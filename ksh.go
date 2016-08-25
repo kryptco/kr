@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -88,6 +89,48 @@ func StartSessionAndWait(session *ssh.Session) {
 
 func main() {
 	log.Println(os.Args)
+	key, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_rsa")
+	if err != nil {
+		log.Fatalf("unable to read private key: %v", err)
+	}
+
+	// Create the Signer for this private key.
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		log.Fatalf("unable to parse private key: %v", err)
+	}
+
+	config := &ssh.ClientConfig{
+		User: strings.Split(os.Args[1], "@")[0],
+		Auth: []ssh.AuthMethod{
+			// Use the PublicKeys method for remote authentication.
+			ssh.PublicKeys(signer),
+		},
+	}
+
+	// Connect to the remote server and perform the SSH handshake.
+	client, err := ssh.Dial("tcp", strings.Split(os.Args[1], "@")[1]+":22", config)
+	if err != nil {
+		log.Fatalf("unable to connect: %v", err)
+	}
+
+	session, err := client.NewSession()
+	if err != nil {
+		log.Fatalf("unable to create session: %v", err)
+	}
+
+	session.Stdin = os.Stdin
+	session.Stdout = os.Stdout
+	session.Stderr = os.Stderr
+
+	err = session.Run(strings.Join(os.Args[2:], " "))
+	if err != nil {
+		log.Fatalf("error running command: %v", err)
+	}
+}
+
+func printArgs() {
+	log.Println(os.Args)
 	os.Exit(1)
 	signer, err := ssh.NewSignerFromSigner(NewProxiedSSHKey())
 	if err != nil {
@@ -111,4 +154,5 @@ func main() {
 	}
 
 	StartSessionAndWait(session)
+
 }
