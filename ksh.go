@@ -119,7 +119,7 @@ func commandMain(c *cli.Context) (err error) {
 	config := &ssh.ClientConfig{
 		User: user,
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(certifiedSigner2),
+			ssh.PublicKeys(signer, certifiedSigner2),
 		},
 	}
 
