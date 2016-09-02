@@ -9,6 +9,8 @@ import (
 	"log"
 	"net"
 	"os"
+
+	"bitbucket.org/kryptco/krssh/agent/launch"
 )
 
 type Agent struct{}
