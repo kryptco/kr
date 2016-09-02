@@ -1,4 +1,4 @@
-package main
+package krssh
 
 import (
 	"log"
@@ -9,14 +9,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
-func testSQS() (err error) {
+func TestSQS() (err error) {
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
 	_, err = creds.Get()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cfg := aws.NewConfig().WithRegion("us-west-1").WithCredentials(creds)
+	cfg := aws.NewConfig().WithRegion("us-east-1").WithCredentials(creds)
 	session, err := session.NewSession(cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -66,5 +66,50 @@ func testSQS() (err error) {
 	}
 	log.Println("received message:", receiveResponse)
 
+	return
+}
+
+// Create queues named `queueBaseName` and `queueBaseName-recv`
+// Return URL for queue named `queueBaseName`
+func CreateSendAndReceiveQueues(queueBaseName string) (baseQueueURL string, err error) {
+	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
+	_, err = creds.Get()
+	if err != nil {
+		return
+	}
+
+	cfg := aws.NewConfig().WithRegion("us-east-1").WithCredentials(creds)
+	session, err := session.NewSession(cfg)
+	if err != nil {
+		return
+	}
+
+	sqsService := sqs.New(session)
+
+	createSendQueueInput := &sqs.CreateQueueInput{
+		QueueName: aws.String(queueBaseName), // Required
+		Attributes: map[string]*string{
+			sqs.QueueAttributeNameMessageRetentionPeriod: aws.String("600"),
+			sqs.QueueAttributeNameVisibilityTimeout:      aws.String("0"),
+		},
+	}
+	createSendQueueResponse, err := sqsService.CreateQueue(createSendQueueInput)
+	if err != nil {
+		return
+	}
+
+	createRecvQueueInput := &sqs.CreateQueueInput{
+		QueueName: aws.String(queueBaseName + "-recv"), // Required
+		Attributes: map[string]*string{
+			sqs.QueueAttributeNameMessageRetentionPeriod: aws.String("600"),
+			sqs.QueueAttributeNameVisibilityTimeout:      aws.String("0"),
+		},
+	}
+	_, err = sqsService.CreateQueue(createRecvQueueInput)
+	if err != nil {
+		return
+	}
+
+	baseQueueURL = *createSendQueueResponse.QueueUrl
 	return
 }

@@ -1,4 +1,4 @@
-package main
+package krssh
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 )
 
 type SymmetricSecretKey struct {
-	bytes []byte
+	Bytes []byte
 }
 
 func GenSymmetricSecretKey() (key SymmetricSecretKey, err error) {
@@ -16,7 +16,7 @@ func GenSymmetricSecretKey() (key SymmetricSecretKey, err error) {
 		return
 	}
 	key = SymmetricSecretKey{
-		bytes: keyBytes,
+		Bytes: keyBytes,
 	}
 	return
 }
@@ -27,7 +27,7 @@ func Seal(message []byte, key SymmetricSecretKey) (ciphertext []byte, err error)
 		err = errors.New("error generating IV: " + err.Error())
 	}
 
-	ciphertext, ret := secretbox.CryptoSecretBoxEasy(message, iv, key.bytes)
+	ciphertext, ret := secretbox.CryptoSecretBoxEasy(message, iv, key.Bytes)
 	if ret != 0 {
 		err = errors.New(fmt.Sprintf("error encrypting: %d", ret))
 		return
@@ -41,7 +41,7 @@ func Open(ciphertext []byte, key SymmetricSecretKey) (message []byte, err error)
 	iv := ciphertext[0:secretbox.CryptoSecretBoxNonceBytes()]
 	ciphertext = ciphertext[secretbox.CryptoSecretBoxNonceBytes():]
 
-	message, ret := secretbox.CryptoSecretBoxOpenEasy(ciphertext, iv, key.bytes)
+	message, ret := secretbox.CryptoSecretBoxOpenEasy(ciphertext, iv, key.Bytes)
 	if ret != 0 {
 		err = errors.New(fmt.Sprintf("error decrypting: %d", ret))
 		return

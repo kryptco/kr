@@ -91,13 +91,19 @@ func main() {
 	//sockName := os.Getenv("LAUNCH_DAEMON_SOCKET_NAME")
 	//sockName := "Socket"
 	//sockName := "KRSSH_AUTH_SOCK"
-	sockName := "AuthListener"
-	launchdListeners, err := launch.SocketListeners(sockName)
+	launchdAuthListener, err := launch.SocketListeners("AuthListener")
 	if err != nil {
 		log.Fatal(err)
 	}
-	if len(launchdListeners) == 0 {
-		log.Fatal("no launchd listeners found")
+	if len(launchdAuthListener) == 0 {
+		log.Fatal("no launchd auth listener found")
+	}
+	launchdCtlListener, err := launch.SocketListeners("CtlListener")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(launchdCtlListener) == 0 {
+		log.Fatal("no launchd ctl listener found")
 	}
 	pkDER, err := base64.StdEncoding.DecodeString("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHD0yLU4UBhXwUZg7LbN5qdrBerbw/WvcP88xc5csWZVoVFDIbZTr0fk1fruV6zOlzk98C9ojHcM0df5yfSd6VA==")
 	if err != nil {
@@ -114,8 +120,10 @@ func main() {
 
 	signers = append(signers, pkSigner)
 
+	go handleCtl(launchdCtlListener[0])
+
 	krAgent := &Agent{}
-	l := launchdListeners[0]
+	l := launchdAuthListener[0]
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package main
+package krssh
 
 import (
 	"crypto/rand"
@@ -12,7 +12,15 @@ func RandNBytes(n uint) (randBytes []byte, err error) {
 }
 
 func Rand256Base62() (encodedRand string, err error) {
-	randBuf, err := RandNBytes(32)
+	return RandNBase62(32)
+}
+
+func Rand128Base62() (encodedRand string, err error) {
+	return RandNBase62(16)
+}
+
+func RandNBase62(n uint) (encodedRand string, err error) {
+	randBuf, err := RandNBytes(n)
 	_, err = rand.Read(randBuf)
 	if err != nil {
 		return
