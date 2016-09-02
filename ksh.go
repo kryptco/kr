@@ -6,7 +6,6 @@ import (
 )
 
 func pairCommand(c *cli.Context) (err error) {
-
 	return
 }
 
@@ -23,5 +22,4 @@ func main() {
 		},
 	}
 	app.Run(os.Args)
-
 }

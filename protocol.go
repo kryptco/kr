@@ -31,10 +31,11 @@ type Request struct {
 }
 
 type Response struct {
-	RequestID    string        `json:"request_id"`
-	SignResponse *SignResponse `json:"sign_response"`
-	ListResponse *ListResponse `json:"list_response"`
-	MeResponse   *MeResponse   `json:"me_response"`
+	RequestID      string        `json:"request_id"`
+	SignResponse   *SignResponse `json:"sign_response"`
+	ListResponse   *ListResponse `json:"list_response"`
+	MeResponse     *MeResponse   `json:"me_response"`
+	SNSEndpointARN *string       `json:"sns_endpoint_arn"`
 }
 
 type SignRequest struct {
@@ -46,7 +47,8 @@ type SignRequest struct {
 }
 
 type SignResponse struct {
-	Signature []byte `json:"signature"`
+	Signature *[]byte `json:"signature"`
+	Error     *string `json:"error"`
 }
 
 type ListRequest struct {
@@ -58,7 +60,7 @@ type ListResponse struct {
 }
 
 type Profile struct {
-	PublicKeyPEM string `json:"public_key_pem"`
+	PublicKeyDER []byte `json:"public_key_der"`
 	Email        string `json:"email"`
 }
 

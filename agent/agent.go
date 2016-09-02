@@ -5,6 +5,7 @@ import (
 	"errors"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -17,23 +18,23 @@ var paired bool
 
 func (a *Agent) List() (keys []*agent.Key, err error) {
 	log.Println("list")
-	//idrsaBytes, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_ecdsa-cert.pub")
-	//if err != nil {
-	//log.Fatal(err)
-	//}
-	//idrsaPk, comment, _, _, err := ssh.ParseAuthorizedKey(idrsaBytes)
-	//if err != nil {
-	//log.Fatal(err)
-	//}
+	idrsaBytes, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_rsa.pub")
+	if err != nil {
+		log.Fatal(err)
+	}
+	idrsaPk, comment, _, _, err := ssh.ParseAuthorizedKey(idrsaBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	//keys = append(keys, &agent.Key{
-	//Format:  idrsaPk.Type(),
-	//Blob:    idrsaPk.Marshal(),
-	//Comment: comment,
-	//})
+	keys = append(keys, &agent.Key{
+		Format:  idrsaPk.Type(),
+		Blob:    idrsaPk.Marshal(),
+		Comment: comment,
+	})
 
 	for _, signer := range signers {
-		os.Stdout.WriteString(signer.PublicKey().Type() + " " +
+		log.Println(signer.PublicKey().Type() + " " +
 			base64.StdEncoding.EncodeToString(signer.PublicKey().Marshal()))
 		keys = append(keys, &agent.Key{
 			Format: signer.PublicKey().Type(),
@@ -46,7 +47,9 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 
 func (a *Agent) Sign(key ssh.PublicKey, data []byte) (signature *ssh.Signature, err error) {
 	log.Println("sign")
-	log.Println(key, string(data))
+	log.Println(key)
+	log.Println(string(data))
+	log.Println(base64.StdEncoding.EncodeToString(data))
 	err = errors.New("not yet implemented")
 	return
 }
