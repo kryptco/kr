@@ -14,6 +14,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 )
 
 func connectToAgent() (conn net.Conn, err error) {
@@ -52,7 +53,14 @@ func pairCommand(c *cli.Context) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation, then press ENTER to clear the screen.")
+	fmt.Println()
 	fmt.Println(qr.Terminal)
+
+	os.Stdin.Read(make([]byte, 1))
+	clearCommand := exec.Command("clear")
+	clearCommand.Stdout = os.Stdout
+	clearCommand.Run()
 	return
 }
 
