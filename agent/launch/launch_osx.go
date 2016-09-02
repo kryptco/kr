@@ -1,13 +1,21 @@
+// +build darwin
 package launch
+
+/*
+*	OSX-specific launchd interaction
+ */
 
 /*
 #include <stdlib.h>
 int launch_activate_socket(const char *name, int **fds, size_t *cnt);
+#include <string.h>
+char* strerror(int errnum);
 */
 import "C"
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"unsafe"
@@ -53,7 +61,8 @@ func activateSocket(name string) ([]int, error) {
 
 	err := C.launch_activate_socket(c_name, &c_fds, &c_cnt)
 	if err != 0 {
-		return nil, errors.New("couldn't activate launchd socket " + name)
+		errStr := C.GoString(C.strerror(err))
+		return nil, errors.New(fmt.Sprintf("couldn't activate launchd socket %s, Error %s", name, errStr))
 	}
 
 	length := int(c_cnt)

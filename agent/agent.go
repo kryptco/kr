@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 	"io/ioutil"
 	"log"
-	"net"
+	"log/syslog"
 	"os"
 
 	"bitbucket.org/kryptco/krssh/agent/launch"
@@ -82,6 +82,23 @@ func (a *Agent) Signers() (signers []ssh.Signer, err error) {
 }
 
 func main() {
+	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krssh-agent")
+	if e == nil {
+		log.SetOutput(logwriter)
+	}
+
+	//sockName := os.Getenv("KRSSH_AUTH_SOCK")
+	//sockName := os.Getenv("LAUNCH_DAEMON_SOCKET_NAME")
+	//sockName := "Socket"
+	//sockName := "KRSSH_AUTH_SOCK"
+	sockName := "AuthListener"
+	launchdListeners, err := launch.SocketListeners(sockName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(launchdListeners) == 0 {
+		log.Fatal("no launchd listeners found")
+	}
 	pkDER, err := base64.StdEncoding.DecodeString("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHD0yLU4UBhXwUZg7LbN5qdrBerbw/WvcP88xc5csWZVoVFDIbZTr0fk1fruV6zOlzk98C9ojHcM0df5yfSd6VA==")
 	if err != nil {
 		log.Fatal(err)
@@ -98,8 +115,7 @@ func main() {
 	signers = append(signers, pkSigner)
 
 	krAgent := &Agent{}
-	os.Remove("/tmp/krsshagent")
-	l, err := net.Listen("unix", "/tmp/krsshagent")
+	l := launchdListeners[0]
 	if err != nil {
 		log.Fatal(err)
 	}
