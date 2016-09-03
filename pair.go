@@ -2,16 +2,13 @@ package krssh
 
 import (
 	"encoding/base64"
-	"sync"
 )
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 
 type PairingSecret struct {
-	SQSBaseQueueName    string     `json:"q"`
-	SymmetricSecretKey  []byte     `json:"k"`
-	SNSEndpointARN      *string    `json:"-"`
-	SNSEndpointARNMutex sync.Mutex `json:"-"`
+	SQSBaseQueueName   string `json:"q"`
+	SymmetricSecretKey []byte `json:"k"`
 }
 
 func (ps PairingSecret) SQSSendQueueURL() string {
@@ -59,26 +56,27 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 	return
 }
 
-func (ps PairingSecret) ReceiveMessage() (message []byte, err error) {
+func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
 	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
-	ctxtString, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
+	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
 	if err != nil {
 		return
 	}
 
-	ctxt, err := base64.StdEncoding.DecodeString(ctxtString)
-	if err != nil {
-		return
-	}
+	for _, ctxtString := range ctxtStrings {
+		ctxt, err := base64.StdEncoding.DecodeString(ctxtString)
+		if err != nil {
+			continue
+		}
 
-	message, err = Open(ctxt, *key)
-	if err != nil {
-		return
+		message, err := Open(ctxt, *key)
+		if err != nil {
+			continue
+		}
+		messages = append(messages, message)
 	}
-
 	return
-
 }

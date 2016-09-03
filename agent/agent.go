@@ -8,8 +8,10 @@ import (
 	//"io/ioutil"
 	"log"
 	"log/syslog"
+	"sync"
 	//"os"
 
+	"bitbucket.org/kryptco/krssh"
 	"bitbucket.org/kryptco/krssh/agent/launch"
 )
 
@@ -17,6 +19,9 @@ type Agent struct{}
 
 var signers []ssh.Signer
 var paired bool
+
+var me *krssh.Profile
+var meMutex sync.Mutex
 
 func (a *Agent) List() (keys []*agent.Key, err error) {
 	log.Println("list")
@@ -34,6 +39,21 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	//Blob:    idrsaPk.Marshal(),
 	//Comment: comment,
 	//})
+
+	meMutex.Lock()
+	if me != nil {
+		proxiedKey, err := PKDERToProxiedKey(me.PublicKeyDER)
+		if err == nil {
+			sshSigner, err := ssh.NewSignerFromSigner(proxiedKey)
+			if err == nil {
+				keys = append(keys, &agent.Key{
+					Format: sshSigner.PublicKey().Type(),
+					Blob:   sshSigner.PublicKey().Marshal(),
+				})
+			}
+		}
+	}
+	meMutex.Unlock()
 
 	for _, signer := range signers {
 		log.Println(signer.PublicKey().Type() + " " +
@@ -120,7 +140,8 @@ func main() {
 
 	signers = append(signers, pkSigner)
 
-	go handleCtl(launchdCtlListener[0])
+	ctlServer := NewCtlServer()
+	go ctlServer.handleCtl(launchdCtlListener[0])
 
 	krAgent := &Agent{}
 	l := launchdAuthListener[0]

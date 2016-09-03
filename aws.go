@@ -3,6 +3,7 @@ package krssh
 import (
 	"errors"
 	"log"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -89,7 +90,7 @@ func getSQSService() (sqsService *sqs.SQS, err error) {
 	return
 }
 
-func ReceiveAndDeleteFromQueue(queueUrl string) (message string, err error) {
+func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 	sqsService, err := getSQSService()
 	if err != nil {
 		log.Println(err)
@@ -97,7 +98,7 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (message string, err error) {
 	}
 
 	receiveMessageInput := &sqs.ReceiveMessageInput{
-		MaxNumberOfMessages: aws.Int64(1),
+		MaxNumberOfMessages: aws.Int64(10),
 		QueueUrl:            aws.String(queueUrl),
 		WaitTimeSeconds:     aws.Int64(10),
 	}
@@ -107,14 +108,22 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (message string, err error) {
 		log.Println(err)
 		return
 	}
-	if len(receiveResponse.Messages) > 0 {
-		message = *receiveResponse.Messages[0].Body
-		deleteMessageInput := &sqs.DeleteMessageInput{
-			QueueUrl:      aws.String(queueUrl),
-			ReceiptHandle: receiveResponse.Messages[0].ReceiptHandle,
+
+	deleteRequestEntries := []*sqs.DeleteMessageBatchRequestEntry{}
+	for i, message := range receiveResponse.Messages {
+		messages = append(messages, *message.Body)
+		deleteRequestEntries = append(deleteRequestEntries, &sqs.DeleteMessageBatchRequestEntry{
+			Id:            aws.String(strconv.Itoa(i)),
+			ReceiptHandle: message.ReceiptHandle,
+		})
+	}
+	if len(messages) > 0 {
+		deleteMessageInput := &sqs.DeleteMessageBatchInput{
+			QueueUrl: aws.String(queueUrl),
+			Entries:  deleteRequestEntries,
 		}
 
-		_, err = sqsService.DeleteMessage(deleteMessageInput)
+		_, err = sqsService.DeleteMessageBatch(deleteMessageInput)
 		if err != nil {
 			log.Println(err)
 			return

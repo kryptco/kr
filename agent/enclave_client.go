@@ -7,60 +7,118 @@ package main
 import (
 	"bitbucket.org/kryptco/krssh"
 	"encoding/json"
+	"github.com/golang/groupcache/lru"
+	"log"
 	"sync"
+	"time"
 )
 
-var requestCallbacksByRequestID = map[string]chan krssh.Response{}
-var requestCallbacksByRequestIDMutex sync.Mutex
+type EnclaveClientI interface {
+	RequestMe() (*krssh.MeResponse, error)
+	RequestSignature(krssh.SignRequest) (*krssh.SignResponse, error)
+	RequestList(krssh.ListRequest) (*krssh.ListResponse, error)
+}
 
-//	Send one request and receive one response, not necessarily the response
-//	associated with this request
-func SendRequestAndReceiveResponse(ps krssh.PairingSecret, request krssh.Request, cb chan krssh.Response) (err error) {
+type EnclaveClient struct {
+	pairingSecret               krssh.PairingSecret
+	requestCallbacksByRequestID *lru.Cache
+	mutex                       sync.Mutex
+	snsEndpointARN              *string
+}
 
+func NewEnclaveClient(pairingSecret krssh.PairingSecret) *EnclaveClient {
+	return &EnclaveClient{
+		pairingSecret:               pairingSecret,
+		requestCallbacksByRequestID: lru.New(128),
+	}
+}
+
+func (client *EnclaveClient) RequestMe() (meResponse *krssh.MeResponse, err error) {
+	meRequest, err := krssh.NewRequest()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	meRequest.MeRequest = &krssh.MeRequest{}
+	response, err := client.tryRequest(meRequest)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if response != nil {
+		meResponse = response.MeResponse
+	} else {
+		//	timed out
+	}
+	return
+}
+
+func (client *EnclaveClient) tryRequest(request krssh.Request) (response *krssh.Response, err error) {
+	cb := make(chan *krssh.Response, 1)
+	go client.sendRequestAndReceiveResponses(request, cb)
+	select {
+	case response = <-cb:
+	case <-time.After(3 * time.Second):
+	}
+	return
+}
+
+func (client *EnclaveClient) RequestSignature(krssh.SignRequest) (response *krssh.SignResponse, err error) {
+	return
+}
+func (client *EnclaveClient) RequestList(krssh.ListRequest) (response *krssh.ListResponse, err error) {
+	return
+}
+
+//	Send one request and receive pending responses, not necessarily associated
+//	with this request
+func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Request, cb chan *krssh.Response) (err error) {
 	requestJson, err := json.Marshal(request)
 	if err != nil {
 		return
 	}
 
-	err = ps.SendMessage(requestJson)
+	err = client.pairingSecret.SendMessage(requestJson)
 	if err != nil {
 		return
 	}
 
-	requestCallbacksByRequestIDMutex.Lock()
-	requestCallbacksByRequestID[request.RequestID] = cb
-	requestCallbacksByRequestIDMutex.Unlock()
+	client.mutex.Lock()
+	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
+	client.mutex.Unlock()
 
-	ps.SNSEndpointARNMutex.Lock()
-	snsEndpointARN := ps.SNSEndpointARN
-	ps.SNSEndpointARNMutex.Unlock()
+	client.mutex.Lock()
+	snsEndpointARN := client.snsEndpointARN
+	client.mutex.Unlock()
 	if snsEndpointARN != nil {
 		//TODO: send notification to SNS endpoint
 	}
 
-	responseJson, err := ps.ReceiveMessage()
+	responseJsons, err := client.pairingSecret.ReceiveMessages()
 	if err != nil {
 		return
 	}
 
-	var response krssh.Response
-	err = json.Unmarshal(responseJson, &response)
-	if err != nil {
-		return
-	}
+	for _, responseJson := range responseJsons {
+		var response krssh.Response
+		err = json.Unmarshal(responseJson, &response)
+		if err != nil {
+			return
+		}
 
-	if response.SNSEndpointARN != nil {
-		ps.SNSEndpointARNMutex.Lock()
-		ps.SNSEndpointARN = response.SNSEndpointARN
-		ps.SNSEndpointARNMutex.Unlock()
-	}
+		if response.SNSEndpointARN != nil {
+			client.mutex.Lock()
+			client.snsEndpointARN = response.SNSEndpointARN
+			client.mutex.Unlock()
+		}
 
-	requestCallbacksByRequestIDMutex.Lock()
-	if requestCb, ok := requestCallbacksByRequestID[response.RequestID]; ok {
-		requestCb <- response
+		client.mutex.Lock()
+		if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
+			requestCb.(chan *krssh.Response) <- &response
+		}
+		client.requestCallbacksByRequestID.Remove(response.RequestID)
+		client.mutex.Unlock()
 	}
-	delete(requestCallbacksByRequestID, response.RequestID)
-	requestCallbacksByRequestIDMutex.Unlock()
 
 	return
 }

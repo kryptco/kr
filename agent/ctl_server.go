@@ -10,41 +10,48 @@ import (
 	"sync"
 )
 
-var pairingSecret krssh.PairingSecret
-var pairingSecretMutex sync.Mutex
+type CtlServer struct {
+	enclaveClient EnclaveClientI
+	mutex         sync.Mutex
+}
 
-func handleCtl(listener net.Listener) (err error) {
+func NewCtlServer() *CtlServer {
+	return &CtlServer{}
+}
+
+func (server *CtlServer) handleCtl(listener net.Listener) (err error) {
 	httpMux := http.NewServeMux()
-	httpMux.HandleFunc("/pair", handlePair)
-	httpMux.HandleFunc("/phone", handlePhone)
+	httpMux.HandleFunc("/pair", server.handlePair)
+	httpMux.HandleFunc("/phone", server.handlePhone)
 	err = http.Serve(listener, httpMux)
 	return
 }
 
-func handlePair(w http.ResponseWriter, r *http.Request) {
+func (server *CtlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 	jsonBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	pairingSecretMutex.Lock()
-	defer pairingSecretMutex.Unlock()
+	var pairingSecret krssh.PairingSecret
 	err = json.Unmarshal(jsonBody, &pairingSecret)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	log.Println(pairingSecret)
-
-	msg, err := pairingSecret.ReceiveMessage()
+	server.mutex.Lock()
+	server.enclaveClient = NewEnclaveClient(pairingSecret)
+	_, err = server.enclaveClient.RequestMe()
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println("received message", string(msg))
+	server.mutex.Unlock()
+
 	//<-time.After(time.Second)
 }
 
-func handlePhone(w http.ResponseWriter, r *http.Request) {
+func (server *CtlServer) handlePhone(w http.ResponseWriter, r *http.Request) {
 }
