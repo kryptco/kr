@@ -37,12 +37,12 @@ func handlePair(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(pairingSecret)
 
-	msg, err := krssh.ReceiveAndDeleteFromQueue(pairingSecret.SQSRecvQueueURL())
+	msg, err := pairingSecret.ReceiveMessage()
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println("received message", msg)
+	log.Println("received message", string(msg))
 	//<-time.After(time.Second)
 }
 

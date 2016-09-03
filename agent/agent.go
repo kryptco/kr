@@ -5,10 +5,10 @@ import (
 	"errors"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	"io/ioutil"
+	//"io/ioutil"
 	"log"
 	"log/syslog"
-	"os"
+	//"os"
 
 	"bitbucket.org/kryptco/krssh/agent/launch"
 )
@@ -20,20 +20,20 @@ var paired bool
 
 func (a *Agent) List() (keys []*agent.Key, err error) {
 	log.Println("list")
-	idrsaBytes, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_rsa.pub")
-	if err != nil {
-		log.Fatal(err)
-	}
-	idrsaPk, comment, _, _, err := ssh.ParseAuthorizedKey(idrsaBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//idrsaBytes, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_rsa.pub")
+	//if err != nil {
+	//log.Fatal(err)
+	//}
+	//idrsaPk, comment, _, _, err := ssh.ParseAuthorizedKey(idrsaBytes)
+	//if err != nil {
+	//log.Fatal(err)
+	//}
 
-	keys = append(keys, &agent.Key{
-		Format:  idrsaPk.Type(),
-		Blob:    idrsaPk.Marshal(),
-		Comment: comment,
-	})
+	//keys = append(keys, &agent.Key{
+	//Format:  idrsaPk.Type(),
+	//Blob:    idrsaPk.Marshal(),
+	//Comment: comment,
+	//})
 
 	for _, signer := range signers {
 		log.Println(signer.PublicKey().Type() + " " +

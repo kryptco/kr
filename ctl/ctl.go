@@ -55,11 +55,9 @@ func pairCommand(c *cli.Context) (err error) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation, then press ENTER to clear the screen.")
+	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation.")
 	fmt.Println()
 	fmt.Println(qr.Terminal)
-
-	krssh.SendToQueue(pairingSecret.SQSRecvQueueURL(), "test msg")
 
 	bufReader := bufio.NewReader(agentConn)
 	response, err := http.ReadResponse(bufReader, pairRequest)
