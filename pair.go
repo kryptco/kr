@@ -2,13 +2,16 @@ package krssh
 
 import (
 	"encoding/base64"
+	"sync"
 )
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 
 type PairingSecret struct {
-	SQSBaseQueueName   string `json:"q"`
-	SymmetricSecretKey []byte `json:"k"`
+	SQSBaseQueueName    string     `json:"q"`
+	SymmetricSecretKey  []byte     `json:"k"`
+	SNSEndpointARN      *string    `json:"-"`
+	SNSEndpointARNMutex sync.Mutex `json:"-"`
 }
 
 func (ps PairingSecret) SQSSendQueueURL() string {

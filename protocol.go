@@ -30,6 +30,17 @@ type Request struct {
 	MeRequest   *MeRequest   `json:"me_request"`
 }
 
+func NewRequest() (request Request, err error) {
+	id, err := Rand128Base62()
+	if err != nil {
+		return
+	}
+	request = Request{
+		RequestID: id,
+	}
+	return
+}
+
 type Response struct {
 	RequestID      string        `json:"request_id"`
 	SignResponse   *SignResponse `json:"sign_response"`
