@@ -1,5 +1,9 @@
 package krssh
 
+import (
+	"encoding/base64"
+)
+
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 
 type PairingSecret struct {
@@ -32,4 +36,46 @@ func GeneratePairingSecret() (ps PairingSecret, err error) {
 	}
 
 	return
+}
+
+func (ps PairingSecret) SendMessage(message []byte) (err error) {
+	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+	if err != nil {
+		return
+	}
+	ctxt, err := Seal(message, *key)
+	if err != nil {
+		return
+	}
+	ctxtString := base64.StdEncoding.EncodeToString(ctxt)
+
+	err = SendToQueue(ps.SQSSendQueueURL(), ctxtString)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (ps PairingSecret) ReceiveMessage() (message []byte, err error) {
+	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+	if err != nil {
+		return
+	}
+	ctxtString, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
+	if err != nil {
+		return
+	}
+
+	ctxt, err := base64.StdEncoding.DecodeString(ctxtString)
+	if err != nil {
+		return
+	}
+
+	message, err = Open(ctxt, *key)
+	if err != nil {
+		return
+	}
+
+	return
+
 }

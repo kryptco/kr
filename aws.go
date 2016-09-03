@@ -1,6 +1,7 @@
 package krssh
 
 import (
+	"errors"
 	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -8,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
+
+var ErrNoMessages = errors.New("No messages in SQS Queue")
 
 func TestSQS() (err error) {
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
@@ -69,9 +72,7 @@ func TestSQS() (err error) {
 	return
 }
 
-// Create queues named `queueBaseName` and `queueBaseName-recv`
-// Return URL for queue named `queueBaseName`
-func CreateSendAndReceiveQueues(queueBaseName string) (baseQueueURL string, err error) {
+func getSQSService() (sqsService *sqs.SQS, err error) {
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
 	_, err = creds.Get()
 	if err != nil {
@@ -84,8 +85,75 @@ func CreateSendAndReceiveQueues(queueBaseName string) (baseQueueURL string, err 
 		return
 	}
 
-	sqsService := sqs.New(session)
+	sqsService = sqs.New(session)
+	return
+}
 
+func ReceiveAndDeleteFromQueue(queueUrl string) (message string, err error) {
+	sqsService, err := getSQSService()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	receiveMessageInput := &sqs.ReceiveMessageInput{
+		MaxNumberOfMessages: aws.Int64(1),
+		QueueUrl:            aws.String(queueUrl),
+		WaitTimeSeconds:     aws.Int64(10),
+	}
+
+	receiveResponse, err := sqsService.ReceiveMessage(receiveMessageInput)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if len(receiveResponse.Messages) > 0 {
+		message = *receiveResponse.Messages[0].Body
+		deleteMessageInput := &sqs.DeleteMessageInput{
+			QueueUrl:      aws.String(queueUrl),
+			ReceiptHandle: receiveResponse.Messages[0].ReceiptHandle,
+		}
+
+		_, err = sqsService.DeleteMessage(deleteMessageInput)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		err = ErrNoMessages
+	}
+
+	return
+}
+
+func SendToQueue(queueUrl string, message string) (err error) {
+	sqsService, err := getSQSService()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	sendMessageInput := &sqs.SendMessageInput{
+		MessageBody: aws.String(message),
+		QueueUrl:    aws.String(queueUrl),
+	}
+
+	_, err = sqsService.SendMessage(sendMessageInput)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	return
+}
+
+// Create queues named `queueBaseName` and `queueBaseName-recv`
+// Return URL for queue named `queueBaseName`
+func CreateSendAndReceiveQueues(queueBaseName string) (baseQueueURL string, err error) {
+	sqsService, err := getSQSService()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	createSendQueueInput := &sqs.CreateQueueInput{
 		QueueName: aws.String(queueBaseName), // Required
 		Attributes: map[string]*string{

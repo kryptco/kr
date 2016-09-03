@@ -24,6 +24,7 @@ func GenSymmetricSecretKey() (key SymmetricSecretKey, err error) {
 func SymmetricSecretKeyFromBytes(bytes []byte) (key *SymmetricSecretKey, err error) {
 	if len(bytes) != secretbox.CryptoSecretBoxKeyBytes() {
 		err = errors.New(fmt.Sprintf("secret box key must have %d bytes, %d provided", secretbox.CryptoSecretBoxKeyBytes(), len(bytes)))
+		return
 	}
 	key = &SymmetricSecretKey{bytes}
 	return

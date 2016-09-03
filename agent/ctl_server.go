@@ -7,7 +7,11 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"sync"
 )
+
+var pairingSecret krssh.PairingSecret
+var pairingSecretMutex sync.Mutex
 
 func handleCtl(listener net.Listener) (err error) {
 	httpMux := http.NewServeMux()
@@ -20,15 +24,26 @@ func handleCtl(listener net.Listener) (err error) {
 func handlePair(w http.ResponseWriter, r *http.Request) {
 	jsonBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
-	var pairingSecret krssh.PairingSecret
+	pairingSecretMutex.Lock()
+	defer pairingSecretMutex.Unlock()
 	err = json.Unmarshal(jsonBody, &pairingSecret)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	log.Println(pairingSecret)
+
+	msg, err := krssh.ReceiveAndDeleteFromQueue(pairingSecret.SQSRecvQueueURL())
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println("received message", msg)
+	//<-time.After(time.Second)
 }
 
 func handlePhone(w http.ResponseWriter, r *http.Request) {

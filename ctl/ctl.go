@@ -6,6 +6,7 @@ package main
 
 import (
 	"bitbucket.org/kryptco/krssh"
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -53,11 +54,20 @@ func pairCommand(c *cli.Context) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation, then press ENTER to clear the screen.")
 	fmt.Println()
 	fmt.Println(qr.Terminal)
 
-	os.Stdin.Read(make([]byte, 1))
+	krssh.SendToQueue(pairingSecret.SQSRecvQueueURL(), "test msg")
+
+	bufReader := bufio.NewReader(agentConn)
+	response, err := http.ReadResponse(bufReader, pairRequest)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer response.Body.Close()
+
 	clearCommand := exec.Command("clear")
 	clearCommand.Stdout = os.Stdout
 	clearCommand.Run()
