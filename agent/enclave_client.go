@@ -48,8 +48,14 @@ func (client *EnclaveClient) RequestMe() (meResponse *krssh.MeResponse, err erro
 	if response != nil {
 		meResponse = response.MeResponse
 	} else {
-		//	timed out
+		//	TODO: handle timeout
 	}
+	return
+}
+func (client *EnclaveClient) RequestSignature(krssh.SignRequest) (response *krssh.SignResponse, err error) {
+	return
+}
+func (client *EnclaveClient) RequestList(krssh.ListRequest) (response *krssh.ListResponse, err error) {
 	return
 }
 
@@ -60,13 +66,6 @@ func (client *EnclaveClient) tryRequest(request krssh.Request) (response *krssh.
 	case response = <-cb:
 	case <-time.After(3 * time.Second):
 	}
-	return
-}
-
-func (client *EnclaveClient) RequestSignature(krssh.SignRequest) (response *krssh.SignResponse, err error) {
-	return
-}
-func (client *EnclaveClient) RequestList(krssh.ListRequest) (response *krssh.ListResponse, err error) {
 	return
 }
 

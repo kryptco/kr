@@ -100,7 +100,7 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 	receiveMessageInput := &sqs.ReceiveMessageInput{
 		MaxNumberOfMessages: aws.Int64(10),
 		QueueUrl:            aws.String(queueUrl),
-		WaitTimeSeconds:     aws.Int64(10),
+		WaitTimeSeconds:     aws.Int64(3),
 	}
 
 	receiveResponse, err := sqsService.ReceiveMessage(receiveMessageInput)
