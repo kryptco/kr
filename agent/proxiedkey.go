@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto"
+	"crypto/sha256"
 	"crypto/x509"
 	"errors"
 	"io"
@@ -11,6 +12,8 @@ import (
 //	Implements crypto.Signer by requesting signatures from phone
 type ProxiedKey struct {
 	crypto.PublicKey
+	publicKeyFingerprint []byte
+	enclaveClient        EnclaveClientI
 }
 
 func (pk *ProxiedKey) Public() crypto.PublicKey {
@@ -23,14 +26,18 @@ func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts
 	return
 }
 
-func PKDERToProxiedKey(pkDER []byte) (proxiedKey crypto.Signer, err error) {
+func PKDERToProxiedKey(enclaveClient EnclaveClientI, pkDER []byte) (proxiedKey crypto.Signer, err error) {
 	pk, err := x509.ParsePKIXPublicKey(pkDER)
 	if err != nil {
 		return
 	}
 
+	publicKeyFingerprint := sha256.Sum256(pkDER)
+
 	proxiedKey = &ProxiedKey{
-		PublicKey: pk,
+		publicKeyFingerprint: publicKeyFingerprint[:],
+		enclaveClient:        enclaveClient,
+		PublicKey:            pk,
 	}
 	return
 }

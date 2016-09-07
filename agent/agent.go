@@ -42,7 +42,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 
 	meMutex.Lock()
 	if me != nil {
-		proxiedKey, err := PKDERToProxiedKey(me.PublicKeyDER)
+		proxiedKey, err := PKDERToProxiedKey(nil, me.PublicKeyDER)
 		if err == nil {
 			sshSigner, err := ssh.NewSignerFromSigner(proxiedKey)
 			if err == nil {
@@ -129,7 +129,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	pk, err := PKDERToProxiedKey(pkDER)
+	pk, err := PKDERToProxiedKey(nil, pkDER)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -140,8 +140,8 @@ func main() {
 
 	signers = append(signers, pkSigner)
 
-	ctlServer := NewCtlServer()
-	go ctlServer.handleCtl(launchdCtlListener[0])
+	middleware := NewCtlEnclaveMiddleware()
+	go middleware.handleCtl(launchdCtlListener[0])
 
 	krAgent := &Agent{}
 	l := launchdAuthListener[0]
