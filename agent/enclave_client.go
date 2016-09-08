@@ -7,11 +7,14 @@ package main
 import (
 	"bitbucket.org/kryptco/krssh"
 	"encoding/json"
+	"errors"
 	"github.com/golang/groupcache/lru"
 	"log"
 	"sync"
 	"time"
 )
+
+var ErrTimeout = errors.New("Request timed out")
 
 type EnclaveClientI interface {
 	RequestMe() (*krssh.MeResponse, error)
@@ -26,7 +29,7 @@ type EnclaveClient struct {
 	snsEndpointARN              *string
 }
 
-func NewEnclaveClient(pairingSecret krssh.PairingSecret) *EnclaveClient {
+func NewEnclaveClient(pairingSecret krssh.PairingSecret) EnclaveClientI {
 	return &EnclaveClient{
 		pairingSecret:               pairingSecret,
 		requestCallbacksByRequestID: lru.New(128),
@@ -64,7 +67,9 @@ func (client *EnclaveClient) tryRequest(request krssh.Request) (response *krssh.
 	go client.sendRequestAndReceiveResponses(request, cb)
 	select {
 	case response = <-cb:
-	case <-time.After(3 * time.Second):
+		//	TODO:
+	case <-time.After(60 * time.Second):
+		err = ErrTimeout
 	}
 	return
 }

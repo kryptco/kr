@@ -15,13 +15,12 @@ import (
 	"bitbucket.org/kryptco/krssh/agent/launch"
 )
 
-type Agent struct{}
-
-var signers []ssh.Signer
-var paired bool
-
-var me *krssh.Profile
-var meMutex sync.Mutex
+type Agent struct {
+	CtlEnclaveMiddlewareI
+	signers []ssh.Signer
+	me      *krssh.Profile
+	mutex   sync.Mutex
+}
 
 func (a *Agent) List() (keys []*agent.Key, err error) {
 	log.Println("list")
@@ -40,29 +39,22 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	//Comment: comment,
 	//})
 
-	meMutex.Lock()
-	if me != nil {
-		proxiedKey, err := PKDERToProxiedKey(nil, me.PublicKeyDER)
-		if err == nil {
-			sshSigner, err := ssh.NewSignerFromSigner(proxiedKey)
-			if err == nil {
-				keys = append(keys, &agent.Key{
-					Format: sshSigner.PublicKey().Type(),
-					Blob:   sshSigner.PublicKey().Marshal(),
-				})
-			}
-		}
+	signer, err := a.CtlEnclaveMiddlewareI.RequestMeSigner()
+	if err != nil {
+		log.Println(err)
+		return
 	}
-	meMutex.Unlock()
+	if signer == nil {
+		log.Println("no keys associated with this agent")
+		return
+	}
 
-	for _, signer := range signers {
-		log.Println(signer.PublicKey().Type() + " " +
-			base64.StdEncoding.EncodeToString(signer.PublicKey().Marshal()))
-		keys = append(keys, &agent.Key{
-			Format: signer.PublicKey().Type(),
-			Blob:   signer.PublicKey().Marshal(),
-		})
-	}
+	log.Println(signer.PublicKey().Type() + " " +
+		base64.StdEncoding.EncodeToString(signer.PublicKey().Marshal()))
+	keys = append(keys, &agent.Key{
+		Format: signer.PublicKey().Type(),
+		Blob:   signer.PublicKey().Marshal(),
+	})
 
 	return
 }
@@ -138,12 +130,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	signers = append(signers, pkSigner)
+	signers := []ssh.Signer{pkSigner}
 
 	middleware := NewCtlEnclaveMiddleware()
-	go middleware.handleCtl(launchdCtlListener[0])
+	go middleware.HandleCtl(launchdCtlListener[0])
 
-	krAgent := &Agent{}
+	krAgent := &Agent{
+		CtlEnclaveMiddlewareI: middleware,
+		signers:               signers,
+	}
 	l := launchdAuthListener[0]
 	if err != nil {
 		log.Fatal(err)
