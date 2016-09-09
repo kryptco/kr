@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bitbucket.org/kryptco/krssh"
 	"crypto"
 	"crypto/sha256"
 	"crypto/x509"
@@ -21,7 +22,31 @@ func (pk *ProxiedKey) Public() crypto.PublicKey {
 }
 
 func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
-	log.Printf("trying to sign with %t\n", pk.PublicKey)
+	log.Printf("trying to sign %d bytes with %t\n", len(digest), pk.PublicKey)
+	request := krssh.SignRequest{
+		PublicKeyFingerprint: pk.publicKeyFingerprint,
+		Digest:               digest,
+	}
+	response, err := pk.enclaveClient.RequestSignature(request)
+	if err != nil {
+		return
+	}
+	if response != nil {
+		if response.Error != nil {
+			err = errors.New("Enclave signature error: " + *response.Error)
+			return
+		}
+		if response.Signature != nil {
+			signature = *response.Signature
+			return
+		}
+		err = errors.New("No enclave signature in response")
+		return
+	} else {
+		err = errors.New("No response from enclave")
+		return
+	}
+
 	err = errors.New("not yet implemented")
 	return
 }

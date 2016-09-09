@@ -23,6 +23,7 @@ type CtlEnclaveMiddleware struct {
 	EnclaveClientI
 	mutex             sync.Mutex
 	cachedSigner      ssh.Signer
+	cachedProfile     *krssh.Profile
 	newEnclaveClientI func(krssh.PairingSecret) EnclaveClientI
 }
 
@@ -35,7 +36,7 @@ func NewCtlEnclaveMiddleware() *CtlEnclaveMiddleware {
 func (middleware *CtlEnclaveMiddleware) HandleCtl(listener net.Listener) (err error) {
 	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("/pair", middleware.handlePair)
-	httpMux.HandleFunc("/phone", middleware.handlePhone)
+	httpMux.HandleFunc("/enclave", middleware.handleEnclave)
 	err = http.Serve(listener, httpMux)
 	return
 }
@@ -56,10 +57,28 @@ func (middleware *CtlEnclaveMiddleware) handlePair(w http.ResponseWriter, r *htt
 	log.Println(pairingSecret)
 	middleware.mutex.Lock()
 	middleware.EnclaveClientI = middleware.newEnclaveClientI(pairingSecret)
+	middleware.cachedProfile = nil
+	middleware.cachedSigner = nil
 	middleware.mutex.Unlock()
 
 	//	populate cached Me
 	middleware.RequestMeSigner()
+
+	//	response with profile
+	middleware.mutex.Lock()
+	me := middleware.cachedProfile
+	middleware.mutex.Unlock()
+	if me != nil {
+		err = json.NewEncoder(w).Encode(*me)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		log.Println(err)
+		return
+	}
 
 	//<-time.After(time.Second)
 }
@@ -93,6 +112,7 @@ func (middleware *CtlEnclaveMiddleware) RequestMeSigner() (me ssh.Signer, err er
 			return
 		}
 		middleware.cachedSigner = signer
+		middleware.cachedProfile = &meResponse.Me
 	} else {
 		log.Println(err)
 		return
@@ -100,5 +120,24 @@ func (middleware *CtlEnclaveMiddleware) RequestMeSigner() (me ssh.Signer, err er
 	return
 }
 
-func (middleware *CtlEnclaveMiddleware) handlePhone(w http.ResponseWriter, r *http.Request) {
+func (middleware *CtlEnclaveMiddleware) handleEnclave(w http.ResponseWriter, r *http.Request) {
+	var enclaveRequest krssh.Request
+	err := json.NewDecoder(r.Body).Decode(&enclaveRequest)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if enclaveRequest.MeRequest != nil {
+		if middleware.cachedProfile != nil {
+			err = json.NewEncoder(w).Encode(*middleware.cachedProfile)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	}
 }

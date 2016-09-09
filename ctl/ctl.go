@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/urfave/cli"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -64,11 +65,69 @@ func pairCommand(c *cli.Context) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if response.StatusCode != 200 {
+		log.Fatalf("Pairing failed with error code %d", response.StatusCode)
+	}
 	defer response.Body.Close()
+	var me krssh.Profile
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = json.Unmarshal(responseBody, &me)
 
 	clearCommand := exec.Command("clear")
 	clearCommand.Stdout = os.Stdout
 	clearCommand.Run()
+
+	fmt.Println("Paired successfully with identity", me.DisplayString())
+	return
+}
+
+func meCommand(c *cli.Context) (err error) {
+	agentConn, err := connectToAgent()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	request, err := krssh.NewRequest()
+	if err != nil {
+		log.Fatal(err)
+	}
+	request.MeRequest = &krssh.MeRequest{}
+	requestJson, err := json.Marshal(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+	httpRequest, err := http.NewRequest("PUT", "/enclave", bytes.NewReader(requestJson))
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = httpRequest.Write(agentConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bufReader := bufio.NewReader(agentConn)
+	response, err := http.ReadResponse(bufReader, httpRequest)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 200 {
+		log.Printf("Error retrieving paired identity: %d", response.StatusCode)
+	}
+
+	var me krssh.Profile
+	err = json.NewDecoder(response.Body).Decode(&me)
+	if err != nil {
+		log.Fatal(err)
+	}
+	wireString, err := me.SSHWireString()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(wireString)
 	return
 }
 
@@ -85,7 +144,7 @@ func main() {
 		},
 		cli.Command{
 			Name:   "me",
-			Action: pairCommand,
+			Action: meCommand,
 		},
 		cli.Command{
 			Name:    "list",

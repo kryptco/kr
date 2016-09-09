@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"golang.org/x/crypto/ssh"
@@ -62,8 +64,17 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 func (a *Agent) Sign(key ssh.PublicKey, data []byte) (signature *ssh.Signature, err error) {
 	log.Println("sign")
 	log.Println(key)
-	log.Println(string(data))
+	log.Printf("%v\n", data)
+	log.Printf("%q\n", string(data))
 	log.Println(base64.StdEncoding.EncodeToString(data))
+	me, err := a.CtlEnclaveMiddlewareI.RequestMeSigner()
+	if err != nil {
+		log.Println("error retrieving Me: " + err.Error())
+		return
+	}
+	if bytes.Equal(me.PublicKey().Marshal(), key.Marshal()) {
+		return me.Sign(rand.Reader, data)
+	}
 	err = errors.New("not yet implemented")
 	return
 }

@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/kryptco/krssh"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/golang/groupcache/lru"
 	"log"
 	"sync"
@@ -15,6 +16,33 @@ import (
 )
 
 var ErrTimeout = errors.New("Request timed out")
+
+//	Network-related error during send
+type SendError struct {
+	error
+}
+
+func (err *SendError) Error() string {
+	return fmt.Sprintf("SendError: " + err.error.Error())
+}
+
+//	Network-related error during receive
+type RecvError struct {
+	error
+}
+
+func (err *RecvError) Error() string {
+	return fmt.Sprintf("RecvError: " + err.error.Error())
+}
+
+//	Unrecoverable error, this request will always fail
+type ProtoError struct {
+	error
+}
+
+func (err *ProtoError) Error() string {
+	return fmt.Sprintf("ProtoError: " + err.error.Error())
+}
 
 type EnclaveClientI interface {
 	RequestMe() (*krssh.MeResponse, error)
@@ -55,7 +83,23 @@ func (client *EnclaveClient) RequestMe() (meResponse *krssh.MeResponse, err erro
 	}
 	return
 }
-func (client *EnclaveClient) RequestSignature(krssh.SignRequest) (response *krssh.SignResponse, err error) {
+func (client *EnclaveClient) RequestSignature(signRequest krssh.SignRequest) (signResponse *krssh.SignResponse, err error) {
+	request, err := krssh.NewRequest()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	request.SignRequest = &signRequest
+	response, err := client.tryRequest(request)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if response != nil {
+		signResponse = response.SignResponse
+	} else {
+		//	TODO: handle timeout
+	}
 	return
 }
 func (client *EnclaveClient) RequestList(krssh.ListRequest) (response *krssh.ListResponse, err error) {
@@ -64,11 +108,16 @@ func (client *EnclaveClient) RequestList(krssh.ListRequest) (response *krssh.Lis
 
 func (client *EnclaveClient) tryRequest(request krssh.Request) (response *krssh.Response, err error) {
 	cb := make(chan *krssh.Response, 1)
-	go client.sendRequestAndReceiveResponses(request, cb)
+	go func() {
+		err := client.sendRequestAndReceiveResponses(request, cb)
+		if err != nil {
+			log.Println("error sendRequestAndReceiveResponses: ", err.Error())
+		}
+	}()
 	select {
 	case response = <-cb:
 		//	TODO:
-	case <-time.After(60 * time.Second):
+	case <-time.After(3 * time.Second):
 		err = ErrTimeout
 	}
 	return
@@ -79,11 +128,13 @@ func (client *EnclaveClient) tryRequest(request krssh.Request) (response *krssh.
 func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Request, cb chan *krssh.Response) (err error) {
 	requestJson, err := json.Marshal(request)
 	if err != nil {
+		err = &ProtoError{err}
 		return
 	}
 
 	err = client.pairingSecret.SendMessage(requestJson)
 	if err != nil {
+		err = &SendError{err}
 		return
 	}
 
@@ -100,6 +151,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 
 	responseJsons, err := client.pairingSecret.ReceiveMessages()
 	if err != nil {
+		err = &RecvError{err}
 		return
 	}
 

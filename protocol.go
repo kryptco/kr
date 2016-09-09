@@ -1,33 +1,18 @@
 package krssh
 
 import (
-	"crypto"
-	"errors"
-	"fmt"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/base64"
+	"golang.org/x/crypto/ssh"
 )
-
-const (
-	HashFunctionSHA256 = "SHA256"
-	HashFunctionSHA1   = "SHA1"
-)
-
-func HashToName(hash crypto.Hash) (name string, err error) {
-	switch hash {
-	case crypto.SHA1:
-		name = HashFunctionSHA1
-	case crypto.SHA256:
-		name = HashFunctionSHA256
-	default:
-		err = errors.New(fmt.Sprintf("Unsupported hash function %d"))
-	}
-	return
-}
 
 type Request struct {
-	RequestID   string       `json:"request_id"`
-	SignRequest *SignRequest `json:"sign_request"`
-	ListRequest *ListRequest `json:"list_request"`
-	MeRequest   *MeRequest   `json:"me_request"`
+	RequestID       string       `json:"request_id"`
+	SignRequest     *SignRequest `json:"sign_request"`
+	ListRequest     *ListRequest `json:"list_request"`
+	MeRequest       *MeRequest   `json:"me_request"`
+	timeoutOverride *int
 }
 
 func NewRequest() (request Request, err error) {
@@ -51,10 +36,9 @@ type Response struct {
 
 type SignRequest struct {
 	//	N.B. []byte marshals to base64 encoding in JSON
-	Message []byte `json:"message"`
+	Digest []byte `json:"digest"`
 	//	SHA256 hash of public key DER
 	PublicKeyFingerprint []byte `json:"public_key_fingerprint"`
-	HashName             string `json:"hash_name"`
 }
 
 type SignResponse struct {
@@ -73,6 +57,23 @@ type ListResponse struct {
 type Profile struct {
 	PublicKeyDER []byte `json:"public_key_der"`
 	Email        string `json:"email"`
+}
+
+func (p Profile) DisplayString() string {
+	pkFingerprint := sha256.Sum256(p.PublicKeyDER)
+	return base64.StdEncoding.EncodeToString(pkFingerprint[:]) + " <" + p.Email + ">"
+}
+func (p Profile) SSHWireString() (wireString string, err error) {
+	x509Pk, err := x509.ParsePKIXPublicKey(p.PublicKeyDER)
+	if err != nil {
+		return
+	}
+	sshPk, err := ssh.NewPublicKey(x509Pk)
+	if err != nil {
+		return
+	}
+	wireString = sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal())
+	return
 }
 
 type MeRequest struct{}

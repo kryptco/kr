@@ -2,6 +2,7 @@ package krssh
 
 import (
 	"encoding/base64"
+	"log"
 )
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
@@ -9,13 +10,20 @@ const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 type PairingSecret struct {
 	SQSBaseQueueName   string `json:"q"`
 	SymmetricSecretKey []byte `json:"k"`
+	WorkstationName    string `json:"n"`
 }
 
 func (ps PairingSecret) SQSSendQueueURL() string {
 	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName
 }
 func (ps PairingSecret) SQSRecvQueueURL() string {
-	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName + "-recv"
+	return SQS_BASE_QUEUE_URL + ps.SQSRecvQueueName()
+}
+func (ps PairingSecret) SQSSendQueueName() string {
+	return ps.SQSBaseQueueName
+}
+func (ps PairingSecret) SQSRecvQueueName() string {
+	return ps.SQSBaseQueueName + "-responder"
 }
 
 func GeneratePairingSecret() (ps PairingSecret, err error) {
@@ -30,7 +38,11 @@ func GeneratePairingSecret() (ps PairingSecret, err error) {
 		return
 	}
 
-	_, err = CreateSendAndReceiveQueues(ps.SQSBaseQueueName)
+	_, err = CreateQueue(ps.SQSSendQueueName())
+	if err != nil {
+		return
+	}
+	_, err = CreateQueue(ps.SQSRecvQueueName())
 	if err != nil {
 		return
 	}
@@ -69,14 +81,18 @@ func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
 	for _, ctxtString := range ctxtStrings {
 		ctxt, err := base64.StdEncoding.DecodeString(ctxtString)
 		if err != nil {
+			log.Println("base64 ciphertext decoding error")
 			continue
 		}
 
 		message, err := Open(ctxt, *key)
 		if err != nil {
+			log.Println("open cipertext error")
 			continue
 		}
 		messages = append(messages, message)
+		log.Println("received message: ", string(message))
 	}
+	log.Printf("received %d messages", len(messages))
 	return
 }
