@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
 	"errors"
 	"io"
 	"log"
@@ -23,12 +24,16 @@ func (pk *ProxiedKey) Public() crypto.PublicKey {
 
 func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
 	log.Printf("trying to sign %d bytes with %t\n", len(digest), pk.PublicKey)
+	log.Printf("data: %s\n", base64.StdEncoding.EncodeToString(digest))
+	pkDER, _ := x509.MarshalPKIXPublicKey(pk.PublicKey)
+	log.Printf("pk: %s\n", base64.StdEncoding.EncodeToString(pkDER))
 	request := krssh.SignRequest{
 		PublicKeyFingerprint: pk.publicKeyFingerprint,
 		Digest:               digest,
 	}
 	response, err := pk.enclaveClient.RequestSignature(request)
 	if err != nil {
+		log.Println("error requesting signature:", err)
 		return
 	}
 	if response != nil {

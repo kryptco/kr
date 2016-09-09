@@ -173,9 +173,9 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 
 	for _, responseJson := range responseJsons {
 		var response krssh.Response
-		err = json.Unmarshal(responseJson, &response)
+		err := json.Unmarshal(responseJson, &response)
 		if err != nil {
-			return
+			continue
 		}
 
 		if response.SNSEndpointARN != nil {
@@ -186,7 +186,10 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 
 		client.mutex.Lock()
 		if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
+			log.Println("found callback for request", response.RequestID)
 			requestCb.(chan *krssh.Response) <- &response
+		} else {
+			log.Println("callback not found for request", response.RequestID)
 		}
 		client.requestCallbacksByRequestID.Remove(response.RequestID)
 		client.mutex.Unlock()
