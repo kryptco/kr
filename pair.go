@@ -3,6 +3,7 @@ package krssh
 import (
 	"encoding/base64"
 	"log"
+	"os"
 )
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
@@ -46,6 +47,9 @@ func GeneratePairingSecret() (ps PairingSecret, err error) {
 	if err != nil {
 		return
 	}
+
+	hostname, _ := os.Hostname()
+	ps.WorkstationName = os.Getenv("USER") + "@" + hostname
 
 	return
 }

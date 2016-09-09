@@ -102,7 +102,23 @@ func (client *EnclaveClient) RequestSignature(signRequest krssh.SignRequest) (si
 	}
 	return
 }
-func (client *EnclaveClient) RequestList(krssh.ListRequest) (response *krssh.ListResponse, err error) {
+func (client *EnclaveClient) RequestList(listRequest krssh.ListRequest) (listResponse *krssh.ListResponse, err error) {
+	request, err := krssh.NewRequest()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	request.ListRequest = &listRequest
+	response, err := client.tryRequest(request)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if response != nil {
+		listResponse = response.ListResponse
+	} else {
+		//	TODO: handle timeout
+	}
 	return
 }
 

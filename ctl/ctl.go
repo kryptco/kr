@@ -62,6 +62,11 @@ func pairCommand(c *cli.Context) (err error) {
 
 	bufReader := bufio.NewReader(agentConn)
 	response, err := http.ReadResponse(bufReader, pairRequest)
+
+	clearCommand := exec.Command("clear")
+	clearCommand.Stdout = os.Stdout
+	clearCommand.Run()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -75,10 +80,6 @@ func pairCommand(c *cli.Context) (err error) {
 		log.Fatal(err)
 	}
 	err = json.Unmarshal(responseBody, &me)
-
-	clearCommand := exec.Command("clear")
-	clearCommand.Stdout = os.Stdout
-	clearCommand.Run()
 
 	fmt.Println("Paired successfully with identity", me.DisplayString())
 	return
