@@ -68,8 +68,6 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 			log.Println(err)
 			return
 		}
-	} else {
-		err = ErrNoMessages
 	}
 
 	return

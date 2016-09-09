@@ -165,35 +165,55 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		//TODO: send notification to SNS endpoint
 	}
 
-	responseJsons, err := client.pairingSecret.ReceiveMessages()
-	if err != nil {
-		err = &RecvError{err}
+	receive := func() (numReceived int, err error) {
+		responseJsons, err := client.pairingSecret.ReceiveMessages()
+		if err != nil {
+			err = &RecvError{err}
+			return
+		}
+
+		for _, responseJson := range responseJsons {
+			var response krssh.Response
+			err := json.Unmarshal(responseJson, &response)
+			if err != nil {
+				continue
+			}
+
+			numReceived++
+
+			if response.SNSEndpointARN != nil {
+				client.mutex.Lock()
+				client.snsEndpointARN = response.SNSEndpointARN
+				client.mutex.Unlock()
+			}
+
+			client.mutex.Lock()
+			if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
+				log.Println("found callback for request", response.RequestID)
+				requestCb.(chan *krssh.Response) <- &response
+			} else {
+				log.Println("callback not found for request", response.RequestID)
+			}
+			client.requestCallbacksByRequestID.Remove(response.RequestID)
+			client.mutex.Unlock()
+		}
 		return
 	}
 
-	for _, responseJson := range responseJsons {
-		var response krssh.Response
-		err := json.Unmarshal(responseJson, &response)
-		if err != nil {
-			continue
+	for {
+		n, err := receive()
+		if n == 0 || err != nil {
+			break
 		}
-
-		if response.SNSEndpointARN != nil {
-			client.mutex.Lock()
-			client.snsEndpointARN = response.SNSEndpointARN
-			client.mutex.Unlock()
-		}
-
-		client.mutex.Lock()
-		if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
-			log.Println("found callback for request", response.RequestID)
-			requestCb.(chan *krssh.Response) <- &response
-		} else {
-			log.Println("callback not found for request", response.RequestID)
-		}
-		client.requestCallbacksByRequestID.Remove(response.RequestID)
-		client.mutex.Unlock()
 	}
+	client.mutex.Lock()
+	if cb, ok := client.requestCallbacksByRequestID.Get(request.RequestID); ok {
+		//	request still not processed, give up on it
+		cb.(chan *krssh.Response) <- nil
+		client.requestCallbacksByRequestID.Remove(request.RequestID)
+		log.Println("evicting request", request.RequestID)
+	}
+	client.mutex.Unlock()
 
 	return
 }
