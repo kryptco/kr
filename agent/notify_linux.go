@@ -5,7 +5,7 @@ import (
 )
 
 func DesktopNotify(message string) (err error) {
-	notify = notificator.New(notificator.Options{
+	notify := notificator.New(notificator.Options{
 		AppName: "krssh-agent",
 	})
 
