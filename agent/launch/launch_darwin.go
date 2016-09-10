@@ -21,7 +21,7 @@ import (
 )
 
 func OpenAuthAndCtlSockets() (authSocket net.Listener, ctlSocket net.Listener, err error) {
-	launchdAuthListeners, err := launch.SocketListeners("AuthListener")
+	launchdAuthListeners, err := SocketListeners("AuthListener")
 	if err != nil {
 		return
 	}
@@ -29,7 +29,7 @@ func OpenAuthAndCtlSockets() (authSocket net.Listener, ctlSocket net.Listener, e
 		err = errors.New("no launchd auth listener found")
 		return
 	}
-	launchdCtlListeners, err := launch.SocketListeners("CtlListener")
+	launchdCtlListeners, err := SocketListeners("CtlListener")
 	if err != nil {
 		return
 	}
@@ -37,7 +37,7 @@ func OpenAuthAndCtlSockets() (authSocket net.Listener, ctlSocket net.Listener, e
 		err = errors.New("no launchd ctl listener found")
 		return
 	}
-	authSocket = launchdAuthListners[0]
+	authSocket = launchdAuthListeners[0]
 	ctlSocket = launchdCtlListeners[0]
 	return
 }
