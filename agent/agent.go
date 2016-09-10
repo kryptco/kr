@@ -7,11 +7,9 @@ import (
 	"errors"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	//"io/ioutil"
 	"log"
 	"log/syslog"
 	"sync"
-	//"os"
 
 	"bitbucket.org/kryptco/krssh"
 	"bitbucket.org/kryptco/krssh/agent/launch"
@@ -41,13 +39,10 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	//Comment: comment,
 	//})
 
-	signer, err := a.CtlEnclaveMiddlewareI.RequestMeSigner()
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	signer := a.CtlEnclaveMiddlewareI.GetCachedMeSigner()
 	if signer == nil {
 		log.Println("no keys associated with this agent")
+		DesktopNotify("Not paired, please run \"kr pair\" and scan the QR code with kryptonite.")
 		return
 	}
 

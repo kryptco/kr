@@ -17,6 +17,7 @@ type CtlEnclaveMiddlewareI interface {
 	EnclaveClientI
 	HandleCtl(listener net.Listener) (err error)
 	RequestMeSigner() (me ssh.Signer, err error)
+	GetCachedMeSigner() ssh.Signer
 }
 
 type CtlEnclaveMiddleware struct {
@@ -83,6 +84,12 @@ func (middleware *CtlEnclaveMiddleware) handlePair(w http.ResponseWriter, r *htt
 	//<-time.After(time.Second)
 }
 
+func (middleware *CtlEnclaveMiddleware) GetCachedMeSigner() (me ssh.Signer) {
+	middleware.mutex.Lock()
+	defer middleware.mutex.Unlock()
+	me = middleware.cachedSigner
+	return
+}
 func (middleware *CtlEnclaveMiddleware) RequestMeSigner() (me ssh.Signer, err error) {
 	middleware.mutex.Lock()
 	defer middleware.mutex.Unlock()
