@@ -109,19 +109,9 @@ func main() {
 	//sockName := os.Getenv("LAUNCH_DAEMON_SOCKET_NAME")
 	//sockName := "Socket"
 	//sockName := "KRSSH_AUTH_SOCK"
-	launchdAuthListener, err := launch.SocketListeners("AuthListener")
+	authSocket, ctlSocket, err := launch.OpenAuthAndCtlSockets()
 	if err != nil {
 		log.Fatal(err)
-	}
-	if len(launchdAuthListener) == 0 {
-		log.Fatal("no launchd auth listener found")
-	}
-	launchdCtlListener, err := launch.SocketListeners("CtlListener")
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(launchdCtlListener) == 0 {
-		log.Fatal("no launchd ctl listener found")
 	}
 	pkDER, err := base64.StdEncoding.DecodeString("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHD0yLU4UBhXwUZg7LbN5qdrBerbw/WvcP88xc5csWZVoVFDIbZTr0fk1fruV6zOlzk98C9ojHcM0df5yfSd6VA==")
 	if err != nil {
@@ -139,18 +129,14 @@ func main() {
 	signers := []ssh.Signer{pkSigner}
 
 	middleware := NewCtlEnclaveMiddleware()
-	go middleware.HandleCtl(launchdCtlListener[0])
+	go middleware.HandleCtl(ctlSocket)
 
 	krAgent := &Agent{
 		CtlEnclaveMiddlewareI: middleware,
 		signers:               signers,
 	}
-	l := launchdAuthListener[0]
-	if err != nil {
-		log.Fatal(err)
-	}
 	for {
-		c, err := l.Accept()
+		c, err := authSocket.Accept()
 		if err != nil {
 			log.Println(err)
 			continue

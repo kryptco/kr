@@ -20,6 +20,28 @@ import (
 	"unsafe"
 )
 
+func OpenAuthAndCtlSockets() (authSocket net.Listener, ctlSocket net.Listener, err error) {
+	launchdAuthListeners, err := launch.SocketListeners("AuthListener")
+	if err != nil {
+		return
+	}
+	if len(launchdAuthListeners) == 0 {
+		err = errors.New("no launchd auth listener found")
+		return
+	}
+	launchdCtlListeners, err := launch.SocketListeners("CtlListener")
+	if err != nil {
+		return
+	}
+	if len(launchdCtlListeners) == 0 {
+		err = errors.New("no launchd ctl listener found")
+		return
+	}
+	authSocket = launchdAuthListners[0]
+	ctlSocket = launchdCtlListeners[0]
+	return
+}
+
 func SocketFiles(name string) ([]*os.File, error) {
 	fds, err := activateSocket(name)
 	if err != nil {
