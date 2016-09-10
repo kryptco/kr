@@ -1,4 +1,3 @@
-//+build darwin
 package main
 
 import (
