@@ -9,7 +9,6 @@ func DesktopNotify(message string) (err error) {
 	note.Title = "krssh-agent"
 	note.Group = "co.krypt.krssh " + message
 	note.AppIcon = "/usr/local/share/krssh/kryptonite.png"
-	note.ContentImage = "/usr/local/share/krssh/kryptonite.png"
 	err = note.Push()
 	return
 }
