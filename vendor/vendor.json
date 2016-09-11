@@ -24,6 +24,12 @@
 			"revisionTime": "2016-09-09T22:19:37Z"
 		},
 		{
+			"checksumSHA1": "x3OaqAqBxmd/tVTRYhxwk1CqNYM=",
+			"path": "github.com/0xAX/notificator",
+			"revision": "309917ea201626dea59ecdd3daabdb97d3ca6a2c",
+			"revisionTime": "2015-10-21T18:20:16Z"
+		},
+		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
 			"path": "github.com/aws/aws-sdk-go/aws",
 			"revision": "d6b4bfeba6997082629986cac2a932a233ba745e",
@@ -160,6 +166,12 @@
 			"path": "github.com/aws/aws-sdk-go/service/sts",
 			"revision": "d6b4bfeba6997082629986cac2a932a233ba745e",
 			"revisionTime": "2016-08-30T22:35:58Z"
+		},
+		{
+			"checksumSHA1": "0LxZKE4y1Vzff32xdqhN8C0ouUg=",
+			"path": "github.com/deckarep/gosx-notifier",
+			"revision": "9daaf8a4715ebe4daf300036644762fe27d3aded",
+			"revisionTime": "2016-02-05T06:52:41Z"
 		},
 		{
 			"checksumSHA1": "FCeEm2BWZV/n4oTy+SGd/k0Ab5c=",
