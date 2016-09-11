@@ -8,6 +8,7 @@ class Krssh < Formula
   head "https://bitbucket.org/kryptco/krssh.git"
 
   bottle do
+	# TODO: add bottle URL since its non-standard
     cellar :any_skip_relocation
     sha256 "64db158ba7e9356c9acf2d307d2bec7b5d8547ea54b38937a1427f9ffd361f74" => :el_capitan
   end
