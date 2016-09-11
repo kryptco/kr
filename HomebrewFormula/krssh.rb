@@ -7,6 +7,11 @@ class Krssh < Formula
   sha256 "593808489cd16487b2d2a05f561231167e8d776b907d6c43e6dbaf7ef970cef3"
   head "https://bitbucket.org/kryptco/krssh.git"
 
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "64db158ba7e9356c9acf2d307d2bec7b5d8547ea54b38937a1427f9ffd361f74" => :el_capitan
+  end
+
   def install
     # ENV.deparallelize  # if your formula fails when building in parallel
 
