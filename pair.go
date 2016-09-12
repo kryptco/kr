@@ -1,8 +1,11 @@
 package krssh
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -51,6 +54,19 @@ func GeneratePairingSecret() (ps PairingSecret, err error) {
 	hostname, _ := os.Hostname()
 	ps.WorkstationName = os.Getenv("USER") + "@" + hostname
 
+	return
+}
+
+func (ps PairingSecret) HTTPRequest() (httpRequest *http.Request, err error) {
+	pairingSecretJson, err := json.Marshal(ps)
+	if err != nil {
+		return
+	}
+
+	httpRequest, err = http.NewRequest("PUT", "/pair", bytes.NewReader(pairingSecretJson))
+	if err != nil {
+		return
+	}
 	return
 }
 

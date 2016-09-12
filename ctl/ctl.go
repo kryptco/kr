@@ -36,17 +36,17 @@ func pairCommand(c *cli.Context) (err error) {
 		log.Fatal(err)
 	}
 
-	pairingSecretJson, err := json.Marshal(pairingSecret)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	pairRequest, err := http.NewRequest("PUT", "/pair", bytes.NewReader(pairingSecretJson))
+	pairRequest, err := pairingSecret.HTTPRequest()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	err = pairRequest.Write(agentConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pairingSecretJson, err := json.Marshal(pairingSecret)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,6 +69,13 @@ func pairCommand(c *cli.Context) (err error) {
 
 	if err != nil {
 		log.Fatal(err)
+	}
+	switch response.StatusCode {
+	case 404:
+		log.Fatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
+	case 500:
+		log.Fatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
+	default:
 	}
 	if response.StatusCode != 200 {
 		log.Fatalf("Pairing failed with error code %d", response.StatusCode)
