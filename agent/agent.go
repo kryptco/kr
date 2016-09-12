@@ -11,15 +11,13 @@ import (
 	"log/syslog"
 	"sync"
 
-	"bitbucket.org/kryptco/krssh"
 	"bitbucket.org/kryptco/krssh/agent/launch"
 )
 
 type Agent struct {
-	CtlEnclaveMiddlewareI
-	signers []ssh.Signer
-	me      *krssh.Profile
-	mutex   sync.Mutex
+	enclaveClient EnclaveClientI
+	signers       []ssh.Signer
+	mutex         sync.Mutex
 }
 
 func (a *Agent) List() (keys []*agent.Key, err error) {
@@ -39,7 +37,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	//Comment: comment,
 	//})
 
-	signer := a.CtlEnclaveMiddlewareI.GetCachedMeSigner()
+	signer := a.enclaveClient.GetCachedMeSigner()
 	if signer == nil {
 		log.Println("no keys associated with this agent")
 		DesktopNotify("Not paired, please run \"kr pair\" and scan the QR code with kryptonite.")
@@ -62,7 +60,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (signature *ssh.Signature, 
 	log.Printf("%v\n", data)
 	log.Printf("%q\n", string(data))
 	log.Println(base64.StdEncoding.EncodeToString(data))
-	me, err := a.CtlEnclaveMiddlewareI.RequestMeSigner()
+	me, err := a.enclaveClient.RequestMeSigner()
 	if err != nil {
 		log.Println("error retrieving Me: " + err.Error())
 		return
@@ -128,12 +126,12 @@ func main() {
 
 	signers := []ssh.Signer{pkSigner}
 
-	middleware := NewCtlEnclaveMiddleware()
-	go middleware.HandleCtl(ctlSocket)
+	controlServer := NewControlServer()
+	go controlServer.HandleControlHTTP(ctlSocket)
 
 	krAgent := &Agent{
-		CtlEnclaveMiddlewareI: middleware,
-		signers:               signers,
+		enclaveClient: controlServer.enclaveClient,
+		signers:       signers,
 	}
 	for {
 		c, err := authSocket.Accept()

@@ -72,7 +72,7 @@ func (p Profile) SSHWireString() (wireString string, err error) {
 	if err != nil {
 		return
 	}
-	wireString = sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal())
+	wireString = sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal()) + " " + p.Email
 	return
 }
 
