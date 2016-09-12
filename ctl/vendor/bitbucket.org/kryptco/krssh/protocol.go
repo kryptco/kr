@@ -8,11 +8,10 @@ import (
 )
 
 type Request struct {
-	RequestID       string       `json:"request_id"`
-	SignRequest     *SignRequest `json:"sign_request"`
-	ListRequest     *ListRequest `json:"list_request"`
-	MeRequest       *MeRequest   `json:"me_request"`
-	timeoutOverride *int
+	RequestID   string       `json:"request_id"`
+	SignRequest *SignRequest `json:"sign_request"`
+	ListRequest *ListRequest `json:"list_request"`
+	MeRequest   *MeRequest   `json:"me_request"`
 }
 
 func NewRequest() (request Request, err error) {
@@ -72,7 +71,7 @@ func (p Profile) SSHWireString() (wireString string, err error) {
 	if err != nil {
 		return
 	}
-	wireString = sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal())
+	wireString = sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal()) + " " + p.Email
 	return
 }
 
