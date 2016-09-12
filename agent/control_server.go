@@ -42,7 +42,6 @@ func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 	log.Println(pairingSecret)
 	cs.enclaveClient.Pair(pairingSecret)
 
-	//	response with profile
 	meResponse, err := cs.enclaveClient.RequestMe()
 	if err == nil && meResponse != nil {
 		err = json.NewEncoder(w).Encode(meResponse.Me)

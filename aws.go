@@ -6,14 +6,16 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
 var ErrNoMessages = errors.New("No messages in SQS Queue")
 
-func getSQSService() (sqsService *sqs.SQS, err error) {
+func getAWSSession() (conf client.ConfigProvider, err error) {
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
 	_, err = creds.Get()
 	if err != nil {
@@ -21,12 +23,45 @@ func getSQSService() (sqsService *sqs.SQS, err error) {
 	}
 
 	cfg := aws.NewConfig().WithRegion("us-east-1").WithCredentials(creds)
-	session, err := session.NewSession(cfg)
+	conf, err = session.NewSession(cfg)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func getSQSService() (sqsService *sqs.SQS, err error) {
+	session, err := getAWSSession()
+	if err != nil {
+		return
+	}
+	sqsService = sqs.New(session)
+	return
+}
+
+func getSNSService() (snsService *sns.SNS, err error) {
+	session, err := getAWSSession()
+	if err != nil {
+		return
+	}
+	snsService = sns.New(session)
+	return
+}
+
+func PushToSNSEndpoint(endpointARN, sqsQueueName string) (err error) {
+	snsService, err := getSNSService()
 	if err != nil {
 		return
 	}
 
-	sqsService = sqs.New(session)
+	publishInput := &sns.PublishInput{
+		Message:   aws.String(sqsQueueName),
+		TargetArn: aws.String(endpointARN),
+	}
+	_, err = snsService.Publish(publishInput)
+	if err != nil {
+		return
+	}
 	return
 }
 

@@ -225,7 +225,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	snsEndpointARN := client.snsEndpointARN
 	client.mutex.Unlock()
 	if snsEndpointARN != nil {
-		//TODO: send notification to SNS endpoint
+		PushToSNSEndpoint(*snsEndpointARN, pairingSecret.SQSSendQueueName())
 	}
 
 	receive := func() (numReceived int, err error) {
