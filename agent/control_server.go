@@ -55,8 +55,6 @@ func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-
-	//<-time.After(time.Second)
 }
 
 func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
