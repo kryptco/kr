@@ -34,7 +34,7 @@ func pairCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 
-	pairingSecret, err := krssh.GeneratePairingSecret()
+	pairingSecret, err := krssh.GeneratePairingSecretAndCreateQueues()
 	if err != nil {
 		PrintFatal(err.Error())
 	}

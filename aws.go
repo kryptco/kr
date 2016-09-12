@@ -49,7 +49,7 @@ func getSNSService() (snsService *sns.SNS, err error) {
 	return
 }
 
-func PushToSNSEndpoint(endpointARN, sqsQueueName string) (err error) {
+func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err error) {
 	snsService, err := getSNSService()
 	if err != nil {
 		return
@@ -62,6 +62,7 @@ func PushToSNSEndpoint(endpointARN, sqsQueueName string) (err error) {
 				"sound":             "",
 				"content-available": 1,
 				"queue":             sqsQueueName,
+				"c":                 requestCiphertext,
 			},
 		})
 	message := map[string]interface{}{

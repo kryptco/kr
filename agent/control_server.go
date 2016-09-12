@@ -39,7 +39,6 @@ func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	log.Println(pairingSecret)
 	cs.enclaveClient.Pair(pairingSecret)
 
 	meResponse, err := cs.enclaveClient.RequestMe()
@@ -51,7 +50,9 @@ func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		w.WriteHeader(http.StatusNotFound)
-		log.Println(err)
+		if err != nil {
+			log.Println(err)
+		}
 		return
 	}
 }

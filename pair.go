@@ -42,6 +42,12 @@ func GeneratePairingSecret() (ps PairingSecret, err error) {
 		return
 	}
 
+	hostname, _ := os.Hostname()
+	ps.WorkstationName = os.Getenv("USER") + "@" + hostname
+	return
+}
+
+func (ps PairingSecret) CreateQueues() (err error) {
 	_, err = CreateQueue(ps.SQSSendQueueName())
 	if err != nil {
 		return
@@ -50,10 +56,18 @@ func GeneratePairingSecret() (ps PairingSecret, err error) {
 	if err != nil {
 		return
 	}
+	return
+}
 
-	hostname, _ := os.Hostname()
-	ps.WorkstationName = os.Getenv("USER") + "@" + hostname
-
+func GeneratePairingSecretAndCreateQueues() (ps PairingSecret, err error) {
+	ps, err = GeneratePairingSecret()
+	if err != nil {
+		return
+	}
+	err = ps.CreateQueues()
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -70,18 +84,26 @@ func (ps PairingSecret) HTTPRequest() (httpRequest *http.Request, err error) {
 	return
 }
 
-func (ps PairingSecret) SendMessage(message []byte) (err error) {
+func (ps PairingSecret) EncryptMessage(message []byte) (ciphertextString string, err error) {
 	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
-	ctxt, err := Seal(message, *key)
+	ciphertext, err := Seal(message, *key)
 	if err != nil {
 		return
 	}
-	ctxtString := base64.StdEncoding.EncodeToString(ctxt)
+	ciphertextString = base64.StdEncoding.EncodeToString(ciphertext)
+	return
+}
 
-	err = SendToQueue(ps.SQSSendQueueURL(), ctxtString)
+func (ps PairingSecret) SendMessage(message []byte) (err error) {
+	ctxt, err := ps.EncryptMessage(message)
+	if err != nil {
+		return
+	}
+
+	err = SendToQueue(ps.SQSSendQueueURL(), ctxt)
 	if err != nil {
 		return
 	}

@@ -215,19 +215,26 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
 	client.mutex.Unlock()
 
-	err = pairingSecret.SendMessage(requestJson)
+	client.mutex.Lock()
+	snsEndpointARN := client.snsEndpointARN
+	client.mutex.Unlock()
+	ciphertext, err := pairingSecret.EncryptMessage(requestJson)
 	if err != nil {
 		err = &SendError{err}
 		return
 	}
-
-	client.mutex.Lock()
-	snsEndpointARN := client.snsEndpointARN
-	client.mutex.Unlock()
-	if snsEndpointARN != nil {
-		if pushErr := krssh.PushToSNSEndpoint(*snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
-			log.Println("Push error:", pushErr)
+	go func() {
+		if snsEndpointARN != nil {
+			if pushErr := krssh.PushToSNSEndpoint(ciphertext, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
+				log.Println("Push error:", pushErr)
+			}
 		}
+	}()
+
+	err = pairingSecret.SendMessage(requestJson)
+	if err != nil {
+		err = &SendError{err}
+		return
 	}
 
 	receive := func() (numReceived int, err error) {
@@ -267,7 +274,8 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 
 	for {
 		n, err := receive()
-		if err != nil || (n == 0 && time.Now().After(timeoutAt)) {
+		_, requestPending := client.requestCallbacksByRequestID.Get(request.RequestID)
+		if err != nil || (n == 0 && time.Now().After(timeoutAt)) || !requestPending {
 			break
 		}
 	}
