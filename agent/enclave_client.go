@@ -127,15 +127,18 @@ func (client *EnclaveClient) RequestMe() (meResponse *krssh.MeResponse, err erro
 		return
 	}
 	meRequest.MeRequest = &krssh.MeRequest{}
-	response, err := client.tryRequest(meRequest)
+	response, err := client.tryRequest(meRequest, 20*time.Second)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	if response != nil {
 		meResponse = response.MeResponse
-	} else {
-		//	TODO: handle timeout
+		if meResponse != nil {
+			client.mutex.Lock()
+			client.cachedMe = &meResponse.Me
+			client.mutex.Unlock()
+		}
 	}
 	return
 }
@@ -146,15 +149,13 @@ func (client *EnclaveClient) RequestSignature(signRequest krssh.SignRequest) (si
 		return
 	}
 	request.SignRequest = &signRequest
-	response, err := client.tryRequest(request)
+	response, err := client.tryRequest(request, 30*time.Second)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	if response != nil {
 		signResponse = response.SignResponse
-	} else {
-		//	TODO: handle timeout
 	}
 	return
 }
@@ -165,7 +166,7 @@ func (client *EnclaveClient) RequestList(listRequest krssh.ListRequest) (listRes
 		return
 	}
 	request.ListRequest = &listRequest
-	response, err := client.tryRequest(request)
+	response, err := client.tryRequest(request, 0)
 	if err != nil {
 		log.Println(err)
 		return
@@ -178,18 +179,17 @@ func (client *EnclaveClient) RequestList(listRequest krssh.ListRequest) (listRes
 	return
 }
 
-func (client *EnclaveClient) tryRequest(request krssh.Request) (response *krssh.Response, err error) {
+func (client *EnclaveClient) tryRequest(request krssh.Request, timeout time.Duration) (response *krssh.Response, err error) {
 	cb := make(chan *krssh.Response, 1)
 	go func() {
-		err := client.sendRequestAndReceiveResponses(request, cb)
+		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
 		if err != nil {
 			log.Println("error sendRequestAndReceiveResponses: ", err.Error())
 		}
 	}()
 	select {
 	case response = <-cb:
-		//	TODO:
-	case <-time.After(3 * time.Second):
+	case <-time.After(timeout):
 		err = ErrTimeout
 	}
 	return
@@ -197,8 +197,7 @@ func (client *EnclaveClient) tryRequest(request krssh.Request) (response *krssh.
 
 //	Send one request and receive pending responses, not necessarily associated
 //	with this request
-//	TODO: handle custom request timeout
-func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Request, cb chan *krssh.Response) (err error) {
+func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Request, cb chan *krssh.Response, timeout time.Duration) (err error) {
 	pairingSecret := client.getPairingSecret()
 	if pairingSecret == nil {
 		err = errors.New("EnclaveClient not paired")
@@ -209,6 +208,8 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		err = &ProtoError{err}
 		return
 	}
+
+	timeoutAt := time.Now().Add(timeout)
 
 	client.mutex.Lock()
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
@@ -264,7 +265,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 
 	for {
 		n, err := receive()
-		if n == 0 || err != nil {
+		if err != nil || (n == 0 && time.Now().After(timeoutAt)) {
 			break
 		}
 	}
