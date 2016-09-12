@@ -225,7 +225,9 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	snsEndpointARN := client.snsEndpointARN
 	client.mutex.Unlock()
 	if snsEndpointARN != nil {
-		PushToSNSEndpoint(*snsEndpointARN, pairingSecret.SQSSendQueueName())
+		if pushErr := krssh.PushToSNSEndpoint(*snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
+			log.Println("Push error:", pushErr)
+		}
 	}
 
 	receive := func() (numReceived int, err error) {

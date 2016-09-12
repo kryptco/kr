@@ -45,11 +45,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (signature *ssh.Signature, 
 	log.Printf("%v\n", data)
 	log.Printf("%q\n", string(data))
 	log.Println(base64.StdEncoding.EncodeToString(data))
-	me, err := a.enclaveClient.RequestMeSigner()
-	if err != nil {
-		log.Println("error retrieving Me: " + err.Error())
-		return
-	}
+	me := a.enclaveClient.GetCachedMeSigner()
 	if bytes.Equal(me.PublicKey().Marshal(), key.Marshal()) {
 		return me.Sign(rand.Reader, data)
 	}

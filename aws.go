@@ -1,6 +1,7 @@
 package krssh
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"strconv"
@@ -54,9 +55,26 @@ func PushToSNSEndpoint(endpointARN, sqsQueueName string) (err error) {
 		return
 	}
 
+	apnsPayload, _ := json.Marshal(
+		map[string]interface{}{
+			"aps": map[string]interface{}{
+				"alert":             "",
+				"sound":             "",
+				"content-available": 1,
+				"queue":             sqsQueueName,
+			},
+		})
+	message := map[string]interface{}{
+		"APNS_SANDBOX": string(apnsPayload),
+	}
+	messageJson, err := json.Marshal(message)
+	if err != nil {
+		return
+	}
 	publishInput := &sns.PublishInput{
-		Message:   aws.String(sqsQueueName),
-		TargetArn: aws.String(endpointARN),
+		Message:          aws.String(string(messageJson)),
+		MessageStructure: aws.String("json"),
+		TargetArn:        aws.String(endpointARN),
 	}
 	_, err = snsService.Publish(publishInput)
 	if err != nil {
