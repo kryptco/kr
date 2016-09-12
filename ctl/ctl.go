@@ -7,17 +7,20 @@ package main
 import (
 	"bitbucket.org/kryptco/krssh"
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/urfave/cli"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 )
+
+func PrintFatal(msg string) {
+	os.Stderr.WriteString(msg + "\n")
+	os.Exit(1)
+}
 
 func connectToAgent() (conn net.Conn, err error) {
 	agentSockName := os.Getenv(krssh.KRSSH_CTL_SOCK_ENV)
@@ -28,32 +31,32 @@ func connectToAgent() (conn net.Conn, err error) {
 func pairCommand(c *cli.Context) (err error) {
 	agentConn, err := connectToAgent()
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	pairingSecret, err := krssh.GeneratePairingSecret()
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	pairRequest, err := pairingSecret.HTTPRequest()
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	err = pairRequest.Write(agentConn)
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	pairingSecretJson, err := json.Marshal(pairingSecret)
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	qr, err := QREncode(pairingSecretJson)
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation.")
@@ -68,23 +71,20 @@ func pairCommand(c *cli.Context) (err error) {
 	clearCommand.Run()
 
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 	switch response.StatusCode {
 	case 404:
-		log.Fatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
+		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
 	case 500:
-		log.Fatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
+		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
 	default:
-	}
-	if response.StatusCode != 200 {
-		log.Fatalf("Pairing failed with error code %d", response.StatusCode)
 	}
 	defer response.Body.Close()
 	var me krssh.Profile
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 	err = json.Unmarshal(responseBody, &me)
 
@@ -95,45 +95,43 @@ func pairCommand(c *cli.Context) (err error) {
 func meCommand(c *cli.Context) (err error) {
 	agentConn, err := connectToAgent()
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	request, err := krssh.NewRequest()
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 	request.MeRequest = &krssh.MeRequest{}
-	requestJson, err := json.Marshal(request)
+	httpRequest, err := request.HTTPRequest()
 	if err != nil {
-		log.Fatal(err)
-	}
-	httpRequest, err := http.NewRequest("PUT", "/enclave", bytes.NewReader(requestJson))
-	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 	err = httpRequest.Write(agentConn)
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 
 	bufReader := bufio.NewReader(agentConn)
 	response, err := http.ReadResponse(bufReader, httpRequest)
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 	defer response.Body.Close()
-	if response.StatusCode != 200 {
-		log.Printf("Error retrieving paired identity: %d", response.StatusCode)
+	switch response.StatusCode {
+	case 404:
+		PrintFatal("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the krSSH mobile app.")
+	default:
 	}
 
 	var me krssh.Profile
 	err = json.NewDecoder(response.Body).Decode(&me)
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 	wireString, err := me.SSHWireString()
 	if err != nil {
-		log.Fatal(err)
+		PrintFatal(err.Error())
 	}
 	fmt.Println(wireString)
 	return

@@ -1,9 +1,13 @@
 package krssh
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
+	"net/http"
+
 	"golang.org/x/crypto/ssh"
 )
 
@@ -79,4 +83,16 @@ type MeRequest struct{}
 
 type MeResponse struct {
 	Me Profile `json:"me"`
+}
+
+func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
+	requestJson, err := json.Marshal(request)
+	if err != nil {
+		return
+	}
+	httpRequest, err = http.NewRequest("PUT", "/enclave", bytes.NewReader(requestJson))
+	if err != nil {
+		return
+	}
+	return
 }
