@@ -22,21 +22,6 @@ type Agent struct {
 
 func (a *Agent) List() (keys []*agent.Key, err error) {
 	log.Println("list")
-	//idrsaBytes, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_rsa.pub")
-	//if err != nil {
-	//log.Fatal(err)
-	//}
-	//idrsaPk, comment, _, _, err := ssh.ParseAuthorizedKey(idrsaBytes)
-	//if err != nil {
-	//log.Fatal(err)
-	//}
-
-	//keys = append(keys, &agent.Key{
-	//Format:  idrsaPk.Type(),
-	//Blob:    idrsaPk.Marshal(),
-	//Comment: comment,
-	//})
-
 	signer := a.enclaveClient.GetCachedMeSigner()
 	if signer == nil {
 		log.Println("no keys associated with this agent")
@@ -103,10 +88,6 @@ func main() {
 		log.SetOutput(logwriter)
 	}
 
-	//sockName := os.Getenv("KRSSH_AUTH_SOCK")
-	//sockName := os.Getenv("LAUNCH_DAEMON_SOCKET_NAME")
-	//sockName := "Socket"
-	//sockName := "KRSSH_AUTH_SOCK"
 	authSocket, ctlSocket, err := launch.OpenAuthAndCtlSockets()
 	if err != nil {
 		log.Fatal(err)
