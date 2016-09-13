@@ -39,7 +39,11 @@ func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	cs.enclaveClient.Pair(pairingSecret)
+	err = cs.enclaveClient.Pair(pairingSecret)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	meResponse, err := cs.enclaveClient.RequestMe()
 	if err == nil && meResponse != nil {

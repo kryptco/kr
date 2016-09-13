@@ -2,11 +2,14 @@ package krssh
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/satori/go.uuid"
 )
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
@@ -15,6 +18,11 @@ type PairingSecret struct {
 	SQSBaseQueueName   string `json:"q"`
 	SymmetricSecretKey []byte `json:"k"`
 	WorkstationName    string `json:"n"`
+}
+
+func (ps PairingSecret) DeriveBluetoothServiceUUID() (btUUID uuid.UUID, err error) {
+	keyDigest := sha256.Sum256(ps.SymmetricSecretKey)
+	return uuid.FromBytes(keyDigest[0:16])
 }
 
 func (ps PairingSecret) SQSSendQueueURL() string {
@@ -84,16 +92,15 @@ func (ps PairingSecret) HTTPRequest() (httpRequest *http.Request, err error) {
 	return
 }
 
-func (ps PairingSecret) EncryptMessage(message []byte) (ciphertextString string, err error) {
+func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
 	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
-	ciphertext, err := Seal(message, *key)
+	ciphertext, err = Seal(message, *key)
 	if err != nil {
 		return
 	}
-	ciphertextString = base64.StdEncoding.EncodeToString(ciphertext)
 	return
 }
 
@@ -103,7 +110,9 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 		return
 	}
 
-	err = SendToQueue(ps.SQSSendQueueURL(), ctxt)
+	ctxtString := base64.StdEncoding.EncodeToString(ctxt)
+
+	err = SendToQueue(ps.SQSSendQueueURL(), ctxtString)
 	if err != nil {
 		return
 	}
@@ -133,7 +142,6 @@ func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
 			continue
 		}
 		messages = append(messages, message)
-		log.Println("received message: ", string(message))
 	}
 	log.Printf("received %d messages", len(messages))
 	return

@@ -79,7 +79,6 @@ func (a *Agent) Signers() (signers []ssh.Signer, err error) {
 }
 
 func main() {
-	go startBluetooth()
 	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krssh-agent")
 	if e == nil {
 		log.SetOutput(logwriter)

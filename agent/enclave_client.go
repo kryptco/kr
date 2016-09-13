@@ -6,6 +6,7 @@ package main
 
 import (
 	"bitbucket.org/kryptco/krssh"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -46,7 +47,7 @@ func (err *ProtoError) Error() string {
 }
 
 type EnclaveClientI interface {
-	Pair(krssh.PairingSecret)
+	Pair(krssh.PairingSecret) (err error)
 	RequestMe() (*krssh.MeResponse, error)
 	RequestMeSigner() (ssh.Signer, error)
 	GetCachedMe() *krssh.Profile
@@ -61,12 +62,23 @@ type EnclaveClient struct {
 	requestCallbacksByRequestID *lru.Cache
 	snsEndpointARN              *string
 	cachedMe                    *krssh.Profile
+	bluetoothPeripheral         *BluetoothPeripheral
 }
 
-func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) {
+func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
 	ec.pairingSecret = &pairingSecret
+	btUUID, err := ec.pairingSecret.DeriveBluetoothServiceUUID()
+	if err != nil {
+		return
+	}
+	ec.bluetoothPeripheral, err = NewBluetoothPeripheral(btUUID.String())
+	if err != nil {
+		return
+	}
+	go ec.bluetoothPeripheral.bluetoothMain()
+	return
 }
 
 func (ec *EnclaveClient) getPairingSecret() (pairingSecret *krssh.PairingSecret) {
@@ -224,11 +236,19 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		return
 	}
 	go func() {
+		ctxtString := base64.StdEncoding.EncodeToString(ciphertext)
 		if snsEndpointARN != nil {
-			if pushErr := krssh.PushToSNSEndpoint(ciphertext, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
+			if pushErr := krssh.PushToSNSEndpoint(ctxtString, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
 				log.Println("Push error:", pushErr)
 			}
 		}
+	}()
+	go func() {
+		client.mutex.Lock()
+		if client.bluetoothPeripheral != nil {
+			client.bluetoothPeripheral.Write <- ciphertext
+		}
+		client.mutex.Unlock()
 	}()
 
 	err = pairingSecret.SendMessage(requestJson)
