@@ -10,37 +10,30 @@ import (
 	"github.com/currantlabs/ble/examples/lib/gatt"
 )
 
-type krsshChar struct {
-	sync.Mutex
-	read chan []byte
-	m    map[string]chan []byte
-}
-
-func (k *krsshChar) written(req ble.Request, rsp ble.ResponseWriter) {
-	k.Lock()
+func (bp *BluetoothPeripheral) written(req ble.Request, rsp ble.ResponseWriter) {
+	bp.Lock()
 	data := req.Data()
 	log.Println("got data:", data)
-	k.Unlock()
-	k.read <- data
-}
-func (k *krsshChar) Write(msg []byte) {
-	k.Lock()
-	for _, ch := range k.m {
-		ch <- msg
-	}
-	k.Unlock()
+	bp.Unlock()
+	bp.Read <- data
 }
 
-func (k *krsshChar) notify(req ble.Request, n ble.Notifier) {
+func (bp *BluetoothPeripheral) notify(req ble.Request, n ble.Notifier) {
 	ch := make(chan []byte)
-	k.Lock()
-	k.m[req.Conn().RemoteAddr().String()] = ch
-	k.Unlock()
+	bp.Lock()
+	bp.m[req.Conn().RemoteAddr().String()] = ch
+	log.Printf("writing queued messages\n")
+	for _, msg := range bp.writeQueue {
+		n.Write(msg)
+	}
+	bp.writeQueue = [][]byte{}
+	log.Printf("wrote queued messages\n")
+	bp.Unlock()
 	log.Printf("bluetooth: Notification subscribed on Conn %s", req.Conn().RemoteAddr().String())
 	defer func() {
-		k.Lock()
-		delete(k.m, req.Conn().RemoteAddr().String())
-		k.Unlock()
+		bp.Lock()
+		delete(bp.m, req.Conn().RemoteAddr().String())
+		bp.Unlock()
 	}()
 	for {
 		select {
@@ -58,22 +51,14 @@ func (k *krsshChar) notify(req ble.Request, n ble.Notifier) {
 
 var krsshCharUUID = ble.MustParse("20F53E48-C08D-423A-B2C2-1C797889AF24")
 
-func makeKRSSHChar() (c *ble.Characteristic, k *krsshChar) {
-	k = &krsshChar{m: make(map[string]chan []byte)}
-	c = ble.NewCharacteristic(krsshCharUUID)
-	c.HandleWrite(ble.WriteHandlerFunc(k.written))
-	c.HandleNotify(ble.NotifyHandlerFunc(k.notify))
-	c.HandleIndicate(ble.NotifyHandlerFunc(k.notify))
-	return
-}
-
 type BluetoothPeripheral struct {
 	sync.Mutex
-	Read      chan []byte
-	Write     chan []byte
-	uuid      ble.UUID
-	krsshChar *krsshChar
-	service   *ble.Service
+	Read       chan []byte
+	Write      chan []byte
+	writeQueue [][]byte
+	uuid       ble.UUID
+	service    *ble.Service
+	m          map[string]chan []byte
 }
 
 func NewBluetoothPeripheral(uuidStr string) (bp *BluetoothPeripheral, err error) {
@@ -81,23 +66,27 @@ func NewBluetoothPeripheral(uuidStr string) (bp *BluetoothPeripheral, err error)
 	if err != nil {
 		return
 	}
-	service := ble.NewService(uuid)
-	char, krsshChar := makeKRSSHChar()
-	service.AddCharacteristic(char)
-
 	bp = &BluetoothPeripheral{
-		uuid:      uuid,
-		Read:      make(chan []byte, 1024),
-		Write:     make(chan []byte, 1024),
-		krsshChar: krsshChar,
-		service:   service,
+		uuid:  uuid,
+		Read:  make(chan []byte, 1024),
+		m:     map[string]chan []byte{},
+		Write: make(chan []byte, 1024),
 	}
 
-	krsshChar.read = bp.Read
+	service := ble.NewService(uuid)
+	char := ble.NewCharacteristic(krsshCharUUID)
+	char.HandleWrite(ble.WriteHandlerFunc(bp.written))
+	char.HandleNotify(ble.NotifyHandlerFunc(bp.notify))
+	char.HandleIndicate(ble.NotifyHandlerFunc(bp.notify))
+	service.AddCharacteristic(char)
+
+	bp.service = service
+
 	return
 }
 
 func (bp *BluetoothPeripheral) bluetoothMain() {
+	go bp.start()
 	panicked := false
 	for !panicked {
 		func() {
@@ -130,7 +119,17 @@ func (bp *BluetoothPeripheral) start() {
 	for {
 		select {
 		case msg := <-bp.Write:
-			bp.krsshChar.Write(msg)
+			bp.Lock()
+			if len(bp.m) == 0 {
+				bp.writeQueue = append(bp.writeQueue, msg)
+				log.Printf("wrote queued messages\n")
+			} else {
+				for _, ch := range bp.m {
+					ch <- msg
+				}
+				log.Printf("wrote msg to %d devices\n", len(bp.m))
+			}
+			bp.Unlock()
 		}
 	}
 }

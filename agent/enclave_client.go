@@ -246,7 +246,10 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	go func() {
 		client.mutex.Lock()
 		if client.bluetoothPeripheral != nil {
+			log.Println("writing to peripheral...")
 			client.bluetoothPeripheral.Write <- ciphertext
+		} else {
+			log.Println("no bluetooth peripheral found")
 		}
 		client.mutex.Unlock()
 	}()
