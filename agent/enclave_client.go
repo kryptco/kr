@@ -245,13 +245,39 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	}()
 	go func() {
 		client.mutex.Lock()
-		if client.bluetoothPeripheral != nil {
+		bp := client.bluetoothPeripheral
+		client.mutex.Unlock()
+
+		if bp != nil {
 			log.Println("writing to peripheral...")
-			client.bluetoothPeripheral.Write <- ciphertext
+			bp.Write <- ciphertext
+			select {
+			case ciphertext := <-bp.Read:
+				client.mutex.Lock()
+				responseJson, err := client.pairingSecret.DecryptMessage(ciphertext)
+				client.mutex.Unlock()
+				if err != nil {
+					log.Println("bluetooth decrypt error:", err)
+					return
+				}
+				var response krssh.Response
+				err = json.Unmarshal(responseJson, &response)
+				if err != nil {
+					log.Println("bluetooth response unmarshal error :", err)
+					return
+				}
+				client.mutex.Lock()
+				if cb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
+					cb.(chan *krssh.Response) <- &response
+					client.requestCallbacksByRequestID.Remove(response.RequestID)
+				}
+				client.mutex.Unlock()
+			case <-time.After(5 * time.Second):
+				log.Println("bluetooth read timeout")
+			}
 		} else {
 			log.Println("no bluetooth peripheral found")
 		}
-		client.mutex.Unlock()
 	}()
 
 	err = pairingSecret.SendMessage(requestJson)

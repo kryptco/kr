@@ -104,6 +104,18 @@ func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err e
 	return
 }
 
+func (ps PairingSecret) DecryptMessage(ciphertext []byte) (message []byte, err error) {
+	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+	if err != nil {
+		return
+	}
+	message, err = Open(ciphertext, *key)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (ps PairingSecret) SendMessage(message []byte) (err error) {
 	ctxt, err := ps.EncryptMessage(message)
 	if err != nil {

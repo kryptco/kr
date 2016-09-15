@@ -18,6 +18,27 @@ func (bp *BluetoothPeripheral) written(req ble.Request, rsp ble.ResponseWriter) 
 	bp.Read <- data
 }
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func SplitMsgForBluetooth(message []byte) (splitMessage [][]byte) {
+	log.Println("message len", len(message))
+	block := 128
+	n := byte(len(message) / block)
+	for offset := 0; offset < len(message); offset += block {
+		endOffset := min(offset+block, len(message))
+		blockMsg := append([]byte{n}, message[offset:endOffset]...)
+		splitMessage = append(splitMessage, blockMsg)
+		n = n - 1
+	}
+	log.Println("split messages: ", len(splitMessage))
+	return
+}
+
 func (bp *BluetoothPeripheral) notify(req ble.Request, n ble.Notifier) {
 	ch := make(chan []byte)
 	bp.Lock()
@@ -41,6 +62,8 @@ func (bp *BluetoothPeripheral) notify(req ble.Request, n ble.Notifier) {
 			log.Printf("bluetooth: Notification unsubscribed on Conn %s", req.Conn().RemoteAddr().String())
 			return
 		case msg := <-ch:
+			log.Printf("Writing %d byte message\n", len(msg))
+			log.Printf("BT cap %d\n", n.Cap())
 			if _, err := n.Write(msg); err != nil {
 				log.Printf("bluetooth: can't indicate: %s", err)
 				return
@@ -119,15 +142,18 @@ func (bp *BluetoothPeripheral) start() {
 	for {
 		select {
 		case msg := <-bp.Write:
+			msgs := SplitMsgForBluetooth(msg)
 			bp.Lock()
-			if len(bp.m) == 0 {
-				bp.writeQueue = append(bp.writeQueue, msg)
-				log.Printf("wrote queued messages\n")
-			} else {
-				for _, ch := range bp.m {
-					ch <- msg
+			for _, msg := range msgs {
+				if len(bp.m) == 0 {
+					bp.writeQueue = append(bp.writeQueue, msg)
+					log.Printf("wrote queued messages\n")
+				} else {
+					for _, ch := range bp.m {
+						ch <- msg
+					}
+					log.Printf("wrote msg to %d devices\n", len(bp.m))
 				}
-				log.Printf("wrote msg to %d devices\n", len(bp.m))
 			}
 			bp.Unlock()
 		}
