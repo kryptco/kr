@@ -78,6 +78,34 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 		return
 	}
 	go ec.bluetoothPeripheral.bluetoothMain()
+	go func() {
+		bp := ec.bluetoothPeripheral
+		for ciphertext := range bp.Read {
+			ec.mutex.Lock()
+			responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
+			ec.mutex.Unlock()
+			if err != nil {
+				log.Println("bluetooth decrypt error:", err)
+				return
+			}
+			var response krssh.Response
+			err = json.Unmarshal(responseJson, &response)
+			if err != nil {
+				log.Println("bluetooth response unmarshal error :", err)
+				return
+			}
+			ec.mutex.Lock()
+			if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
+				cb.(chan *krssh.Response) <- &response
+				ec.requestCallbacksByRequestID.Remove(response.RequestID)
+				log.Println("found BT response cb for request", response.RequestID)
+			} else {
+				log.Println("no BT response cb for request", response.RequestID)
+			}
+			ec.mutex.Unlock()
+		}
+
+	}()
 	return
 }
 
@@ -251,30 +279,6 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		if bp != nil {
 			log.Println("writing to peripheral...")
 			bp.Write <- ciphertext
-			select {
-			case ciphertext := <-bp.Read:
-				client.mutex.Lock()
-				responseJson, err := client.pairingSecret.DecryptMessage(ciphertext)
-				client.mutex.Unlock()
-				if err != nil {
-					log.Println("bluetooth decrypt error:", err)
-					return
-				}
-				var response krssh.Response
-				err = json.Unmarshal(responseJson, &response)
-				if err != nil {
-					log.Println("bluetooth response unmarshal error :", err)
-					return
-				}
-				client.mutex.Lock()
-				if cb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
-					cb.(chan *krssh.Response) <- &response
-					client.requestCallbacksByRequestID.Remove(response.RequestID)
-				}
-				client.mutex.Unlock()
-			case <-time.After(5 * time.Second):
-				log.Println("bluetooth read timeout")
-			}
 		} else {
 			log.Println("no bluetooth peripheral found")
 		}
