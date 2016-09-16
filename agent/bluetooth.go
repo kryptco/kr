@@ -80,7 +80,9 @@ func (bp *BluetoothPeripheral) notify(req ble.Request, n ble.Notifier) {
 	}
 }
 
-var krsshCharUUID = ble.MustParse("20F53E48-C08D-423A-B2C2-1C797889AF24")
+const krsshCharUUIDString = "20F53E48-C08D-423A-B2C2-1C797889AF24"
+
+var krsshCharUUID = ble.MustParse(krsshCharUUIDString)
 
 type BluetoothManager struct {
 	sync.Mutex
@@ -99,6 +101,20 @@ func (bm *BluetoothManager) SetPeripheral(bp *BluetoothPeripheral) {
 		}
 		bm.writeQueue = [][]byte{}
 	}
+}
+
+func (bm *BluetoothManager) Reset() {
+	bm.Lock()
+	defer bm.Unlock()
+	gatt.StopAdvertising()
+	serviceUUID := bm.peripheral.uuid.String()
+	bm.peripheral.Close <- true
+	bm.peripheral = nil
+	bp, err := NewBluetoothPeripheral(serviceUUID)
+	if err != nil {
+		go bm.SetPeripheral(bp)
+	}
+
 }
 
 func (bm *BluetoothManager) advertise() {

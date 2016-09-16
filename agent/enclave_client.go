@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/groupcache/lru"
+	"github.com/vanadium/go.ref/lib/discovery/plugins/ble/corebluetooth"
 	"golang.org/x/crypto/ssh"
 	"log"
 	"sync"
@@ -63,6 +64,7 @@ type EnclaveClient struct {
 	snsEndpointARN              *string
 	cachedMe                    *krssh.Profile
 	bluetoothManager            BluetoothManager
+	bt                          *corebluetooth.CoreBluetoothDriver
 }
 
 func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
@@ -73,52 +75,68 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 	if err != nil {
 		return
 	}
-	bp, err := NewBluetoothPeripheral(btUUID.String())
+	_ = btUUID
+	//bp, err := NewBluetoothPeripheral(btUUID.String())
+	//if err != nil {
+	//return
+	//}
+	//go bp.bluetoothMain()
+	//go ec.bluetoothManager.SetPeripheral(bp)
+	if ec.bt == nil {
+		ec.bt, err = corebluetooth.NewContextAndDriver()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+	err = ec.bt.AddService(btUUID.String(), map[string][]byte{krsshCharUUIDString: []byte{1, 0}})
+	//err = ec.bt.AddService("1AAA", map[string][]byte{krsshCharUUIDString: []byte{1, 0}})
 	if err != nil {
+		log.Println(err)
 		return
 	}
-	go bp.bluetoothMain()
-	go ec.bluetoothManager.SetPeripheral(bp)
-	go func() {
-		for {
-			select {
-			case ciphertext := <-bp.Read:
-				ec.mutex.Lock()
-				responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
-				ec.mutex.Unlock()
-				if err != nil {
-					log.Println("bluetooth decrypt error:", err)
-					continue
-				}
-				var response krssh.Response
-				err = json.Unmarshal(responseJson, &response)
-				if err != nil {
-					log.Println("bluetooth response unmarshal error :", err)
-					continue
-				}
-				ec.mutex.Lock()
-				if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
-					cb.(chan *krssh.Response) <- &response
-					ec.requestCallbacksByRequestID.Remove(response.RequestID)
-					log.Println("found BT response cb for request", response.RequestID)
-				} else {
-					log.Println("no BT response cb for request", response.RequestID)
-				}
-				ec.mutex.Unlock()
-			case <-time.After(5 * time.Second):
-				//	check if no BT read since last BT write
-				bp.Lock()
-				if bp.lastWrite.Sub(bp.lastRead) > 3*time.Second {
-					bp.lastWrite = time.Time{}
-					bp.lastRead = time.Time{}
-					ec.bluetoothManager.SetPeripheral(bp)
-					//bp.Close <- true
-				}
-				bp.Unlock()
-			}
-		}
+	return
+	//go func() {
+	//for {
+	//select {
+	//case ciphertext := <-bp.Read:
+	//ec.mutex.Lock()
+	//responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
+	//ec.mutex.Unlock()
+	//if err != nil {
+	//log.Println("bluetooth decrypt error:", err)
+	//continue
+	//}
+	//var response krssh.Response
+	//err = json.Unmarshal(responseJson, &response)
+	//if err != nil {
+	//log.Println("bluetooth response unmarshal error :", err)
+	//continue
+	//}
+	//ec.mutex.Lock()
+	//if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
+	//cb.(chan *krssh.Response) <- &response
+	//ec.requestCallbacksByRequestID.Remove(response.RequestID)
+	//log.Println("found BT response cb for request", response.RequestID)
+	//} else {
+	//log.Println("no BT response cb for request", response.RequestID)
+	//}
+	//ec.mutex.Unlock()
+	//case <-time.After(5 * time.Second):
+	////	check if no BT read since last BT write
+	//bp.Lock()
+	//if bp.lastWrite.Sub(bp.lastRead) > 3*time.Second {
+	//bp.lastWrite = time.Time{}
+	//bp.lastRead = time.Time{}
+	////ec.bluetoothManager.SetPeripheral(bp)
+	//ec.bluetoothManager.Reset()
+	////bp.Close <- true
+	//}
+	//bp.Unlock()
+	//}
+	//}
 
-	}()
+	//}()
 	return
 }
 
