@@ -14,6 +14,7 @@ func (bp *BluetoothPeripheral) written(req ble.Request, rsp ble.ResponseWriter) 
 	bp.Lock()
 	data := req.Data()
 	log.Println("got data:", data)
+	bp.lastRead = time.Now()
 	bp.Unlock()
 	bp.Read <- data
 }
@@ -63,25 +64,83 @@ func (bp *BluetoothPeripheral) notify(req ble.Request, n ble.Notifier) {
 			return
 		case msg := <-ch:
 			log.Printf("Writing %d byte message\n", len(msg))
-			log.Printf("BT cap %d\n", n.Cap())
 			if _, err := n.Write(msg); err != nil {
 				log.Printf("bluetooth: can't indicate: %s", err)
 				return
 			}
+		case <-bp.Close:
+			log.Println("Closing peripheral")
+			err := n.Close()
+			if err != nil {
+				log.Println("Error closing  peripheral:", err)
+			}
+			//gatt.StopAdvertising()
+			gatt.Stop()
 		}
 	}
 }
 
 var krsshCharUUID = ble.MustParse("20F53E48-C08D-423A-B2C2-1C797889AF24")
 
+type BluetoothManager struct {
+	sync.Mutex
+	peripheral *BluetoothPeripheral
+	writeQueue [][]byte
+}
+
+func (bm *BluetoothManager) SetPeripheral(bp *BluetoothPeripheral) {
+	bm.Lock()
+	defer bm.Unlock()
+	bm.peripheral = bp
+	bm.advertise()
+	if len(bm.writeQueue) > 0 {
+		for _, msg := range bm.writeQueue {
+			bm.peripheral.Write <- msg
+		}
+		bm.writeQueue = [][]byte{}
+	}
+}
+
+func (bm *BluetoothManager) advertise() {
+	defer func() {
+		//if r := recover(); r != nil {
+		//log.Println("recovered: ", r)
+		//}
+	}()
+	gatt.StopAdvertising()
+	err := gatt.SetServices([]*ble.Service{bm.peripheral.service})
+	if err != nil {
+		log.Println("error setting gatt services:", err)
+	}
+	gatt.AdvertiseNameAndServices("krssh", bm.peripheral.uuid)
+	if err != nil {
+		log.Println("error advertising gatt services:", err)
+		return
+	}
+	log.Println("Bluetooth advertising")
+}
+
+func (bm *BluetoothManager) Write(msg []byte) {
+	bm.Lock()
+	defer bm.Unlock()
+	if bm.peripheral == nil {
+		bm.writeQueue = append(bm.writeQueue, msg)
+	} else {
+		bm.peripheral.Write <- msg
+	}
+}
+
 type BluetoothPeripheral struct {
 	sync.Mutex
 	Read       chan []byte
 	Write      chan []byte
-	writeQueue [][]byte
+	Close      chan bool
 	uuid       ble.UUID
 	service    *ble.Service
 	m          map[string]chan []byte
+	lastRead   time.Time
+	lastWrite  time.Time
+	writeQueue [][]byte
 }
 
 func NewBluetoothPeripheral(uuidStr string) (bp *BluetoothPeripheral, err error) {
@@ -92,6 +151,7 @@ func NewBluetoothPeripheral(uuidStr string) (bp *BluetoothPeripheral, err error)
 	bp = &BluetoothPeripheral{
 		uuid:  uuid,
 		Read:  make(chan []byte, 1024),
+		Close: make(chan bool),
 		m:     map[string]chan []byte{},
 		Write: make(chan []byte, 1024),
 	}
@@ -110,32 +170,6 @@ func NewBluetoothPeripheral(uuidStr string) (bp *BluetoothPeripheral, err error)
 
 func (bp *BluetoothPeripheral) bluetoothMain() {
 	go bp.start()
-	panicked := false
-	for !panicked {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					log.Println("Recovered startBluetooth", r)
-					panicked = true
-				}
-			}()
-			gatt.Reset()
-			if err := gatt.AddService(bp.service); err != nil {
-				log.Printf("can't add service: %s", err)
-				gatt.RemoveAllServices()
-				<-time.After(10 * time.Second)
-				return
-			}
-			if err := gatt.AdvertiseNameAndServices("Gopher", bp.service.UUID); err != nil {
-				log.Printf("can't advertise: %s", err)
-				gatt.RemoveAllServices()
-				<-time.After(10 * time.Second)
-				return
-			}
-			log.Printf("Bluetooth advertising")
-			select {}
-		}()
-	}
 }
 
 func (bp *BluetoothPeripheral) start() {
@@ -155,6 +189,7 @@ func (bp *BluetoothPeripheral) start() {
 					log.Printf("wrote msg to %d devices\n", len(bp.m))
 				}
 			}
+			bp.lastWrite = time.Now()
 			bp.Unlock()
 		}
 	}

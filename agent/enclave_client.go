@@ -62,7 +62,7 @@ type EnclaveClient struct {
 	requestCallbacksByRequestID *lru.Cache
 	snsEndpointARN              *string
 	cachedMe                    *krssh.Profile
-	bluetoothPeripheral         *BluetoothPeripheral
+	bluetoothManager            BluetoothManager
 }
 
 func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
@@ -73,36 +73,49 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 	if err != nil {
 		return
 	}
-	ec.bluetoothPeripheral, err = NewBluetoothPeripheral(btUUID.String())
+	bp, err := NewBluetoothPeripheral(btUUID.String())
 	if err != nil {
 		return
 	}
-	go ec.bluetoothPeripheral.bluetoothMain()
+	go bp.bluetoothMain()
+	go ec.bluetoothManager.SetPeripheral(bp)
 	go func() {
-		bp := ec.bluetoothPeripheral
-		for ciphertext := range bp.Read {
-			ec.mutex.Lock()
-			responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
-			ec.mutex.Unlock()
-			if err != nil {
-				log.Println("bluetooth decrypt error:", err)
-				return
+		for {
+			select {
+			case ciphertext := <-bp.Read:
+				ec.mutex.Lock()
+				responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
+				ec.mutex.Unlock()
+				if err != nil {
+					log.Println("bluetooth decrypt error:", err)
+					continue
+				}
+				var response krssh.Response
+				err = json.Unmarshal(responseJson, &response)
+				if err != nil {
+					log.Println("bluetooth response unmarshal error :", err)
+					continue
+				}
+				ec.mutex.Lock()
+				if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
+					cb.(chan *krssh.Response) <- &response
+					ec.requestCallbacksByRequestID.Remove(response.RequestID)
+					log.Println("found BT response cb for request", response.RequestID)
+				} else {
+					log.Println("no BT response cb for request", response.RequestID)
+				}
+				ec.mutex.Unlock()
+			case <-time.After(5 * time.Second):
+				//	check if no BT read since last BT write
+				bp.Lock()
+				if bp.lastWrite.Sub(bp.lastRead) > 3*time.Second {
+					bp.lastWrite = time.Time{}
+					bp.lastRead = time.Time{}
+					ec.bluetoothManager.SetPeripheral(bp)
+					//bp.Close <- true
+				}
+				bp.Unlock()
 			}
-			var response krssh.Response
-			err = json.Unmarshal(responseJson, &response)
-			if err != nil {
-				log.Println("bluetooth response unmarshal error :", err)
-				return
-			}
-			ec.mutex.Lock()
-			if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
-				cb.(chan *krssh.Response) <- &response
-				ec.requestCallbacksByRequestID.Remove(response.RequestID)
-				log.Println("found BT response cb for request", response.RequestID)
-			} else {
-				log.Println("no BT response cb for request", response.RequestID)
-			}
-			ec.mutex.Unlock()
 		}
 
 	}()
@@ -272,16 +285,8 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		}
 	}()
 	go func() {
-		client.mutex.Lock()
-		bp := client.bluetoothPeripheral
-		client.mutex.Unlock()
-
-		if bp != nil {
-			log.Println("writing to peripheral...")
-			bp.Write <- ciphertext
-		} else {
-			log.Println("no bluetooth peripheral found")
-		}
+		log.Println("writing to peripheral...")
+		client.bluetoothManager.Write(ciphertext)
 	}()
 
 	err = pairingSecret.SendMessage(requestJson)
