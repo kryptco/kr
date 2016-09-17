@@ -281,11 +281,9 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	}()
 	go func() {
 		log.Println("writing to peripheral...")
-		for _, msg := range SplitMsgForBluetooth(ciphertext) {
-			err := client.bt.WriteData(msg)
-			if err != nil {
-				log.Println("error writing BT", err)
-			}
+		err := client.bt.WriteData(ciphertext)
+		if err != nil {
+			log.Println("error writing BT", err)
 		}
 	}()
 
