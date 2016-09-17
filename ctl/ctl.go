@@ -34,9 +34,15 @@ func pairCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 
-	pairingSecret, err := krssh.GeneratePairingSecretAndCreateQueues()
+	pairingSecret, err := krssh.GeneratePairingSecret()
 	if err != nil {
 		PrintFatal(err.Error())
+	}
+	if !c.Bool("no-aws") {
+		err = pairingSecret.CreateQueues()
+		if err != nil {
+			PrintFatal(err.Error())
+		}
 	}
 
 	pairRequest, err := pairingSecret.HTTPRequest()
@@ -146,7 +152,10 @@ func main() {
 		cli.Command{
 			Name:    "pair",
 			Aliases: []string{"p"},
-			Action:  pairCommand,
+			Flags: []cli.Flag{
+				cli.BoolFlag{Name: "no-aws"},
+			},
+			Action: pairCommand,
 		},
 		cli.Command{
 			Name:   "me",
