@@ -72,7 +72,7 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 	defer ec.mutex.Unlock()
 	if ec.pairingSecret != nil && ec.bt != nil {
 		oldBTUUID, err := ec.pairingSecret.DeriveBluetoothServiceUUID()
-		if err != nil {
+		if err == nil {
 			ec.bt.RemoveService(oldBTUUID.String())
 		}
 	}
