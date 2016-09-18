@@ -70,6 +70,12 @@ type EnclaveClient struct {
 func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
+	if ec.pairingSecret != nil && ec.bt != nil {
+		oldBTUUID, err := ec.pairingSecret.DeriveBluetoothServiceUUID()
+		if err != nil {
+			ec.bt.RemoveService(oldBTUUID.String())
+		}
+	}
 	ec.pairingSecret = &pairingSecret
 	btUUID, err := ec.pairingSecret.DeriveBluetoothServiceUUID()
 	if err != nil {
@@ -81,34 +87,34 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 			log.Println(err)
 			return
 		}
-		//	spawn reader
-		go func() {
-			for ciphertext := range ec.bt.Read {
-				ec.mutex.Lock()
-				responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
-				ec.mutex.Unlock()
-				if err != nil {
-					log.Println("bluetooth decrypt error:", err)
-					return
-				}
-				var response krssh.Response
-				err = json.Unmarshal(responseJson, &response)
-				if err != nil {
-					log.Println("bluetooth response unmarshal error :", err)
-					return
-				}
-				ec.mutex.Lock()
-				if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
-					cb.(chan *krssh.Response) <- &response
-					ec.requestCallbacksByRequestID.Remove(response.RequestID)
-					log.Println("found BT response cb for request", response.RequestID)
-				} else {
-					log.Println("no BT response cb for request", response.RequestID)
-				}
-				ec.mutex.Unlock()
-			}
-		}()
 	}
+	//	spawn reader
+	go func() {
+		for ciphertext := range ec.bt.Read {
+			ec.mutex.Lock()
+			responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
+			ec.mutex.Unlock()
+			if err != nil {
+				log.Println("bluetooth decrypt error:", err)
+				return
+			}
+			var response krssh.Response
+			err = json.Unmarshal(responseJson, &response)
+			if err != nil {
+				log.Println("bluetooth response unmarshal error :", err)
+				return
+			}
+			ec.mutex.Lock()
+			if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
+				cb.(chan *krssh.Response) <- &response
+				ec.requestCallbacksByRequestID.Remove(response.RequestID)
+				log.Println("found BT response cb for request", response.RequestID)
+			} else {
+				log.Println("no BT response cb for request", response.RequestID)
+			}
+			ec.mutex.Unlock()
+		}
+	}()
 	err = ec.bt.AddService(btUUID.String(), map[string][]byte{krsshCharUUIDString: []byte{1, 0}})
 	if err != nil {
 		log.Println(err)
