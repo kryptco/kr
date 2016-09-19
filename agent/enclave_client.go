@@ -5,13 +5,13 @@ package main
  */
 
 import (
+	"bitbucket.org/kryptco/go.corebluetooth"
 	"bitbucket.org/kryptco/krssh"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/groupcache/lru"
-	"github.com/vanadium/go.ref/lib/discovery/plugins/ble/corebluetooth"
 	"golang.org/x/crypto/ssh"
 	"log"
 	"sync"
