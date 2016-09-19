@@ -5,7 +5,6 @@ package main
  */
 
 import (
-	"bitbucket.org/kryptco/go.corebluetooth"
 	"bitbucket.org/kryptco/krssh"
 	"encoding/base64"
 	"encoding/json"
@@ -63,7 +62,7 @@ type EnclaveClient struct {
 	requestCallbacksByRequestID *lru.Cache
 	snsEndpointARN              *string
 	cachedMe                    *krssh.Profile
-	bt                          *corebluetooth.CoreBluetoothDriver
+	bt                          BluetoothDriverI
 }
 
 func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
@@ -72,7 +71,7 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 	if ec.pairingSecret != nil && ec.bt != nil {
 		oldBTUUID, err := ec.pairingSecret.DeriveBluetoothServiceUUID()
 		if err == nil {
-			ec.bt.RemoveService(oldBTUUID.String())
+			ec.bt.RemoveService(oldBTUUID)
 		}
 	}
 	ec.pairingSecret = &pairingSecret
@@ -81,7 +80,7 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 		return
 	}
 	if ec.bt == nil {
-		ec.bt, err = corebluetooth.NewContextAndDriver()
+		ec.bt, err = NewBluetoothDriver()
 		if err != nil {
 			log.Println(err)
 			return
@@ -89,7 +88,12 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 	}
 	//	spawn reader
 	go func() {
-		for ciphertext := range ec.bt.Read {
+		readChan, err := ec.bt.ReadChan()
+		if err != nil {
+			log.Println("error retrieving bluetooth read channel:", err)
+			return
+		}
+		for ciphertext := range readChan {
 			ec.mutex.Lock()
 			responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
 			ec.mutex.Unlock()
@@ -114,7 +118,7 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 			ec.mutex.Unlock()
 		}
 	}()
-	err = ec.bt.AddService(btUUID.String(), map[string][]byte{krsshCharUUIDString: []byte{1, 0}})
+	err = ec.bt.AddService(btUUID)
 	if err != nil {
 		log.Println(err)
 		return
@@ -286,7 +290,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	}()
 	go func() {
 		log.Println("writing to peripheral...")
-		err := client.bt.WriteData(ciphertext)
+		err := client.bt.Write(ciphertext)
 		if err != nil {
 			log.Println("error writing BT", err)
 		}
