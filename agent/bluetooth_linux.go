@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bitbucket.org/kryptco/go.corebluetooth"
 	"github.com/satori/go.uuid"
 )
 
