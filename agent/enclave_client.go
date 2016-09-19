@@ -63,7 +63,6 @@ type EnclaveClient struct {
 	requestCallbacksByRequestID *lru.Cache
 	snsEndpointARN              *string
 	cachedMe                    *krssh.Profile
-	bluetoothManager            BluetoothManager
 	bt                          *corebluetooth.CoreBluetoothDriver
 }
 
