@@ -77,7 +77,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 		return
 	}
 
-	pairingSecret, err = krssh.GeneratePairingSecret()
+	pairingSecret, err = krssh.GeneratePairingSecretAndCreateQueues()
 	if err != nil {
 		log.Println(err)
 		return
@@ -90,7 +90,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 			log.Println(err)
 			return
 		}
-		btUUID, uuidErr := ec.pairingSecret.DeriveBluetoothServiceUUID()
+		btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
 		if uuidErr != nil {
 			err = uuidErr
 			log.Println(err)
@@ -113,12 +113,16 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 		}
 		for ciphertext := range readChan {
 			ec.mutex.Lock()
-			responseJson, err := ec.pairingSecret.DecryptMessage(ciphertext)
+			message, err := ec.pairingSecret.DecryptMessage(ciphertext)
 			ec.mutex.Unlock()
 			if err != nil {
 				log.Println("bluetooth decrypt error:", err)
 				return
 			}
+			if message == nil {
+				return
+			}
+			responseJson := *message
 			var response krssh.Response
 			err = json.Unmarshal(responseJson, &response)
 			if err != nil {
@@ -270,7 +274,7 @@ func (client *EnclaveClient) tryRequest(request krssh.Request, timeout time.Dura
 func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Request, cb chan *krssh.Response, timeout time.Duration) (err error) {
 	pairingSecret := client.getPairingSecret()
 	if pairingSecret == nil {
-		err = errors.New("EnclaveClient not paired")
+		err = errors.New("EnclaveClient pairing never initiated")
 		return
 	}
 	requestJson, err := json.Marshal(request)
@@ -291,7 +295,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	ciphertext, err := pairingSecret.EncryptMessage(requestJson)
 	if err != nil {
 		err = &SendError{err}
-		return
+		//return
 	}
 	go func() {
 		ctxtString := base64.StdEncoding.EncodeToString(ciphertext)
@@ -312,7 +316,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	err = pairingSecret.SendMessage(requestJson)
 	if err != nil {
 		err = &SendError{err}
-		return
+		//return
 	}
 
 	receive := func() (numReceived int, err error) {

@@ -8,12 +8,44 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"github.com/GoKillers/libsodium-go/cryptobox"
 )
 
+const (
+	HEADER_CIPHERTEXT = iota
+	HEADER_WRAPPED_KEY
+)
 const AES_KEY_NUM_BYTES = 32
 
 type SymmetricSecretKey struct {
 	Bytes []byte
+}
+
+func sodiumBoxSealOpen(c, pk, sk []byte) (m []byte, err error) {
+	//	protect against bindings panicking
+	if len(c) == 0 || len(pk) == 0 || len(sk) == 0 {
+		err = fmt.Errorf("empty argument passed to sodium")
+		return
+	}
+	m, ret := cryptobox.CryptoBoxSealOpen(c, pk, sk)
+	if ret != 0 {
+		err = fmt.Errorf("nonzero sodium return status: %d", ret)
+		return
+	}
+	return
+}
+
+func UnwrapKey(c, pk, sk []byte) (key []byte, err error) {
+	key, err = sodiumBoxSealOpen(c, pk, sk)
+	if err != nil {
+		return
+	}
+	//TODO: check key length here
+	if len(key) != AES_KEY_NUM_BYTES {
+		err = fmt.Errorf("incorrect key length of %d expected %d", len(key), AES_KEY_NUM_BYTES)
+		return
+	}
+	return
 }
 
 func GenSymmetricSecretKey() (key SymmetricSecretKey, err error) {

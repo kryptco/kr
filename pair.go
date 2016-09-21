@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
+	"sync"
 
 	"github.com/GoKillers/libsodium-go/cryptobox"
 	"github.com/satori/go.uuid"
@@ -18,9 +20,11 @@ type PairingSecret struct {
 	WorkstationPublicKey []byte  `json:"pk"`
 	workstationSecretKey []byte
 	WorkstationName      string `json:"n"`
+	sync.Mutex
+	receiveQueue [][]byte
 }
 
-func (ps PairingSecret) DeriveBluetoothServiceUUID() (btUUID uuid.UUID, err error) {
+func (ps PairingSecret) DeriveUUID() (derivedUUID uuid.UUID, err error) {
 	keyDigest := sha256.Sum256(ps.WorkstationPublicKey)
 	return uuid.FromBytes(keyDigest[0:16])
 }
@@ -39,8 +43,9 @@ func (ps PairingSecret) SQSRecvQueueName() string {
 }
 
 func (ps PairingSecret) SQSBaseQueueName() string {
-	pkDigest := sha256.Sum256(ps.WorkstationPublicKey)
-	return base64.URLEncoding.EncodeToString(pkDigest[0:16])
+	//	TODO: dont ignore
+	derivedUUID, _ := ps.DeriveUUID()
+	return strings.ToUpper(derivedUUID.String())
 }
 
 func GeneratePairingSecret() (ps PairingSecret, err error) {
@@ -79,7 +84,7 @@ func GeneratePairingSecretAndCreateQueues() (ps PairingSecret, err error) {
 	return
 }
 
-func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
+func (ps *PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
 	if ps.SymmetricSecretKey == nil {
 		err = fmt.Errorf("SymmetricSecretKey not set")
 		return
@@ -95,7 +100,31 @@ func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err e
 	return
 }
 
-func (ps PairingSecret) DecryptMessage(ciphertext []byte) (message []byte, err error) {
+func (ps *PairingSecret) unwrapKeyIfPresent(ciphertext []byte) (remainingCiphertext *[]byte, err error) {
+	if len(ciphertext) < 1 {
+		err = fmt.Errorf("ciphertext empty")
+		return
+	}
+	switch ciphertext[0] {
+	case HEADER_CIPHERTEXT:
+		ctxt := ciphertext[1:]
+		remainingCiphertext = &ctxt
+		return
+	case HEADER_WRAPPED_KEY:
+		wrappedKey := ciphertext[1:]
+		key, unwrapErr := UnwrapKey(wrappedKey, ps.WorkstationPublicKey, ps.workstationSecretKey)
+		if unwrapErr != nil {
+			err = unwrapErr
+			return
+		}
+		ps.SymmetricSecretKey = &key
+		log.Println("stored symmetric key")
+		return
+	}
+	return
+}
+
+func (ps *PairingSecret) DecryptMessage(ciphertext []byte) (message *[]byte, err error) {
 	if ps.SymmetricSecretKey == nil {
 		err = fmt.Errorf("SymmetricSecretKey not set")
 		return
@@ -104,10 +133,11 @@ func (ps PairingSecret) DecryptMessage(ciphertext []byte) (message []byte, err e
 	if err != nil {
 		return
 	}
-	message, err = Open(ciphertext, *key)
+	messageBytes, err := Open(ciphertext, *key)
 	if err != nil {
 		return
 	}
+	message = &messageBytes
 	return
 }
 
@@ -127,14 +157,6 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 }
 
 func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
-	if ps.SymmetricSecretKey == nil {
-		err = fmt.Errorf("SymmetricSecretKey not set")
-		return
-	}
-	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
-	if err != nil {
-		return
-	}
 	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
 	if err != nil {
 		return
@@ -147,7 +169,26 @@ func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
 			continue
 		}
 
-		message, err := Open(ctxt, *key)
+		unwrappedCtxt, err := ps.unwrapKeyIfPresent(ctxt)
+		if err != nil {
+			log.Println("error processing ciphertext header: %s", err.Error())
+			continue
+		}
+		if unwrappedCtxt == nil {
+			continue
+		}
+
+		if ps.SymmetricSecretKey == nil {
+			log.Println("SymmetricSecretKey not set")
+			continue
+		}
+		key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
+		if err != nil {
+			log.Println("SymmetricSecretKey invalid")
+			continue
+		}
+
+		message, err := Open(*unwrappedCtxt, *key)
 		if err != nil {
 			log.Println("open cipertext error")
 			continue

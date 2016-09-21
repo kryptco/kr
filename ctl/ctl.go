@@ -94,6 +94,8 @@ func pairCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 
+	<-make(chan bool)
+
 	//	Check/wait for pairing
 	getReader := bufio.NewReader(getConn)
 	getResponse, err := http.ReadResponse(getReader, getPair)
