@@ -47,7 +47,7 @@ func (err *ProtoError) Error() string {
 }
 
 type EnclaveClientI interface {
-	Pair(krssh.PairingSecret) (err error)
+	Pair() (pairing krssh.PairingSecret, err error)
 	RequestMe() (*krssh.MeResponse, error)
 	RequestMeSigner() (ssh.Signer, error)
 	GetCachedMe() *krssh.Profile
@@ -65,26 +65,40 @@ type EnclaveClient struct {
 	bt                          BluetoothDriverI
 }
 
-func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
+func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
-	if ec.pairingSecret != nil && ec.bt != nil {
-		oldBTUUID, err := ec.pairingSecret.DeriveBluetoothServiceUUID()
-		if err == nil {
-			ec.bt.RemoveService(oldBTUUID)
+	if ec.pairingSecret == nil {
+		pairingSecret, err = krssh.GeneratePairingSecret()
+		if err != nil {
+			log.Println(err)
+			return
 		}
+		ec.pairingSecret = &pairingSecret
 	}
-	ec.pairingSecret = &pairingSecret
-	btUUID, err := ec.pairingSecret.DeriveBluetoothServiceUUID()
-	if err != nil {
-		return
-	}
+	pairingSecret = *ec.pairingSecret
+	//	unpair a currently paired enclave
+	ec.pairingSecret.SymmetricSecretKey = nil
+	ec.cachedMe = nil
 	if ec.bt == nil {
 		ec.bt, err = NewBluetoothDriver()
 		if err != nil {
 			log.Println(err)
 			return
 		}
+		btUUID, uuidErr := ec.pairingSecret.DeriveBluetoothServiceUUID()
+		if uuidErr != nil {
+			err = uuidErr
+			log.Println(err)
+			return
+		}
+		err = ec.bt.AddService(btUUID)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		return
 	}
 	//	spawn reader
 	go func() {
@@ -118,11 +132,6 @@ func (ec *EnclaveClient) Pair(pairingSecret krssh.PairingSecret) (err error) {
 			ec.mutex.Unlock()
 		}
 	}()
-	err = ec.bt.AddService(btUUID)
-	if err != nil {
-		log.Println(err)
-		return
-	}
 	return
 }
 

@@ -45,32 +45,42 @@ func pairCommand(c *cli.Context) (err error) {
 		}
 	}
 
-	pairRequest, err := pairingSecret.HTTPRequest()
+	putPair, err := http.NewRequest("PUT", "/pair", nil)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
 
-	err = pairRequest.Write(agentConn)
+	err = putPair.Write(agentConn)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
-
-	pairingSecretJson, err := json.Marshal(pairingSecret)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-
-	qr, err := QREncode(pairingSecretJson)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-
-	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation.")
-	fmt.Println()
-	fmt.Println(qr.Terminal)
 
 	bufReader := bufio.NewReader(agentConn)
-	response, err := http.ReadResponse(bufReader, pairRequest)
+	putPairResponse, err := http.ReadResponse(bufReader, putPair)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	responseBytes, err := ioutil.ReadAll(putPairResponse.Body)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	if putPairResponse.StatusCode != http.StatusOK {
+		PrintFatal(string(responseBytes))
+	}
+
+	qr, err := QREncode(responseBytes)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+
+	fmt.Println()
+	fmt.Println(qr.Terminal)
+	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation. Try lowering your terminal font size if the QR code does not fit on the screen.")
+	fmt.Println()
+
+	PrintFatal("not implemented")
+	bufReader = bufio.NewReader(agentConn)
+	response, err := http.ReadResponse(bufReader, putPair)
 
 	clearCommand := exec.Command("clear")
 	clearCommand.Stdout = os.Stdout

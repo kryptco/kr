@@ -1,55 +1,55 @@
 package krssh
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
+	"fmt"
 	"log"
-	"net/http"
 	"os"
 
+	"github.com/GoKillers/libsodium-go/cryptobox"
 	"github.com/satori/go.uuid"
 )
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 
 type PairingSecret struct {
-	SQSBaseQueueName   string `json:"q"`
-	SymmetricSecretKey []byte `json:"k"`
-	WorkstationName    string `json:"n"`
+	SymmetricSecretKey   *[]byte `json:"-"`
+	WorkstationPublicKey []byte  `json:"pk"`
+	workstationSecretKey []byte
+	WorkstationName      string `json:"n"`
 }
 
 func (ps PairingSecret) DeriveBluetoothServiceUUID() (btUUID uuid.UUID, err error) {
-	keyDigest := sha256.Sum256(ps.SymmetricSecretKey)
+	keyDigest := sha256.Sum256(ps.WorkstationPublicKey)
 	return uuid.FromBytes(keyDigest[0:16])
 }
 
 func (ps PairingSecret) SQSSendQueueURL() string {
-	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName
+	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName()
 }
 func (ps PairingSecret) SQSRecvQueueURL() string {
 	return SQS_BASE_QUEUE_URL + ps.SQSRecvQueueName()
 }
 func (ps PairingSecret) SQSSendQueueName() string {
-	return ps.SQSBaseQueueName
+	return ps.SQSBaseQueueName()
 }
 func (ps PairingSecret) SQSRecvQueueName() string {
-	return ps.SQSBaseQueueName + "-responder"
+	return ps.SQSBaseQueueName() + "-responder"
+}
+
+func (ps PairingSecret) SQSBaseQueueName() string {
+	pkDigest := sha256.Sum256(ps.WorkstationPublicKey)
+	return base64.URLEncoding.EncodeToString(pkDigest[0:16])
 }
 
 func GeneratePairingSecret() (ps PairingSecret, err error) {
-	symmetricSecretKey, err := GenSymmetricSecretKey()
-	if err != nil {
+	ret := 0
+	ps.workstationSecretKey, ps.WorkstationPublicKey, ret = cryptobox.CryptoBoxKeyPair()
+	if ret != 0 {
+		err = fmt.Errorf("nonzero CryptoBoxKeyPair exit status: %d", ret)
 		return
 	}
-	ps.SymmetricSecretKey = symmetricSecretKey.Bytes
-
-	ps.SQSBaseQueueName, err = Rand128Base62()
-	if err != nil {
-		return
-	}
-
 	hostname, _ := os.Hostname()
 	ps.WorkstationName = os.Getenv("USER") + "@" + hostname
 	return
@@ -79,21 +79,12 @@ func GeneratePairingSecretAndCreateQueues() (ps PairingSecret, err error) {
 	return
 }
 
-func (ps PairingSecret) HTTPRequest() (httpRequest *http.Request, err error) {
-	pairingSecretJson, err := json.Marshal(ps)
-	if err != nil {
-		return
-	}
-
-	httpRequest, err = http.NewRequest("PUT", "/pair", bytes.NewReader(pairingSecretJson))
-	if err != nil {
-		return
-	}
-	return
-}
-
 func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
-	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+	if ps.SymmetricSecretKey == nil {
+		err = fmt.Errorf("SymmetricSecretKey not set")
+		return
+	}
+	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
@@ -105,7 +96,11 @@ func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err e
 }
 
 func (ps PairingSecret) DecryptMessage(ciphertext []byte) (message []byte, err error) {
-	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+	if ps.SymmetricSecretKey == nil {
+		err = fmt.Errorf("SymmetricSecretKey not set")
+		return
+	}
+	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
@@ -132,7 +127,11 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 }
 
 func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
-	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+	if ps.SymmetricSecretKey == nil {
+		err = fmt.Errorf("SymmetricSecretKey not set")
+		return
+	}
+	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
