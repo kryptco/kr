@@ -19,6 +19,15 @@ import (
 
 var ErrTimeout = errors.New("Request timed out")
 
+//	Message queued during send
+type SendQueued struct {
+	error
+}
+
+func (err *SendQueued) Error() string {
+	return fmt.Sprintf("SendQueued: " + err.error.Error())
+}
+
 //	Network-related error during send
 type SendError struct {
 	error
@@ -60,6 +69,7 @@ type EnclaveClient struct {
 	mutex                       sync.Mutex
 	pairingSecret               *krssh.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
+	outgoingQueue               [][]byte
 	snsEndpointARN              *string
 	cachedMe                    *krssh.Profile
 	bt                          BluetoothDriverI
@@ -74,6 +84,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 		//	unpair a currently paired enclave
 		ec.pairingSecret.SymmetricSecretKey = nil
 		ec.cachedMe = nil
+		ec.outgoingQueue = [][]byte{}
 		return
 	}
 
@@ -112,32 +123,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 			return
 		}
 		for ciphertext := range readChan {
-			ec.mutex.Lock()
-			message, err := ec.pairingSecret.DecryptMessage(ciphertext)
-			ec.mutex.Unlock()
-			if err != nil {
-				log.Println("bluetooth decrypt error:", err)
-				return
-			}
-			if message == nil {
-				return
-			}
-			responseJson := *message
-			var response krssh.Response
-			err = json.Unmarshal(responseJson, &response)
-			if err != nil {
-				log.Println("bluetooth response unmarshal error :", err)
-				return
-			}
-			ec.mutex.Lock()
-			if cb, ok := ec.requestCallbacksByRequestID.Get(response.RequestID); ok {
-				cb.(chan *krssh.Response) <- &response
-				ec.requestCallbacksByRequestID.Remove(response.RequestID)
-				log.Println("found BT response cb for request", response.RequestID)
-			} else {
-				log.Println("no BT response cb for request", response.RequestID)
-			}
-			ec.mutex.Unlock()
+			err = ec.handleCiphertext(ciphertext)
 		}
 	}()
 	return
@@ -289,67 +275,25 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
 	client.mutex.Unlock()
 
-	client.mutex.Lock()
-	snsEndpointARN := client.snsEndpointARN
-	client.mutex.Unlock()
-	ciphertext, err := pairingSecret.EncryptMessage(requestJson)
-	if err != nil {
-		err = &SendError{err}
-		//return
-	}
-	go func() {
-		ctxtString := base64.StdEncoding.EncodeToString(ciphertext)
-		if snsEndpointARN != nil {
-			if pushErr := krssh.PushToSNSEndpoint(ctxtString, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
-				log.Println("Push error:", pushErr)
-			}
-		}
-	}()
-	go func() {
-		log.Println("writing to peripheral...")
-		err := client.bt.Write(ciphertext)
-		if err != nil {
-			log.Println("error writing BT", err)
-		}
-	}()
+	err = client.sendMessage(requestJson)
 
-	err = pairingSecret.SendMessage(requestJson)
 	if err != nil {
-		err = &SendError{err}
-		//return
+		switch err.(type) {
+		case *SendQueued:
+		default:
+			return
+		}
 	}
 
 	receive := func() (numReceived int, err error) {
-		responseJsons, err := pairingSecret.ReceiveMessages()
+		ciphertexts, err := pairingSecret.ReadQueue()
 		if err != nil {
 			err = &RecvError{err}
 			return
 		}
 
-		for _, responseJson := range responseJsons {
-			var response krssh.Response
-			err := json.Unmarshal(responseJson, &response)
-			if err != nil {
-				continue
-			}
-
-			numReceived++
-
-			if response.SNSEndpointARN != nil {
-				client.mutex.Lock()
-				client.snsEndpointARN = response.SNSEndpointARN
-				client.mutex.Unlock()
-			}
-
-			client.mutex.Lock()
-			if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
-				log.Println("found callback for request", response.RequestID)
-				requestCb.(chan *krssh.Response) <- &response
-			} else {
-				log.Println("callback not found for request", response.RequestID)
-			}
-			client.requestCallbacksByRequestID.Remove(response.RequestID)
-			client.mutex.Unlock()
+		for _, ctxt := range ciphertexts {
+			err = client.handleCiphertext(ctxt)
 		}
 		return
 	}
@@ -370,5 +314,117 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	}
 	client.mutex.Unlock()
 
+	return
+}
+
+func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
+	unwrappedCiphertext, didUnwrapKey, err := client.pairingSecret.UnwrapKeyIfPresent(ciphertext)
+	if err != nil {
+		err = &ProtoError{err}
+		return
+	}
+	if didUnwrapKey {
+		client.mutex.Lock()
+		queue := client.outgoingQueue
+		client.outgoingQueue = [][]byte{}
+		client.mutex.Unlock()
+		for _, queuedMessage := range queue {
+			err = client.sendMessage(queuedMessage)
+			if err != nil {
+				log.Println("error sending queued message:", err.Error())
+			}
+		}
+	}
+	if unwrappedCiphertext == nil {
+		return
+	}
+	client.mutex.Lock()
+	message, err := client.pairingSecret.DecryptMessage(*unwrappedCiphertext)
+	client.mutex.Unlock()
+	if err != nil {
+		log.Println("decrypt error:", err)
+		return
+	}
+	if message == nil {
+		return
+	}
+	responseJson := *message
+	err = client.handleMessage(responseJson)
+	if err != nil {
+		log.Println("handleMessage error:", err)
+		return
+	}
+	return
+}
+
+func (client *EnclaveClient) sendMessage(message []byte) (err error) {
+	pairingSecret := client.getPairingSecret()
+	if pairingSecret == nil {
+		err = errors.New("EnclaveClient pairing never initiated")
+		return
+	}
+	client.mutex.Lock()
+	snsEndpointARN := client.snsEndpointARN
+	client.mutex.Unlock()
+	ciphertext, err := client.pairingSecret.EncryptMessage(message)
+	if err != nil {
+		if err == krssh.ErrWaitingForKey {
+			client.mutex.Lock()
+			if len(client.outgoingQueue) < 128 {
+				client.outgoingQueue = append(client.outgoingQueue, message)
+			}
+			client.mutex.Unlock()
+			err = &SendQueued{err}
+		} else {
+			err = &SendError{err}
+		}
+		return
+	}
+	go func() {
+		ctxtString := base64.StdEncoding.EncodeToString(ciphertext)
+		if snsEndpointARN != nil {
+			if pushErr := krssh.PushToSNSEndpoint(ctxtString, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
+				log.Println("Push error:", pushErr)
+			}
+		}
+	}()
+	go func() {
+		log.Println("writing to peripheral...")
+		err := client.bt.Write(ciphertext)
+		if err != nil {
+			log.Println("error writing BT", err)
+		}
+	}()
+
+	err = pairingSecret.SendMessage(message)
+	if err != nil {
+		err = &SendError{err}
+		return
+	}
+	return
+}
+
+func (client *EnclaveClient) handleMessage(message []byte) (err error) {
+	var response krssh.Response
+	err = json.Unmarshal(message, &response)
+	if err != nil {
+		return
+	}
+
+	if response.SNSEndpointARN != nil {
+		client.mutex.Lock()
+		client.snsEndpointARN = response.SNSEndpointARN
+		client.mutex.Unlock()
+	}
+
+	client.mutex.Lock()
+	if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
+		log.Println("found callback for request", response.RequestID)
+		requestCb.(chan *krssh.Response) <- &response
+	} else {
+		log.Println("callback not found for request", response.RequestID)
+	}
+	client.requestCallbacksByRequestID.Remove(response.RequestID)
+	client.mutex.Unlock()
 	return
 }

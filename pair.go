@@ -15,13 +15,14 @@ import (
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 
+var ErrWaitingForKey = fmt.Errorf("Pairing in progress, waiting for symmetric key")
+
 type PairingSecret struct {
 	SymmetricSecretKey   *[]byte `json:"-"`
 	WorkstationPublicKey []byte  `json:"pk"`
 	workstationSecretKey []byte
 	WorkstationName      string `json:"n"`
 	sync.Mutex
-	receiveQueue [][]byte
 }
 
 func (ps PairingSecret) DeriveUUID() (derivedUUID uuid.UUID, err error) {
@@ -85,8 +86,10 @@ func GeneratePairingSecretAndCreateQueues() (ps PairingSecret, err error) {
 }
 
 func (ps *PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
+	ps.Lock()
+	defer ps.Unlock()
 	if ps.SymmetricSecretKey == nil {
-		err = fmt.Errorf("SymmetricSecretKey not set")
+		err = ErrWaitingForKey
 		return
 	}
 	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
@@ -100,7 +103,9 @@ func (ps *PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err 
 	return
 }
 
-func (ps *PairingSecret) unwrapKeyIfPresent(ciphertext []byte) (remainingCiphertext *[]byte, err error) {
+func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphertext *[]byte, didUnwrapKey bool, err error) {
+	ps.Lock()
+	defer ps.Unlock()
 	if len(ciphertext) < 1 {
 		err = fmt.Errorf("ciphertext empty")
 		return
@@ -111,6 +116,10 @@ func (ps *PairingSecret) unwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		remainingCiphertext = &ctxt
 		return
 	case HEADER_WRAPPED_KEY:
+		if ps.SymmetricSecretKey != nil {
+			err = fmt.Errorf("Cannot replace a symmetric key, already paired")
+			return
+		}
 		wrappedKey := ciphertext[1:]
 		key, unwrapErr := UnwrapKey(wrappedKey, ps.WorkstationPublicKey, ps.workstationSecretKey)
 		if unwrapErr != nil {
@@ -118,6 +127,7 @@ func (ps *PairingSecret) unwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 			return
 		}
 		ps.SymmetricSecretKey = &key
+		didUnwrapKey = true
 		log.Println("stored symmetric key")
 		return
 	}
@@ -125,8 +135,10 @@ func (ps *PairingSecret) unwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 }
 
 func (ps *PairingSecret) DecryptMessage(ciphertext []byte) (message *[]byte, err error) {
+	ps.Lock()
+	defer ps.Unlock()
 	if ps.SymmetricSecretKey == nil {
-		err = fmt.Errorf("SymmetricSecretKey not set")
+		err = ErrWaitingForKey
 		return
 	}
 	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
@@ -156,7 +168,7 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 	return
 }
 
-func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
+func (ps PairingSecret) ReadQueue() (ciphertexts [][]byte, err error) {
 	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
 	if err != nil {
 		return
@@ -168,33 +180,7 @@ func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
 			log.Println("base64 ciphertext decoding error")
 			continue
 		}
-
-		unwrappedCtxt, err := ps.unwrapKeyIfPresent(ctxt)
-		if err != nil {
-			log.Println("error processing ciphertext header: %s", err.Error())
-			continue
-		}
-		if unwrappedCtxt == nil {
-			continue
-		}
-
-		if ps.SymmetricSecretKey == nil {
-			log.Println("SymmetricSecretKey not set")
-			continue
-		}
-		key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
-		if err != nil {
-			log.Println("SymmetricSecretKey invalid")
-			continue
-		}
-
-		message, err := Open(*unwrappedCtxt, *key)
-		if err != nil {
-			log.Println("open cipertext error")
-			continue
-		}
-		messages = append(messages, message)
+		ciphertexts = append(ciphertexts, ctxt)
 	}
-	log.Printf("received %d messages", len(messages))
 	return
 }
