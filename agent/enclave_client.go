@@ -68,18 +68,22 @@ type EnclaveClient struct {
 func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
-	if ec.pairingSecret == nil {
-		pairingSecret, err = krssh.GeneratePairingSecret()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		ec.pairingSecret = &pairingSecret
+	if ec.pairingSecret != nil {
+		pairingSecret = *ec.pairingSecret
+
+		//	unpair a currently paired enclave
+		ec.pairingSecret.SymmetricSecretKey = nil
+		ec.cachedMe = nil
+		return
 	}
-	pairingSecret = *ec.pairingSecret
-	//	unpair a currently paired enclave
-	ec.pairingSecret.SymmetricSecretKey = nil
-	ec.cachedMe = nil
+
+	pairingSecret, err = krssh.GeneratePairingSecret()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	ec.pairingSecret = &pairingSecret
+
 	if ec.bt == nil {
 		ec.bt, err = NewBluetoothDriver()
 		if err != nil {

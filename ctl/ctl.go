@@ -29,10 +29,11 @@ func connectToAgent() (conn net.Conn, err error) {
 }
 
 func pairCommand(c *cli.Context) (err error) {
-	agentConn, err := connectToAgent()
+	putConn, err := connectToAgent()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
+	defer putConn.Close()
 
 	pairingSecret, err := krssh.GeneratePairingSecret()
 	if err != nil {
@@ -50,13 +51,13 @@ func pairCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 
-	err = putPair.Write(agentConn)
+	err = putPair.Write(putConn)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
 
-	bufReader := bufio.NewReader(agentConn)
-	putPairResponse, err := http.ReadResponse(bufReader, putPair)
+	putReader := bufio.NewReader(putConn)
+	putPairResponse, err := http.ReadResponse(putReader, putPair)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -78,9 +79,24 @@ func pairCommand(c *cli.Context) (err error) {
 	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation. Try lowering your terminal font size if the QR code does not fit on the screen.")
 	fmt.Println()
 
-	PrintFatal("not implemented")
-	bufReader = bufio.NewReader(agentConn)
-	response, err := http.ReadResponse(bufReader, putPair)
+	getConn, err := connectToAgent()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	defer getConn.Close()
+
+	getPair, err := http.NewRequest("GET", "/pair", nil)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	err = getPair.Write(getConn)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+
+	//	Check/wait for pairing
+	getReader := bufio.NewReader(getConn)
+	getResponse, err := http.ReadResponse(getReader, getPair)
 
 	clearCommand := exec.Command("clear")
 	clearCommand.Stdout = os.Stdout
@@ -89,16 +105,16 @@ func pairCommand(c *cli.Context) (err error) {
 	if err != nil {
 		PrintFatal(err.Error())
 	}
-	switch response.StatusCode {
+	switch getResponse.StatusCode {
 	case 404:
 		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
 	case 500:
 		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
 	default:
 	}
-	defer response.Body.Close()
+	defer getResponse.Body.Close()
 	var me krssh.Profile
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := ioutil.ReadAll(getResponse.Body)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
