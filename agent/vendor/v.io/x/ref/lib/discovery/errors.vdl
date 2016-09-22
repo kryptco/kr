@@ -1,0 +1,39 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package discovery
+
+import (
+	"v.io/v23/discovery"
+)
+
+error (
+	AdvertisementNotFound(id discovery.AdId) {
+		"en": "advertisement not found: {id}",
+	}
+
+	AlreadyBeingAdvertised(id discovery.AdId) {
+		"en": "already being advertised: {id}",
+	}
+
+	BadAdvertisement(err error) {
+		"en": "invalid advertisement: {err}",
+	}
+
+	BadQuery(err error) {
+		"en": "invalid query: {err}",
+	}
+
+	DiscoveryClosed() {
+		"en": "discovery closed",
+	}
+
+	NoDiscoveryPlugin() {
+		"en": "no discovery plugin",
+	}
+
+	TooManyPlugins(actual, limit int32) {
+		"en": "too many plugins ({actual}), support at most {limit}",
+	}
+)

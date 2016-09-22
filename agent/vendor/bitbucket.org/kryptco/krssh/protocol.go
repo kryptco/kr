@@ -41,7 +41,8 @@ type SignRequest struct {
 	//	N.B. []byte marshals to base64 encoding in JSON
 	Digest []byte `json:"digest"`
 	//	SHA256 hash of public key DER
-	PublicKeyFingerprint []byte `json:"public_key_fingerprint"`
+	PublicKeyFingerprint []byte  `json:"public_key_fingerprint"`
+	Command              *string `json:"command"`
 }
 
 type SignResponse struct {

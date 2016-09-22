@@ -2,6 +2,7 @@ package krssh
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"github.com/keybase/saltpack/encoding/basex"
 )
 
@@ -26,5 +27,14 @@ func RandNBase62(n uint) (encodedRand string, err error) {
 		return
 	}
 	encodedRand = basex.Base62StdEncoding.EncodeToString(randBuf)
+	return
+}
+func RandNBase64(n uint) (encodedRand string, err error) {
+	randBuf, err := RandNBytes(n)
+	_, err = rand.Read(randBuf)
+	if err != nil {
+		return
+	}
+	encodedRand = base64.StdEncoding.EncodeToString(randBuf)
 	return
 }

@@ -1,55 +1,61 @@
 package krssh
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
+	"fmt"
 	"log"
-	"net/http"
 	"os"
+	"strings"
+	"sync"
 
+	"github.com/GoKillers/libsodium-go/cryptobox"
 	"github.com/satori/go.uuid"
 )
 
 const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 
+var ErrWaitingForKey = fmt.Errorf("Pairing in progress, waiting for symmetric key")
+
 type PairingSecret struct {
-	SQSBaseQueueName   string `json:"q"`
-	SymmetricSecretKey []byte `json:"k"`
-	WorkstationName    string `json:"n"`
+	SymmetricSecretKey   *[]byte `json:"-"`
+	WorkstationPublicKey []byte  `json:"pk"`
+	workstationSecretKey []byte
+	WorkstationName      string `json:"n"`
+	sync.Mutex
 }
 
-func (ps PairingSecret) DeriveBluetoothServiceUUID() (btUUID uuid.UUID, err error) {
-	keyDigest := sha256.Sum256(ps.SymmetricSecretKey)
+func (ps PairingSecret) DeriveUUID() (derivedUUID uuid.UUID, err error) {
+	keyDigest := sha256.Sum256(ps.WorkstationPublicKey)
 	return uuid.FromBytes(keyDigest[0:16])
 }
 
 func (ps PairingSecret) SQSSendQueueURL() string {
-	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName
+	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName()
 }
 func (ps PairingSecret) SQSRecvQueueURL() string {
 	return SQS_BASE_QUEUE_URL + ps.SQSRecvQueueName()
 }
 func (ps PairingSecret) SQSSendQueueName() string {
-	return ps.SQSBaseQueueName
+	return ps.SQSBaseQueueName()
 }
 func (ps PairingSecret) SQSRecvQueueName() string {
-	return ps.SQSBaseQueueName + "-responder"
+	return ps.SQSBaseQueueName() + "-responder"
+}
+
+func (ps PairingSecret) SQSBaseQueueName() string {
+	//	TODO: dont ignore
+	derivedUUID, _ := ps.DeriveUUID()
+	return strings.ToUpper(derivedUUID.String())
 }
 
 func GeneratePairingSecret() (ps PairingSecret, err error) {
-	symmetricSecretKey, err := GenSymmetricSecretKey()
-	if err != nil {
+	ret := 0
+	ps.workstationSecretKey, ps.WorkstationPublicKey, ret = cryptobox.CryptoBoxKeyPair()
+	if ret != 0 {
+		err = fmt.Errorf("nonzero CryptoBoxKeyPair exit status: %d", ret)
 		return
 	}
-	ps.SymmetricSecretKey = symmetricSecretKey.Bytes
-
-	ps.SQSBaseQueueName, err = Rand128Base62()
-	if err != nil {
-		return
-	}
-
 	hostname, _ := os.Hostname()
 	ps.WorkstationName = os.Getenv("USER") + "@" + hostname
 	return
@@ -79,21 +85,14 @@ func GeneratePairingSecretAndCreateQueues() (ps PairingSecret, err error) {
 	return
 }
 
-func (ps PairingSecret) HTTPRequest() (httpRequest *http.Request, err error) {
-	pairingSecretJson, err := json.Marshal(ps)
-	if err != nil {
+func (ps *PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
+	ps.Lock()
+	defer ps.Unlock()
+	if ps.SymmetricSecretKey == nil {
+		err = ErrWaitingForKey
 		return
 	}
-
-	httpRequest, err = http.NewRequest("PUT", "/pair", bytes.NewReader(pairingSecretJson))
-	if err != nil {
-		return
-	}
-	return
-}
-
-func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
-	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
@@ -104,15 +103,53 @@ func (ps PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err e
 	return
 }
 
-func (ps PairingSecret) DecryptMessage(ciphertext []byte) (message []byte, err error) {
-	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
+func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphertext *[]byte, didUnwrapKey bool, err error) {
+	ps.Lock()
+	defer ps.Unlock()
+	if len(ciphertext) < 1 {
+		err = fmt.Errorf("ciphertext empty")
+		return
+	}
+	switch ciphertext[0] {
+	case HEADER_CIPHERTEXT:
+		ctxt := ciphertext[1:]
+		remainingCiphertext = &ctxt
+		return
+	case HEADER_WRAPPED_KEY:
+		if ps.SymmetricSecretKey != nil {
+			err = fmt.Errorf("Cannot replace a symmetric key, already paired")
+			return
+		}
+		wrappedKey := ciphertext[1:]
+		key, unwrapErr := UnwrapKey(wrappedKey, ps.WorkstationPublicKey, ps.workstationSecretKey)
+		if unwrapErr != nil {
+			err = unwrapErr
+			return
+		}
+		ps.SymmetricSecretKey = &key
+		didUnwrapKey = true
+		log.Println("stored symmetric key")
+		return
+	}
+	return
+}
+
+func (ps *PairingSecret) DecryptMessage(ciphertext []byte) (message *[]byte, err error) {
+	ps.Lock()
+	defer ps.Unlock()
+	if ps.SymmetricSecretKey == nil {
+		err = ErrWaitingForKey
+		return
+	}
+	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
 	if err != nil {
 		return
 	}
-	message, err = Open(ciphertext, *key)
+	messageBytes, err := Open(ciphertext, *key)
 	if err != nil {
 		return
 	}
+	message = &messageBytes
 	return
 }
 
@@ -131,11 +168,7 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 	return
 }
 
-func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
-	key, err := SymmetricSecretKeyFromBytes(ps.SymmetricSecretKey)
-	if err != nil {
-		return
-	}
+func (ps PairingSecret) ReadQueue() (ciphertexts [][]byte, err error) {
 	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
 	if err != nil {
 		return
@@ -147,14 +180,7 @@ func (ps PairingSecret) ReceiveMessages() (messages [][]byte, err error) {
 			log.Println("base64 ciphertext decoding error")
 			continue
 		}
-
-		message, err := Open(ctxt, *key)
-		if err != nil {
-			log.Println("open cipertext error")
-			continue
-		}
-		messages = append(messages, message)
+		ciphertexts = append(ciphertexts, ctxt)
 	}
-	log.Printf("received %d messages", len(messages))
 	return
 }
