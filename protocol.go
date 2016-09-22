@@ -7,12 +7,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 )
 
 type Request struct {
 	RequestID   string       `json:"request_id"`
+	UnixSeconds int64        `json:"unix_seconds"`
 	SignRequest *SignRequest `json:"sign_request"`
 	ListRequest *ListRequest `json:"list_request"`
 	MeRequest   *MeRequest   `json:"me_request"`
@@ -24,7 +26,8 @@ func NewRequest() (request Request, err error) {
 		return
 	}
 	request = Request{
-		RequestID: id,
+		RequestID:   id,
+		UnixSeconds: time.Now().Unix(),
 	}
 	return
 }
