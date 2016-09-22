@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"os/exec"
 )
 
 //	Implements crypto.Signer by requesting signatures from phone
@@ -27,9 +28,19 @@ func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts
 	log.Printf("data: %s\n", base64.StdEncoding.EncodeToString(digest))
 	pkDER, _ := x509.MarshalPKIXPublicKey(pk.PublicKey)
 	log.Printf("pk: %s\n", base64.StdEncoding.EncodeToString(pkDER))
+	var lastCommand *string
+	historyOutput, err := exec.Command("sh", "-c", "'fc -lnr -1'").Output()
+	if err != nil {
+		log.Println("error reading shell history:", err)
+	} else {
+		lastCommandString := string(historyOutput)
+		lastCommand = &lastCommandString
+		log.Println("found command ", historyOutput)
+	}
 	request := krssh.SignRequest{
 		PublicKeyFingerprint: pk.publicKeyFingerprint,
 		Digest:               digest,
+		Command:              lastCommand,
 	}
 	response, err := pk.enclaveClient.RequestSignature(request)
 	if err != nil {
