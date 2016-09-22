@@ -117,7 +117,6 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		return
 	case HEADER_WRAPPED_KEY:
 		if ps.SymmetricSecretKey != nil {
-			err = fmt.Errorf("Cannot replace a symmetric key, already paired")
 			return
 		}
 		wrappedKey := ciphertext[1:]

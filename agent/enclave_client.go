@@ -302,6 +302,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		n, err := receive()
 		_, requestPending := client.requestCallbacksByRequestID.Get(request.RequestID)
 		if err != nil || (n == 0 && time.Now().After(timeoutAt)) || !requestPending {
+			log.Println("done reading queue, err:", err)
 			break
 		}
 	}

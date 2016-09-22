@@ -76,7 +76,7 @@ func pairCommand(c *cli.Context) (err error) {
 
 	fmt.Println()
 	fmt.Println(qr.Terminal)
-	fmt.Println("Scan this QR Code with the krSSH Mobile App to connect it with this workstation. Try lowering your terminal font size if the QR code does not fit on the screen.")
+	fmt.Println("Scan this QR Code with the kryptonite mobile app to connect it with this workstation. Try lowering your terminal font size if the QR code does not fit on the screen.")
 	fmt.Println()
 
 	getConn, err := connectToAgent()
