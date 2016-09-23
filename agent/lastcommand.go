@@ -71,7 +71,7 @@ func getLastCommand() *string {
 		}
 	}
 	if latestCommand != nil {
-		if math.Abs(float64(latestCommand.time.Sub(time.Now()))) < 30 {
+		if math.Abs(float64(latestCommand.time.Sub(time.Now()))) < float64(30*time.Second) {
 			return &latestCommand.command
 		}
 	}
