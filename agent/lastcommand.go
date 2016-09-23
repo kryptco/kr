@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -70,7 +71,9 @@ func getLastCommand() *string {
 		}
 	}
 	if latestCommand != nil {
-		return &latestCommand.command
+		if math.Abs(float64(latestCommand.time.Sub(time.Now()))) < 30 {
+			return &latestCommand.command
+		}
 	}
 	return nil
 }
