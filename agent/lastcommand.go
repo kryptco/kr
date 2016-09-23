@@ -1,79 +1,51 @@
 package main
 
 import (
-	"io/ioutil"
-	"math"
-	"os"
+	"bytes"
+	"log"
+	"os/exec"
 	"strings"
-	"time"
 )
 
-type command struct {
-	command string
-	time    time.Time
-}
-
-func getLastZshCommand() *command {
-	file := os.Getenv("HOME") + "/.zsh_history"
-	hist, err := ioutil.ReadFile(file)
+func getLastCommand() (lastCommand *string) {
+	psWithHeader, err := exec.Command("ps", "-o", "lstart", "-f").Output()
 	if err != nil {
-		return nil
+		return
 	}
-	histStr := string(hist)
-	lines := strings.Split(histStr, "\n")
-	if len(lines) < 2 {
-		return nil
-	}
-
-	lastCommandLog := lines[len(lines)-2]
-	logTokens := strings.Split(lastCommandLog, ";")
-	if len(logTokens) < 2 {
-		return nil
-	}
-	stat, err := os.Stat(file)
+	skipHeaderCmd := exec.Command("tail", "-n", "+2")
+	skipHeaderCmd.Stdin = bytes.NewReader(psWithHeader)
+	ps, err := skipHeaderCmd.Output()
 	if err != nil {
-		return nil
+		log.Println("tailCmd error", err)
+		return
 	}
-
-	lastCommand := logTokens[1]
-	return &command{lastCommand, stat.ModTime()}
-}
-
-func getLastBashCommand() *command {
-	file := os.Getenv("HOME") + "/.bash_history"
-	hist, err := ioutil.ReadFile(file)
+	trimDayCmd := exec.Command("awk", "{$1=\"\";print}")
+	trimDayCmd.Stdin = bytes.NewReader(ps)
+	unsortedPs, err := trimDayCmd.Output()
 	if err != nil {
-		return nil
+		log.Println("awkCmd error", err)
+		return
 	}
-	histStr := string(hist)
-	lines := strings.Split(histStr, "\n")
-	if len(lines) < 2 {
-		return nil
-	}
-
-	lastCommand := lines[len(lines)-2]
-	stat, err := os.Stat(file)
+	sortCmd := exec.Command("sort")
+	sortCmd.Stdin = bytes.NewReader(unsortedPs)
+	sortedPs, err := sortCmd.Output()
 	if err != nil {
-		return nil
+		log.Println("sortCmd error", err)
+		return
 	}
-	return &command{lastCommand, stat.ModTime()}
-}
+	tailCmd := exec.Command("tail", "-1")
+	tailCmd.Stdin = bytes.NewReader(sortedPs)
+	psLine, err := tailCmd.Output()
+	if err != nil {
+		log.Println("tailcmd error", err)
+		return
+	}
 
-func getLastCommand() *string {
-	commands := []*command{getLastZshCommand(), getLastBashCommand()}
-	var latestCommand *command
-	for _, command := range commands {
-		if command == nil {
-			continue
-		}
-		if latestCommand == nil || command.time.After(latestCommand.time) {
-			latestCommand = command
-		}
+	psTokens := strings.Fields(string(psLine))
+	if len(psTokens) <= 11 {
+		log.Println("psTokens too short: ", psTokens)
+		return
 	}
-	if latestCommand != nil {
-		if math.Abs(float64(latestCommand.time.Sub(time.Now()))) < float64(30*time.Second) {
-			return &latestCommand.command
-		}
-	}
-	return nil
+	command := strings.Join(psTokens[11:], " ")
+	return &command
 }
