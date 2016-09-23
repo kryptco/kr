@@ -1,0 +1,52 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package vom
+
+// Primitive represents one of the primitive vom values.  All vom values are
+// composed of combinations of these primitives.
+type Primitive union {
+	PBool    bool
+	PByte    byte
+	PUint    uint64
+	PInt     int64
+	PFloat   float64
+	PString  string
+	PControl ControlKind
+}
+
+// DumpAtom describes a single indivisible piece of the vom encoding.  The vom
+// encoding is composed of a stream of these atoms.
+type DumpAtom struct {
+	Kind  DumpKind  // The kind of this atom.
+	Bytes []byte    // Raw bytes in the vom encoding representing this atom.
+	Data  Primitive // Primitive data corresponding to the raw bytes.
+	Debug string    // Free-form debug string with more information.
+}
+
+// DumpKind enumerates the different kinds of dump atoms.
+type DumpKind enum {
+	Version       // [byte] Version byte, the first byte of a vom stream.
+	Control       // [byte] Control byte.
+	MsgId         // [int]  Message Id, distinguishing type and value messages.
+	TypeMsg       // [uint] Type message, describes the type identified by -MsgId.
+	ValueMsg      // [uint] Value message, describes a value of type +MsgId.
+	MsgLen        // [uint] Message length in bytes.
+	AnyMsgLen     // [uint] Length of inner any message in bytes.
+	AnyLensLen    // [uint] Length of list containing any messages.
+	TypeIdsLen    // [uint] Length of referenced type id list.
+	TypeId        // [uint] Type Id.
+	PrimValue     // [*]    Primitive value.
+	ByteLen       // [uint] Length in bytes.
+	ValueLen      // [uint] Number of values in a composite type.
+	Index         // [uint] Index in a dense array.
+	WireTypeIndex // [uint] WireType index.
+}
+
+// ControlKind enumerates the different kinds of control bytes.
+type ControlKind enum {
+	Nil            // [byte] Nil, meaning non-existent.
+	End            // [byte] End, terminator.
+	IncompleteType // [byte] Indicator that the following type is incomplete.
+}

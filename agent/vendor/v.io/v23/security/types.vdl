@@ -1,0 +1,164 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package security
+
+import "v.io/v23/uniqueid"
+
+// BlessingPattern is a pattern that is matched by specific blessings.
+//
+// A pattern can either be a blessing (slash-separated human-readable string)
+// or a blessing ending in "/$". A pattern ending in "/$" is matched exactly
+// by the blessing specified by the pattern string with the "/$" suffix stripped
+// out. For example, the pattern "a/b/c/$" is matched by exactly by the blessing
+// "a/b/c".
+//
+// A pattern not ending in "/$" is more permissive, and is also matched by blessings
+// that are extensions of the pattern (including the pattern itself). For example, the
+// pattern "a/b/c" is matched by the blessings "a/b/c", "a/b/c/x", "a/b/c/x/y", etc.
+//
+// TODO(ataly, ashankar): Define a formal BNF grammar for blessings and blessing patterns.
+type BlessingPattern string
+
+// Hash identifies a cryptographic hash function approved for use in signature algorithms.
+type Hash string
+
+const (
+	// NoExtension is an optional terminator for a blessing pattern indicating that the pattern
+	// cannot match any extensions of the blessing from that point onwards.
+	NoExtension = BlessingPattern("$")
+
+	// TODO(ataly, ashankar): The semantics of AllPrincipals breaks monotonicity in
+	// AccessLists with NotIn clauses. For instance, the AccessList "In: {AllPrincipals}, NotIn: {"foo"}
+	// matches the principal that presents no recognizable blessings ([]) however does not
+	// match the principal that presents "foo" as the only recognizable blessings (["foo"])
+	// We need to sort this out.
+	AllPrincipals = BlessingPattern("...") // Glob pattern that matches all blessings.
+
+	ChainSeparator = ":" // ChainSeparator joins blessing names to form a blessing chain name.
+
+	SHA1Hash   = Hash("SHA1")   // SHA1 cryptographic hash function defined in RFC3174.
+	SHA256Hash = Hash("SHA256") // SHA256 cryptographic hash function defined  in FIPS 180-4.
+	SHA384Hash = Hash("SHA384") // SHA384 cryptographic hash function defined in FIPS 180-2.
+	SHA512Hash = Hash("SHA512") // SHA512 cryptographic hash function defined in FIPS 180-2.
+
+	SignatureForMessageSigning       = "S1" // Signature.Purpose used by a Principal to sign arbitrary messages.
+	SignatureForBlessingCertificates = "B1" // Signature.Purpose used by a Principal when signing Certificates for creating blessings.
+	SignatureForDischarge            = "D1" // Signature.Purpose used by a Principal when signing discharges for public-key based third-party caveats.
+)
+
+// Signature represents a digital signature.
+type Signature struct {
+	// Purpose of the signature. Can be used to prevent type attacks.
+	// (See Section 4.2 of http://www-users.cs.york.ac.uk/~jac/PublishedPapers/reviewV1_1997.pdf for example).
+	// The actual signature (R, S values for ECDSA keys) is produced by signing: Hash(Hash(message), Hash(Purpose)).
+	Purpose []byte
+	// Cryptographic hash function applied to the message before computing the signature.
+	Hash Hash
+	// Pair of integers that make up an ECDSA signature.
+	R, S []byte
+}
+
+// ThirdPartyRequirements specifies the information required by the third-party
+// that will issue discharges for third-party caveats.
+//
+// These requirements are typically used to construct a DischargeImpetus, which
+// will be sent to the third-party.
+type ThirdPartyRequirements struct {
+	ReportServer    bool // The blessings presented by the server of an IPC call.
+	ReportMethod    bool // The name of the method being invoked.
+	ReportArguments bool // Arguments to the method being invoked.
+}
+
+// DischargeImpetus encapsulates the motivation for a discharge being sought.
+//
+// These values are reported by a principal that is requesting a Discharge for
+// a third-party caveat on one of its blessings. The third-party issues
+// discharges cannot safely assume that all these values are provided, or that
+// they are provided honestly.
+//
+// Implementations of services that issue discharges are encouraged to add
+// caveats to the discharge that bind the discharge to the impetus, thereby
+// rendering the discharge unsuable for any other purpose.
+type DischargeImpetus struct {
+	Server    []BlessingPattern // The client intends to use the discharge to communicate with a server that has a blessing matching one of the patterns in this set.
+	Method    string            // Name of the method being invoked by the client.
+	Arguments []any             // Arguments to the method invocation.
+}
+
+// Certificate represents the cryptographic proof of the binding of
+// extensions of a blessing held by one principal to another (represented by
+// a public key) under specific caveats.
+//
+// For example, if a principal P1 has a blessing "alice", then it can
+// extend it with a Certificate to generate the blessing "alice/friend" for
+// another principal P2.
+type Certificate struct {
+	Extension string    // Human-readable string extension bound to PublicKey.
+	PublicKey []byte    // DER-encoded PKIX public key.
+	Caveats   []Caveat  // Caveats on the binding of Name to PublicKey.
+	Signature Signature // Signature by the blessing principal that binds the extension to the public key.
+}
+
+// CaveatDescriptor defines an association between a caveat validation function
+// (addressed by globally unique identifier) and the data needed by the
+// validation function.
+//
+// For a validator to be invoked, a validation function must be registered with
+// the validator description in the language that the function is defined in.
+type CaveatDescriptor struct {
+	Id        uniqueid.Id // The identifier of the caveat validation function.
+	ParamType typeobject  // The type of the parameter expected by the validation function.
+}
+
+// Caveat is a condition on the validity of a blessing/discharge.
+//
+// These conditions are provided when asking a principal to create
+// a blessing/discharge and are verified when extracting blessings
+// (Blessings.ForName in the Go API).
+//
+// Given a Hash, the message digest of a caveat is:
+// Hash(Hash(Id), Hash(ParamVom))
+type Caveat struct {
+	Id       uniqueid.Id  // The identifier of the caveat validation function.
+	ParamVom []byte       // VOM-encoded bytes of the parameters to be provided to the validation function.
+}
+
+// WireBlessings encapsulates wire format of a set of blessings and the
+// corresponding cryptographic proof that binds them to a principal
+// (identified by a public key).
+//
+// This structure is the "wire" format for sending and receiving blessings
+// in RPCs or marshaling to persistent storage. Typically, languages will
+// provide a factory function that converts this wire representation to
+// a more usable object to inspect and manipulate these blessings.
+type WireBlessings struct {
+	// CertificateChains is an array of chains of certificates that bind
+	// a blessing to the public key in the last certificate of the chain.
+	CertificateChains [][]Certificate
+}
+
+// WireDischarge encapsulates the wire format of a third-party caveat
+// Discharge.
+type WireDischarge union {
+	PublicKey PublicKeyDischarge // Discharge for PublicKeyThirdPartyCaveat
+}
+
+// RejectedBlessing describes why a blessing failed validation.
+type RejectedBlessing struct {
+	Blessing string
+	Err error
+}
+
+error (
+	UnrecognizedRoot(rootKey string, details error) {"en": "unrecognized public key {rootKey} in root certificate{:details}"}
+
+	AuthorizationFailed(remote []string, remoteErr []RejectedBlessing, local []string) { "en": "principal with blessings {remote} (rejected {remoteErr}) is not authorized by principal with blessings {local}"}
+
+	InvalidSigningBlessingCaveat(id uniqueid.Id) {"en": "blessing has caveat with UUID {id} which makes it unsuitable for signing -- please use blessings with just Expiry caveats"}
+
+	PublicKeyNotAllowed(got, want string) { "en": "peer has public key {got}, not the authorized public key {want}" }
+
+	EndpointAuthorizationFailed(endpoint string, remote []string, rejected []RejectedBlessing,) { "en": "blessings in endpoint {endpoint} not matched by blessings presented: {remote} (rejected {rejected})"}
+)

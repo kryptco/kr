@@ -1,0 +1,173 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package syncql
+
+error (
+	BadFieldInWhere(off int64) {
+		"en": "[{off}]Where field must be 'k' or 'v[{.<ident>}...]'.",
+	}
+	BoolInvalidExpression(off int64) {
+		"en": "[{off}]Boolean operands may only be used in equals and not equals expressions.",
+	}
+	CheckOfUnknownStatementType(off int64) {
+		"en": "[{off}]Cannot semantically check unknown statement type.",
+	}
+	CouldNotConvert(off int64, from string, to string) {
+		"en": "[{off}]Could not convert {from} to {to}.",
+	}
+	DotNotationDisallowedForKey(off int64) {
+		"en": "[{off}]Dot notation may not be used on a key field.",
+	}
+	ExecOfUnknownStatementType(off int64, statementType string) {
+		"en": "[{off}]Cannot execute unknown statement type: {statementType}.",
+	}
+	Expected(off int64, expected string) {
+		"en": "[{off}]Expected '{expected}'.",
+	}
+	ExpectedFrom(off int64, found string) {
+		"en": "[{off}]Expected 'from', found {found}.",
+	}
+	ExpectedIdentifier(off int64, found string) {
+		"en": "[{off}]Expected identifier, found {found}.",
+	}
+	ExpectedOperand(off int64, found string) {
+		"en": "[{off}]Expected operand, found {found}.",
+	}
+	ExpectedOperator(off int64, found string) {
+		"en": "[{off}]Expected operator, found {found}.",
+	}
+	FunctionArgCount(off int64, name string, expected int64, found int64) {
+		"en": "[{off}]Function '{name}' expects {expected} args, found: {found}.",
+	}
+	FunctionAtLeastArgCount(off int64, name string, expected int64, found int64) {
+		"en": "[{off}]Function '{name}' expects at least {expected} args, found: {found}.",
+	}
+	FunctionTypeInvalidArg(off int64) {
+		"en": "[{off}]Function 'Type()' cannot get type of argument -- expecting object.",
+	}
+	FunctionLenInvalidArg(off int64) {
+		"en": "[{off}]Function 'Len()' expects array, list, set, map, string or nil.",
+	}
+	FunctionArgBad(off int64, funcName, argName string) {
+		"en": "[{off}]Function '{funcName}' arg '{argName}' could not be resolved.",
+	}
+	FunctionNotFound(off int64, name string) {
+		"en": "[{off}]Function '{name}' not found.",
+	}
+	ArgMustBeField(off int64) {
+		"en": "[{off}]Argument must be a value field (i.e., must begin with 'v').",
+	}
+	BigIntConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to BigInt: {err}.",
+	}
+	BigRatConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to BigRat: {err}.",
+	}
+	BoolConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to Bool: {err}.",
+	}
+	ComplexConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to Complex: {err}.",
+	}
+	UintConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to Uint: {err}.",
+	}
+	TimeConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to time: {err}.",
+	}
+	LocationConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to location: {err}.",
+	}
+	StringConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to string: {err}.",
+	}
+	FloatConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to float: {err}.",
+	}
+	IntConversionError(off int64, err error) {
+		"en": "[{off}]Can't convert to int: {err}.",
+	}
+	IsIsNotRequireLhsValue(off int64) {
+		"en": "[{off}]'Is/is not' expressions require left operand to be a value operand.",
+	}
+	IsIsNotRequireRhsNil(off int64) {
+		"en": "[{off}]'Is/is not' expressions require right operand to be nil.",
+	}
+	InvalidLikePattern(off int64, err error) {
+		"en": "[{off}]Invalid like pattern: {err}.",
+	}
+	InvalidSelectField(off int64) {
+		"en": "[{off}]Select field must be 'k' or 'v[{.<ident>}...]'.",
+	}
+	KeyExpressionLiteral(off int64) {
+		"en": "[{off}]Key (i.e., 'k') compares against literals must be string literal.",
+	}
+	KeyValueStreamError(off int64, err error) {
+		"en": "[{off}]KeyValueStream error: {err}.",
+	}
+	LikeExpressionsRequireRhsString(off int64) {
+		"en": "[{off}]Like expressions require right operand of type <string-literal>.",
+	}
+	LimitMustBeGt0(off int64) {
+		"en": "[{off}]Limit must be > 0.",
+	}
+	MaxStatementLenExceeded(off, max, found int64) {
+		"en": "[{off}]Maximum length of statements is {max}; found {found}.",
+	}
+	NoStatementFound(off int64) {
+		"en": "[{off}]No statement found.",
+	}
+	OffsetMustBeGe0(off int64) {
+		"en": "[{off}]Offset must be > 0.",
+	}
+	ScanError(off int64, err error) {
+		"en": "[{off}]Scan error: {err}.",
+	}
+	TableCantAccess(off int64, table string, err error) {
+		"en": "[{off}]Table {table} does not exist (or cannot be accessed): {err}.",
+	}
+	Unexpected(off int64, found string) {
+		"en": "[{off}]Unexpected: {found}.",
+	}
+	UnexpectedEndOfStatement(off int64) {
+		"en": "[{off}]Unexpected end of statement.",
+	}
+	UnknownIdentifier(off int64, found string) {
+		"en": "[{off}]Unknown identifier: {found}.",
+	}
+	InvalidEscapeChar(off int64, escChar string) {
+		"en": "[{off}]'{escChar}' is not a valid escape character.",
+	}
+	DidYouMeanLowercaseK(off int64) {
+		"en": "[{off}]Did you mean: 'k'?",
+	}
+	DidYouMeanLowercaseV(off int64) {
+		"en": "[{off}]Did you mean: 'v'?",
+	}
+	DidYouMeanFunction(off int64, correctName string) {
+		"en": "[{off}]Did you mean: '{correctName}'?",
+	}
+	NotEnoughParamValuesSpecified(off int64) {
+		"en": "[{off}]Not enough parameter values specified.",
+        }
+	TooManyParamValuesSpecified(off int64) {
+		"en": "[{off}]Too many parameter values specified.",
+        }
+	PreparedStatementNotFound() {
+		"en": "[0]Prepared statement not found.",
+	}
+	IndexKindNotSupported(off int64, kind string, fieldName string, table string) {
+		"en": "[{off}]Index kind {kind} of field {fieldName} on table {table} not supported.",
+	}
+	InvalidIndexField(off int64, fieldName string, table string) {
+		"en": "[{off}]Invalid index field {fieldName} returned by table {table}.",
+	}
+	NotWritable(table string) {
+		"en": "[0]Can't write to table {table} (not supported on batch/connection).",
+	}
+	OperationNotSupported(operation string) {
+		"en": "[0]{operation} not supported.",
+	}
+)
