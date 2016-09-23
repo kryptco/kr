@@ -17,8 +17,8 @@ import (
 	"os/exec"
 )
 
-func PrintFatal(msg string) {
-	os.Stderr.WriteString(msg + "\n")
+func PrintFatal(msg string, args ...interface{}) {
+	os.Stderr.WriteString(fmt.Sprintf(msg, args) + "\n")
 	os.Exit(1)
 }
 
@@ -34,17 +34,6 @@ func pairCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 	defer putConn.Close()
-
-	pairingSecret, err := krssh.GeneratePairingSecret()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	if !c.Bool("no-aws") {
-		err = pairingSecret.CreateQueues()
-		if err != nil {
-			PrintFatal(err.Error())
-		}
-	}
 
 	putPair, err := http.NewRequest("PUT", "/pair", nil)
 	if err != nil {
@@ -106,10 +95,8 @@ func pairCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 	switch getResponse.StatusCode {
-	case 404:
-		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
-	case 500:
-		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
+	case 404, 500:
+		PrintFatal("Pairing failed %d, ensure your phone and workstation are connected to the internet and try again.", getResponse.StatusCode)
 	default:
 	}
 	defer getResponse.Body.Close()

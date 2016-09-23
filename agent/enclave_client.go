@@ -293,7 +293,12 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		}
 
 		for _, ctxt := range ciphertexts {
-			err = client.handleCiphertext(ctxt)
+			ctxtErr := client.handleCiphertext(ctxt)
+			switch ctxtErr {
+			case krssh.ErrWaitingForKey:
+			default:
+				err = ctxtErr
+			}
 		}
 		return
 	}
