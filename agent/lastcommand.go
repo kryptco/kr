@@ -47,11 +47,11 @@ func getLastBashCommand() *command {
 	}
 	histStr := string(hist)
 	lines := strings.Split(histStr, "\n")
-	if len(lines) == 0 {
+	if len(lines) < 2 {
 		return nil
 	}
 
-	lastCommand := lines[len(lines)-1]
+	lastCommand := lines[len(lines)-2]
 	stat, err := os.Stat(file)
 	if err != nil {
 		return nil
