@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitbucket.org/kryptco/krssh"
+	"github.com/agrinman/krssh"
 	"net/http/httptest"
 	"testing"
 )

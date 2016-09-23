@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 
-	"bitbucket.org/kryptco/krssh"
+	"github.com/agrinman/krssh"
 )
 
 type ControlServer struct {

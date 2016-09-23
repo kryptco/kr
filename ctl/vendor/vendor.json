@@ -3,30 +3,6 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "tQMHqQ+4SNH5JI5j6qSOWQ9Osx4=",
-			"path": "bitbucket.org/kryptco/gf256",
-			"revision": "bbd714a0764d8cb2ea9f6b9e78363b7510394a86",
-			"revisionTime": "2016-04-13T18:01:33Z"
-		},
-		{
-			"checksumSHA1": "FxSvWnu6tYbJcqAPOUBcFopABGU=",
-			"path": "bitbucket.org/kryptco/krssh",
-			"revision": "4d1b9573d6ab443dcf689c55d947b7fa5f16f01b",
-			"revisionTime": "2016-09-23T03:01:42Z"
-		},
-		{
-			"checksumSHA1": "r3RgmwCeiVhJvRQ5dMsoAKtIiYo=",
-			"path": "bitbucket.org/kryptco/qr",
-			"revision": "29a3dc96057a503315f7b7a7a411b87d3fdeee4a",
-			"revisionTime": "2016-04-14T00:56:07Z"
-		},
-		{
-			"checksumSHA1": "AehvwJo5CjK34Rd7sF/xSAcc1y8=",
-			"path": "bitbucket.org/kryptco/qr/coding",
-			"revision": "29a3dc96057a503315f7b7a7a411b87d3fdeee4a",
-			"revisionTime": "2016-04-14T00:56:07Z"
-		},
-		{
 			"checksumSHA1": "WIFeS/tU39uZV9m+aJHuo2i7BZA=",
 			"path": "github.com/GoKillers/libsodium-go/cryptobox",
 			"revision": "21fce0a96ee834a8481d6d273691a2b32a26bb18",
@@ -37,6 +13,12 @@
 			"path": "github.com/GoKillers/libsodium-go/support",
 			"revision": "21fce0a96ee834a8481d6d273691a2b32a26bb18",
 			"revisionTime": "2016-07-13T06:31:29Z"
+		},
+		{
+			"checksumSHA1": "efPnuxPrCcsakhtT8NTjLFrZ7Ps=",
+			"path": "github.com/agrinman/krssh",
+			"revision": "bc9d8a08e63676e8eb3c472ca67d5b8e629909a0",
+			"revisionTime": "2016-09-23T19:38:24Z"
 		},
 		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
@@ -239,5 +221,5 @@
 			"revisionTime": "2016-08-24T13:50:57Z"
 		}
 	],
-	"rootPath": "bitbucket.org/kryptco/krssh/ctl"
+	"rootPath": "github.com/agrinman/krssh/ctl"
 }

@@ -12,7 +12,7 @@ import (
 	"sync"
 	"syscall"
 
-	"bitbucket.org/kryptco/krssh/agent/launch"
+	"github.com/agrinman/krssh/agent/launch"
 )
 
 type Agent struct {

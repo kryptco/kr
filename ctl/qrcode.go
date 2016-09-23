@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"strings"
 
-	"bitbucket.org/kryptco/qr"
+	"github.com/kryptco/qr"
 )
 
 // Encodings is the result of QR encoding.  It has three different

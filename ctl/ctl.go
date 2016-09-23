@@ -5,10 +5,10 @@ package main
  */
 
 import (
-	"bitbucket.org/kryptco/krssh"
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/agrinman/krssh"
 	"github.com/urfave/cli"
 	"io/ioutil"
 	"net"

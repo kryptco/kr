@@ -5,11 +5,11 @@ package main
  */
 
 import (
-	"bitbucket.org/kryptco/krssh"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/agrinman/krssh"
 	"github.com/golang/groupcache/lru"
 	"golang.org/x/crypto/ssh"
 	"log"

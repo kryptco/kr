@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bitbucket.org/kryptco/krssh"
 	"crypto"
 	"crypto/sha256"
 	"crypto/x509"
 	"errors"
+	"github.com/agrinman/krssh"
 	"io"
 	"log"
 )
