@@ -1,0 +1,9 @@
+[Unit]
+Description=krytponite ssh agent
+
+[Socket]
+ListenStream=%t/krssh-agent/auth.sock
+ListenStream=%t/krssh-agent/ctl.sock
+
+[Install]
+WantedBy=sockets.target
