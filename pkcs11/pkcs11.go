@@ -167,6 +167,13 @@ func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, 
 					*count = C.CK_ULONG(0)
 					return C.CKR_OK
 				}
+				me, err := getMe()
+				if err != nil {
+					log("getMe error " + err.Error())
+					*count = C.CK_ULONG(0)
+					return C.CKR_OK
+				}
+				staticMe = me
 				*count = C.CK_ULONG(1)
 				*objects = PUBKEY_HANDLE
 				return C.CKR_OK
@@ -214,16 +221,10 @@ var staticMe = krssh.Profile{}
 
 //export C_GetAttributeValue
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
-	me, err := getMe()
-	if err != nil {
-		log("getMe error " + err.Error())
-		return C.CKR_SESSION_CLOSED
-	}
-	staticMe = me
-	pk, err := me.RSAPublicKey()
+	pk, err := staticMe.RSAPublicKey()
 	if err != nil {
 		log("me.RSAPublicKey error " + err.Error())
-		return C.CKR_SESSION_CLOSED
+		return C.CKR_FUNCTION_NOT_SUPPORTED
 	}
 
 	sshPk, err := ssh.NewPublicKey(pk)
