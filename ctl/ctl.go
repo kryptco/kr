@@ -106,7 +106,9 @@ func pairCommand(c *cli.Context) (err error) {
 	}
 	err = json.Unmarshal(responseBody, &me)
 
-	fmt.Println("Paired successfully with identity", me.DisplayString())
+	fmt.Println("Paired successfully with identity")
+	sshWire, _ := me.SSHWireString()
+	fmt.Println(sshWire)
 	return
 }
 
