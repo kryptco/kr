@@ -18,18 +18,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"os"
+	"log"
 	"sync"
 	"unsafe"
 
 	"github.com/agrinman/krssh"
 )
-
-func log(s string) {
-	f, _ := os.OpenFile("/tmp/pkcs11spy.log", os.O_RDWR|os.O_APPEND, 0660)
-	f.WriteString(s + "\n")
-	f.Close()
-}
 
 var functions C.CK_FUNCTION_LIST = C.CK_FUNCTION_LIST{
 	version: C.struct__CK_VERSION{
@@ -128,7 +122,7 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 	mutex.Lock()
 	defer mutex.Unlock()
 	attributes := []C.CK_ATTRIBUTE{}
-	log(fmt.Sprintf("count %d", count))
+	log.Println(fmt.Sprintf("count %d", count))
 	for i := C.CK_ULONG(0); i < count; i++ {
 		attributes = append(attributes, *templates)
 		templates = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templates)) + unsafe.Sizeof(*templates)))
@@ -155,7 +149,7 @@ func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, 
 	if !ok || maxCount == 0 {
 		return C.CKR_GENERAL_ERROR
 	}
-	log(fmt.Sprintf("count %d maxCount %d", *count, maxCount))
+	log.Println(fmt.Sprintf("count %d maxCount %d", *count, maxCount))
 	foundModulus := false
 	foundPublicExponent := false
 	for _, attribute := range attributes {
@@ -169,7 +163,7 @@ func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, 
 				}
 				me, err := getMe()
 				if err != nil {
-					log("getMe error " + err.Error())
+					log.Println("getMe error " + err.Error())
 					*count = C.CK_ULONG(0)
 					return C.CKR_OK
 				}
@@ -184,11 +178,11 @@ func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, 
 				return C.CKR_OK
 			}
 		case C.CKA_KEY_TYPE:
-			log(fmt.Sprintf("found key type %d", *C.CK_ULONG_PTR(attribute.pValue)))
+			log.Println(fmt.Sprintf("found key type %d", *C.CK_ULONG_PTR(attribute.pValue)))
 		}
 	}
 	if foundModulus && foundPublicExponent {
-		log(fmt.Sprintf("found rsa"))
+		log.Println(fmt.Sprintf("found rsa"))
 		*count = 1
 	} else {
 		*count = 0
@@ -223,15 +217,15 @@ var staticMe = krssh.Profile{}
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
 	pk, err := staticMe.RSAPublicKey()
 	if err != nil {
-		log("me.RSAPublicKey error " + err.Error())
+		log.Println("me.RSAPublicKey error " + err.Error())
 		return C.CKR_FUNCTION_NOT_SUPPORTED
 	}
 
 	sshPk, err := ssh.NewPublicKey(pk)
 	if err != nil {
-		log("ssh pk err: " + err.Error())
+		log.Println("ssh pk err: " + err.Error())
 	} else {
-		log(sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal()))
+		log.Println(sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal()))
 	}
 
 	templateIter := template
@@ -239,7 +233,7 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 	eBytes := &bytes.Buffer{}
 	err = binary.Write(eBytes, binary.BigEndian, int64(pk.E))
 	if err != nil {
-		log("public exponent binary encoding error: " + err.Error())
+		log.Println("public exponent binary encoding error: " + err.Error())
 		return C.CKR_GENERAL_ERROR
 	}
 	e := eBytes.Bytes()
@@ -275,7 +269,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	sigBytes, err := sign(pkFingerprint[:], message)
 	//sigBytes, err := rsa.SignPKCS1v15(rand.Reader, sk, crypto.Hash(0), message)
 	if err != nil {
-		log("sig error: " + err.Error())
+		log.Println("sig error: " + err.Error())
 		return C.CKR_GENERAL_ERROR
 	} else {
 		for _, b := range sigBytes {
@@ -283,7 +277,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 			signature = C.CK_BYTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(signature)) + 1))
 		}
 		*signatureLen = C.ulong(len(sigBytes))
-		log("set sig")
+		log.Println("set sig")
 	}
 	return C.CKR_OK
 }
