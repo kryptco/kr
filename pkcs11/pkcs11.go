@@ -47,17 +47,20 @@ var functions C.CK_FUNCTION_LIST = C.CK_FUNCTION_LIST{
 
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
+	log.Println("getFunctionList")
 	*l = &functions
 	return C.CKR_OK
 }
 
 //export C_Initialize
 func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
+	log.Println("initialize")
 	return C.CKR_OK
 }
 
 //export C_GetInfo
 func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
+	log.Println("getInfo")
 	*ck_info = C.CK_INFO{
 		cryptokiVersion: C.struct__CK_VERSION{
 			major: 2,
@@ -76,6 +79,7 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 
 //export C_GetSlotList
 func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulong) C.CK_RV {
+	log.Println("getSlotList")
 	if *count == 0 {
 		*count = 1
 		return C.CKR_OK
@@ -87,6 +91,7 @@ func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulon
 
 //export C_GetTokenInfo
 func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
+	log.Println("getTokenInfo")
 	*tokenInfo = C.CK_TOKEN_INFO{
 		label:               bytesToChar32([]byte("iOS")),
 		manufacturerID:      bytesToChar32([]byte("KryptCo Inc.")),
@@ -103,6 +108,7 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 //export C_OpenSession
 func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID_PTR,
 	Notify C.CK_NOTIFY, sessionHandle C.CK_SESSION_HANDLE_PTR) C.CK_RV {
+	log.Println("openSession")
 	return C.CKR_OK
 }
 
