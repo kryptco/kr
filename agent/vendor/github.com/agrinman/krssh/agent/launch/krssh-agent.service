@@ -1,7 +1,0 @@
-[Unit]
-Description=kryptonite ssh agent
-Before=default.target
-
-[Service]
-ExecStart=/usr/local/bin/krssh-agent
-Restart=always

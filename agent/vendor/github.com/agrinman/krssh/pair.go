@@ -100,6 +100,7 @@ func (ps *PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err 
 	if err != nil {
 		return
 	}
+	ciphertext = append([]byte{HEADER_CIPHERTEXT}, ciphertext...)
 	return
 }
 

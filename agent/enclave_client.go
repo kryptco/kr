@@ -78,21 +78,13 @@ type EnclaveClient struct {
 func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
-	if ec.pairingSecret != nil {
-		pairingSecret = *ec.pairingSecret
-
-		//	unpair a currently paired enclave
-		ec.pairingSecret.SymmetricSecretKey = nil
-		ec.cachedMe = nil
-		ec.outgoingQueue = [][]byte{}
-		return
-	}
 
 	pairingSecret, err = krssh.GeneratePairingSecretAndCreateQueues()
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	//	erase any existing pairing
 	ec.pairingSecret = &pairingSecret
 
 	if ec.bt == nil {

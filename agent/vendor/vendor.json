@@ -27,16 +27,10 @@
 			"revisionTime": "2016-09-20T15:41:55Z"
 		},
 		{
-			"checksumSHA1": "efPnuxPrCcsakhtT8NTjLFrZ7Ps=",
+			"checksumSHA1": "MIKFotK0d3c5ouHPfNTCeJTOclA=",
 			"path": "github.com/agrinman/krssh",
-			"revision": "066022003802923b96bca4fd405d7d2d17c15f6e",
-			"revisionTime": "2016-09-24T08:35:18Z"
-		},
-		{
-			"checksumSHA1": "fnNFc/bbIppqIsydohHMk5Eu5E4=",
-			"path": "github.com/agrinman/krssh/agent/launch",
-			"revision": "066022003802923b96bca4fd405d7d2d17c15f6e",
-			"revisionTime": "2016-09-24T08:35:18Z"
+			"revision": "db0c970c67c04eacb5016b905cd9a935d939f658",
+			"revisionTime": "2016-09-26T12:40:03Z"
 		},
 		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
@@ -563,5 +557,5 @@
 			"revisionTime": "2016-08-17T03:51:17Z"
 		}
 	],
-	"rootPath": "bitbucket.org/kryptco/krssh/agent"
+	"rootPath": "github.com/agrinman/krssh/agent"
 }
