@@ -18,13 +18,12 @@ import (
 )
 
 func PrintFatal(msg string, args ...interface{}) {
-	os.Stderr.WriteString(fmt.Sprintf(msg, args) + "\n")
+	os.Stderr.WriteString(fmt.Sprintf(msg, args...) + "\n")
 	os.Exit(1)
 }
 
 func connectToAgent() (conn net.Conn, err error) {
-	agentSockName := os.Getenv(krssh.KRSSH_CTL_SOCK_ENV)
-	conn, err = net.Dial("unix", agentSockName)
+	conn, err = krssh.DaemonDial()
 	return
 }
 
@@ -143,11 +142,15 @@ func meCommand(c *cli.Context) (err error) {
 	default:
 	}
 
-	var me krssh.Profile
-	err = json.NewDecoder(response.Body).Decode(&me)
+	var meResponse krssh.Response
+	err = json.NewDecoder(response.Body).Decode(&meResponse)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
+	if meResponse.MeResponse == nil {
+		PrintFatal("Response missing profile")
+	}
+	me := meResponse.MeResponse.Me
 	wireString, err := me.SSHWireString()
 	if err != nil {
 		PrintFatal(err.Error())

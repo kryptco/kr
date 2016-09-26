@@ -25,3 +25,12 @@ func DaemonListen() (listener net.Listener, err error) {
 	listener, err = net.Listen("unix", socketPath)
 	return
 }
+
+func DaemonDial() (conn net.Conn, err error) {
+	socketPath, err := krDirFile(DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		return
+	}
+	conn, err = net.Dial("unix", socketPath)
+	return
+}

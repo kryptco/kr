@@ -10,9 +10,9 @@ import (
 )
 import (
 	"bytes"
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
@@ -22,7 +22,7 @@ import (
 	"sync"
 	"unsafe"
 
-	//"github.com/agrinman/krssh"
+	"github.com/agrinman/krssh"
 )
 
 func log(s string) {
@@ -148,6 +148,7 @@ var sessionSentPk map[C.CK_SESSION_HANDLE]bool = map[C.CK_SESSION_HANDLE]bool{}
 
 //export C_FindObjects
 func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
+	//	TODO: error handle here
 	mutex.Lock()
 	defer mutex.Unlock()
 	attributes, ok := sessionFindObjectTypes[session]
@@ -209,12 +210,21 @@ func parse() *rsa.PrivateKey {
 	return sk
 }
 
+var staticMe = krssh.Profile{}
+
 //export C_GetAttributeValue
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
-	skDER := x509.MarshalPKCS1PrivateKey(sk)
-	pkDER, _ := x509.MarshalPKIXPublicKey(&sk.PublicKey)
-	log("private " + base64.StdEncoding.EncodeToString(skDER))
-	log("public " + base64.StdEncoding.EncodeToString(pkDER))
+	me, err := getMe()
+	if err != nil {
+		log("getMe error " + err.Error())
+		return C.CKR_SESSION_CLOSED
+	}
+	staticMe = me
+	pk, err := me.RSAPublicKey()
+	if err != nil {
+		log("me.RSAPublicKey error " + err.Error())
+		return C.CKR_SESSION_CLOSED
+	}
 
 	sshPk, err := ssh.NewPublicKey(pk)
 	if err != nil {
@@ -259,14 +269,10 @@ func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C
 func C_Sign(session C.CK_SESSION_HANDLE,
 	data C.CK_BYTE_PTR, dataLen C.ulong,
 	signature C.CK_BYTE_PTR, signatureLen *C.ulong) C.CK_RV {
-	sshSigner, err := ssh.NewSignerFromSigner(sk)
-	_ = sshSigner
-	if err != nil {
-		log("ssh signer error: " + err.Error())
-		return C.CKR_GENERAL_ERROR
-	}
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
-	sigBytes, err := rsa.SignPKCS1v15(rand.Reader, sk, crypto.Hash(0), message)
+	pkFingerprint := sha256.Sum256(staticMe.PublicKeyDER)
+	sigBytes, err := sign(pkFingerprint[:], message)
+	//sigBytes, err := rsa.SignPKCS1v15(rand.Reader, sk, crypto.Hash(0), message)
 	if err != nil {
 		log("sig error: " + err.Error())
 		return C.CKR_GENERAL_ERROR

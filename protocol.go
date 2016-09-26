@@ -103,6 +103,10 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 	return
 }
 
+func (p Profile) RSAPublicKey() (pk *rsa.PublicKey, err error) {
+	return ParseRsaAsn1(p.PublicKeyDER)
+}
+
 func ParseRsaAsn1(der []byte) (pk *rsa.PublicKey, err error) {
 	pk = new(rsa.PublicKey)
 	rest, err := asn1.Unmarshal(der, pk)

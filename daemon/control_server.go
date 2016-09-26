@@ -87,7 +87,12 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	if enclaveRequest.MeRequest != nil {
 		cachedMe := cs.enclaveClient.GetCachedMe()
 		if cachedMe != nil {
-			err = json.NewEncoder(w).Encode(*cachedMe)
+			response := krssh.Response{
+				MeResponse: &krssh.MeResponse{
+					Me: *cachedMe,
+				},
+			}
+			err = json.NewEncoder(w).Encode(response)
 			if err != nil {
 				log.Println(err)
 				return
@@ -96,5 +101,34 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
+		return
 	}
+
+	if enclaveRequest.SignRequest != nil {
+		if enclaveRequest.SignRequest.Command == nil {
+			enclaveRequest.SignRequest.Command = getLastCommand()
+		}
+		signResponse, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest)
+		if err != nil {
+			log.Println("signature request error:", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if signResponse != nil {
+			response := krssh.Response{
+				RequestID:    enclaveRequest.RequestID,
+				SignResponse: signResponse,
+			}
+			err = json.NewEncoder(w).Encode(response)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
 }
