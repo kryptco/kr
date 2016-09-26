@@ -2,10 +2,12 @@ package krssh
 
 import (
 	"bytes"
+	"crypto/rsa"
 	"crypto/sha256"
-	"crypto/x509"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -71,11 +73,11 @@ func (p Profile) DisplayString() string {
 	return base64.StdEncoding.EncodeToString(pkFingerprint[:]) + " <" + p.Email + ">"
 }
 func (p Profile) SSHWireString() (wireString string, err error) {
-	x509Pk, err := x509.ParsePKIXPublicKey(p.PublicKeyDER)
+	rsaPk, err := ParseRsaAsn1(p.PublicKeyDER)
 	if err != nil {
 		return
 	}
-	sshPk, err := ssh.NewPublicKey(x509Pk)
+	sshPk, err := ssh.NewPublicKey(rsaPk)
 	if err != nil {
 		return
 	}
@@ -99,4 +101,12 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 		return
 	}
 	return
+}
+
+func ParseRsaAsn1(der []byte) (pk *rsa.PublicKey, err error) {
+	pk = new(rsa.PublicKey)
+	rest, err := asn1.Unmarshal(p.PublicKeyDER, pk)
+	if err != nil {
+		return
+	}
 }

@@ -57,7 +57,7 @@ func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts
 }
 
 func PKDERToProxiedKey(enclaveClient EnclaveClientI, pkDER []byte) (proxiedKey crypto.Signer, err error) {
-	pk, err := x509.ParsePKIXPublicKey(pkDER)
+	pk, err := krssh.ParseRsaAsn1(pkDER)
 	if err != nil {
 		return
 	}
