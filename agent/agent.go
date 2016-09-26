@@ -90,27 +90,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	pkDER, err := base64.StdEncoding.DecodeString("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHD0yLU4UBhXwUZg7LbN5qdrBerbw/WvcP88xc5csWZVoVFDIbZTr0fk1fruV6zOlzk98C9ojHcM0df5yfSd6VA==")
-	if err != nil {
-		log.Fatal(err)
-	}
-	pk, err := PKDERToProxiedKey(nil, pkDER)
-	if err != nil {
-		log.Fatal(err)
-	}
-	pkSigner, err := ssh.NewSignerFromSigner(pk)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signers := []ssh.Signer{pkSigner}
-
 	controlServer := NewControlServer()
 	go controlServer.HandleControlHTTP(ctlSocket)
 
 	krAgent := &Agent{
 		enclaveClient: controlServer.enclaveClient,
-		signers:       signers,
 	}
 	for {
 		c, err := authSocket.Accept()
