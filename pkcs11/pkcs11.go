@@ -101,6 +101,8 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 		ulRwSessionCount:    0,
 		ulMaxPinLen:         0,
 		ulMinPinLen:         0,
+		//	TODO: for now, always present
+		flags: C.CKF_TOKEN_PRESENT | C.CKF_REMOVABLE_DEVICE,
 	}
 	return C.CKR_OK
 }
