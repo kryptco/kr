@@ -105,8 +105,13 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 
 func ParseRsaAsn1(der []byte) (pk *rsa.PublicKey, err error) {
 	pk = new(rsa.PublicKey)
-	rest, err := asn1.Unmarshal(p.PublicKeyDER, pk)
+	rest, err := asn1.Unmarshal(der, pk)
 	if err != nil {
 		return
 	}
+	if len(rest) > 0 {
+		err = fmt.Errorf("%d extra bytes in RSA asn.1 encoding", len(rest))
+		return
+	}
+	return
 }
