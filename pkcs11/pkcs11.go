@@ -13,7 +13,6 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	//"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
@@ -22,6 +21,8 @@ import (
 	"os"
 	"sync"
 	"unsafe"
+
+	//"github.com/agrinman/krssh"
 )
 
 func log(s string) {
@@ -53,7 +54,6 @@ var functions C.CK_FUNCTION_LIST = C.CK_FUNCTION_LIST{
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
 	*l = &functions
-	//return C.CKR_GENERAL_ERROR
 	return C.CKR_OK
 }
 
@@ -266,10 +266,6 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 		return C.CKR_GENERAL_ERROR
 	}
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
-	//sig, err := sshSigner.Sign(rand.Reader, message)
-	//sigBytes := sig.Blob
-	//digest := sha256.Sum256(message)
-	//sigBytes, err := sk.Sign(rand.Reader, digest[:], crypto.SHA256)
 	sigBytes, err := rsa.SignPKCS1v15(rand.Reader, sk, crypto.Hash(0), message)
 	if err != nil {
 		log("sig error: " + err.Error())

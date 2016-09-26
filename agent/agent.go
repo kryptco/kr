@@ -33,8 +33,9 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	log.Println(signer.PublicKey().Type() + " " +
 		base64.StdEncoding.EncodeToString(signer.PublicKey().Marshal()))
 	keys = append(keys, &agent.Key{
-		Format: signer.PublicKey().Type(),
-		Blob:   signer.PublicKey().Marshal(),
+		Format:  signer.PublicKey().Type(),
+		Blob:    signer.PublicKey().Marshal(),
+		Comment: "kryptonite iOS",
 	})
 
 	return
