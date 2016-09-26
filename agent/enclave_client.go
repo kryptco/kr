@@ -79,6 +79,16 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
 
+	if ec.pairingSecret != nil {
+		oldBtUUID, uuidErr := ec.pairingSecret.DeriveUUID()
+		if uuidErr == nil {
+			btErr := ec.bt.RemoveService(oldBtUUID)
+			if btErr != nil {
+				log.Println("error removing bluetooth service:", btErr.Error())
+			}
+		}
+	}
+
 	pairingSecret, err = krssh.GeneratePairingSecretAndCreateQueues()
 	if err != nil {
 		log.Println(err)
@@ -93,31 +103,29 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 			log.Println(err)
 			return
 		}
-		btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
-		if uuidErr != nil {
-			err = uuidErr
-			log.Println(err)
-			return
-		}
-		err = ec.bt.AddService(btUUID)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	} else {
+		//	spawn reader
+		go func() {
+			readChan, err := ec.bt.ReadChan()
+			if err != nil {
+				log.Println("error retrieving bluetooth read channel:", err)
+				return
+			}
+			for ciphertext := range readChan {
+				err = ec.handleCiphertext(ciphertext)
+			}
+		}()
+	}
+	btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
+	if uuidErr != nil {
+		err = uuidErr
+		log.Println(err)
 		return
 	}
-	//	spawn reader
-	go func() {
-		readChan, err := ec.bt.ReadChan()
-		if err != nil {
-			log.Println("error retrieving bluetooth read channel:", err)
-			return
-		}
-		for ciphertext := range readChan {
-			err = ec.handleCiphertext(ciphertext)
-		}
-	}()
+	err = ec.bt.AddService(btUUID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	return
 }
 
@@ -195,6 +203,7 @@ func (client *EnclaveClient) RequestMe() (meResponse *krssh.MeResponse, err erro
 	return
 }
 func (client *EnclaveClient) RequestSignature(signRequest krssh.SignRequest) (signResponse *krssh.SignResponse, err error) {
+	start := time.Now()
 	request, err := krssh.NewRequest()
 	if err != nil {
 		log.Println(err)
@@ -208,6 +217,7 @@ func (client *EnclaveClient) RequestSignature(signRequest krssh.SignRequest) (si
 	}
 	if response != nil {
 		signResponse = response.SignResponse
+		log.Println("successful signature took", int(time.Since(start)/time.Millisecond), "ms")
 	}
 	return
 }
