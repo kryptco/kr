@@ -40,6 +40,9 @@ func getMe() (me krssh.Profile, err error) {
 		return
 	}
 	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode == http.StatusNotFound {
+		krssh.DesktopNotify("Not paired, please run \"kr pair\" and scan the QR code with kryptonite.")
+	}
 	if httpResponse.StatusCode != http.StatusOK {
 		err = fmt.Errorf("Non-200 status code %d", httpResponse.StatusCode)
 		return

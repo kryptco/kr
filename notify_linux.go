@@ -1,4 +1,4 @@
-package main
+package krssh
 
 import (
 	"github.com/0xAX/notificator"

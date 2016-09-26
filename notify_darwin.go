@@ -1,4 +1,4 @@
-package main
+package krssh
 
 import (
 	"github.com/deckarep/gosx-notifier"
