@@ -107,8 +107,8 @@ func pairCommand(c *cli.Context) (err error) {
 	err = json.Unmarshal(responseBody, &me)
 
 	fmt.Println("Paired successfully with identity")
-	sshWire, _ := me.SSHWireString()
-	fmt.Println(sshWire)
+	authorizedKey, _ := me.AuthorizedKeyString()
+	fmt.Println(authorizedKey)
 	return
 }
 
@@ -153,11 +153,11 @@ func meCommand(c *cli.Context) (err error) {
 		PrintFatal("Response missing profile")
 	}
 	me := meResponse.MeResponse.Me
-	wireString, err := me.SSHWireString()
+	authorizedKey, err := me.AuthorizedKeyString()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
-	fmt.Println(wireString)
+	fmt.Println(authorizedKey)
 	return
 }
 

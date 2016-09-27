@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"crypto/sha256"
-	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
+	"math/big"
 	"net/http"
 	"time"
 
@@ -64,25 +63,26 @@ type ListResponse struct {
 }
 
 type Profile struct {
-	PublicKeyDER []byte `json:"public_key_der"`
-	Email        string `json:"email"`
+	SSHWirePublicKey []byte `json:"rsa_public_key_wire"`
+	Email            string `json:"email"`
 }
 
-func (p Profile) DisplayString() string {
-	pkFingerprint := sha256.Sum256(p.PublicKeyDER)
-	return base64.StdEncoding.EncodeToString(pkFingerprint[:]) + " <" + p.Email + ">"
-}
-func (p Profile) SSHWireString() (wireString string, err error) {
-	rsaPk, err := ParseRsaAsn1(p.PublicKeyDER)
-	if err != nil {
-		return
-	}
-	sshPk, err := ssh.NewPublicKey(rsaPk)
-	if err != nil {
-		return
-	}
-	wireString = sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal()) + " " + p.Email
+func (p Profile) AuthorizedKeyString() (wireString string, err error) {
+	wireString = "ssh-rsa " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey) + " " + p.Email
 	return
+}
+
+func (p Profile) SSHPublicKey() (pk ssh.PublicKey, err error) {
+	return ssh.ParsePublicKey(p.SSHWirePublicKey)
+}
+
+func (p Profile) RSAPublicKey() (pk *rsa.PublicKey, err error) {
+	return SSHWireRSAPublicKeyToRSAPublicKey(p.SSHWirePublicKey)
+}
+
+func (p Profile) PublicKeyFingerprint() []byte {
+	digest := sha256.Sum256(p.SSHWirePublicKey)
+	return digest[:]
 }
 
 type MeRequest struct{}
@@ -103,19 +103,21 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 	return
 }
 
-func (p Profile) RSAPublicKey() (pk *rsa.PublicKey, err error) {
-	return ParseRsaAsn1(p.PublicKeyDER)
-}
-
-func ParseRsaAsn1(der []byte) (pk *rsa.PublicKey, err error) {
-	pk = new(rsa.PublicKey)
-	rest, err := asn1.Unmarshal(der, pk)
-	if err != nil {
+func SSHWireRSAPublicKeyToRSAPublicKey(wire []byte) (pk *rsa.PublicKey, err error) {
+	//	parse RSA SSH wire format
+	//  https://github.com/golang/crypto/blob/077efaa604f994162e3307fafe5954640763fc08/ssh/keys.go#L302
+	var w struct {
+		//	assume type RSA
+		_ string
+		E *big.Int
+		N *big.Int
+	}
+	if err = ssh.Unmarshal(wire, &w); err != nil {
 		return
 	}
-	if len(rest) > 0 {
-		err = fmt.Errorf("%d extra bytes in RSA asn.1 encoding", len(rest))
-		return
+	pk = &rsa.PublicKey{
+		N: w.N,
+		E: int(w.E.Int64()),
 	}
 	return
 }

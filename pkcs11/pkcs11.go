@@ -97,7 +97,7 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 	log.Println("getSlotInfo")
 	*slotInfo = C.CK_SLOT_INFO{
 		manufacturerID:  bytesToChar32([]byte("KryptCo Inc.")),
-		slotDescription: bytesToChar32([]byte("kryptonite pkcs11 middleware")),
+		slotDescription: bytesToChar64([]byte("kryptonite pkcs11 middleware")),
 		hardwareVersion: C.struct__CK_VERSION{
 			major: 0,
 			minor: 1,
@@ -296,7 +296,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	data C.CK_BYTE_PTR, dataLen C.ulong,
 	signature C.CK_BYTE_PTR, signatureLen *C.ulong) C.CK_RV {
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
-	pkFingerprint := sha256.Sum256(staticMe.PublicKeyDER)
+	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
 	sigBytes, err := sign(pkFingerprint[:], message)
 	//sigBytes, err := rsa.SignPKCS1v15(rand.Reader, sk, crypto.Hash(0), message)
 	if err != nil {
@@ -316,6 +316,29 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 //export C_Finalize
 func C_Finalize(reserved C.CK_VOID_PTR) C.CK_RV {
 	return C.CKR_OK
+}
+func bytesToChar64(b []byte) [64]C.uchar {
+	for len(b) < 64 {
+		b = append(b, byte(0))
+	}
+	return [64]C.uchar{
+		C.uchar(b[0]), C.uchar(b[1]), C.uchar(b[2]), C.uchar(b[3]),
+		C.uchar(b[4]), C.uchar(b[5]), C.uchar(b[6]), C.uchar(b[7]),
+		C.uchar(b[8]), C.uchar(b[9]), C.uchar(b[10]), C.uchar(b[11]),
+		C.uchar(b[12]), C.uchar(b[13]), C.uchar(b[14]), C.uchar(b[15]),
+		C.uchar(b[16]), C.uchar(b[17]), C.uchar(b[18]), C.uchar(b[19]),
+		C.uchar(b[20]), C.uchar(b[21]), C.uchar(b[22]), C.uchar(b[23]),
+		C.uchar(b[24]), C.uchar(b[25]), C.uchar(b[26]), C.uchar(b[27]),
+		C.uchar(b[28]), C.uchar(b[29]), C.uchar(b[30]), C.uchar(b[31]),
+		C.uchar(b[32]), C.uchar(b[33]), C.uchar(b[34]), C.uchar(b[35]),
+		C.uchar(b[36]), C.uchar(b[37]), C.uchar(b[38]), C.uchar(b[39]),
+		C.uchar(b[40]), C.uchar(b[41]), C.uchar(b[42]), C.uchar(b[43]),
+		C.uchar(b[44]), C.uchar(b[45]), C.uchar(b[46]), C.uchar(b[47]),
+		C.uchar(b[48]), C.uchar(b[49]), C.uchar(b[50]), C.uchar(b[51]),
+		C.uchar(b[52]), C.uchar(b[53]), C.uchar(b[54]), C.uchar(b[55]),
+		C.uchar(b[56]), C.uchar(b[57]), C.uchar(b[58]), C.uchar(b[59]),
+		C.uchar(b[60]), C.uchar(b[61]), C.uchar(b[62]), C.uchar(b[63]),
+	}
 }
 
 func bytesToChar32(b []byte) [32]C.uchar {

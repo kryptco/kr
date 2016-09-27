@@ -150,7 +150,7 @@ func UnpairedEnclaveClient() EnclaveClientI {
 }
 
 func (ec *EnclaveClient) proxyKey(me krssh.Profile) (signer ssh.Signer, err error) {
-	proxiedKey, err := PKDERToProxiedKey(ec, me.PublicKeyDER)
+	proxiedKey, err := ProxySSHWireRSAPublicKey(ec, me.SSHWirePublicKey)
 	if err != nil {
 		return
 	}

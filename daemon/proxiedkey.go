@@ -55,13 +55,13 @@ func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts
 	return
 }
 
-func PKDERToProxiedKey(enclaveClient EnclaveClientI, pkDER []byte) (proxiedKey crypto.Signer, err error) {
-	pk, err := krssh.ParseRsaAsn1(pkDER)
+func ProxySSHWireRSAPublicKey(enclaveClient EnclaveClientI, wire []byte) (proxiedKey crypto.Signer, err error) {
+	pk, err := krssh.SSHWireRSAPublicKeyToRSAPublicKey(wire)
 	if err != nil {
 		return
 	}
 
-	publicKeyFingerprint := sha256.Sum256(pkDER)
+	publicKeyFingerprint := sha256.Sum256(wire)
 
 	proxiedKey = &ProxiedKey{
 		publicKeyFingerprint: publicKeyFingerprint[:],
