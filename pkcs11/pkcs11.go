@@ -78,8 +78,9 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 
 //export C_GetSlotList
 func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulong) C.CK_RV {
-	log.Println("getSlotList")
+	log.Println("getSlotList input count", *count)
 	if slot_list == nil {
+		log.Println("slot_list nil")
 		//	just return count
 		*count = 1
 		return C.CKR_OK
@@ -106,6 +107,7 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 			major: 0,
 			minor: 1,
 		},
+		//	TODO: for now, always present
 		flags: C.CKF_TOKEN_PRESENT | C.CKF_REMOVABLE_DEVICE,
 	}
 
@@ -124,16 +126,21 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 		ulRwSessionCount:    0,
 		ulMaxPinLen:         0,
 		ulMinPinLen:         0,
-		//	TODO: for now, always present
-		flags: C.CKF_TOKEN_PRESENT | C.CKF_REMOVABLE_DEVICE,
 	}
 	return C.CKR_OK
 }
 
 //export C_OpenSession
 func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID_PTR,
-	Notify C.CK_NOTIFY, sessionHandle C.CK_SESSION_HANDLE_PTR) C.CK_RV {
+	notify C.CK_NOTIFY, sessionHandle C.CK_SESSION_HANDLE_PTR) C.CK_RV {
 	log.Println("openSession")
+	if flags&C.CKF_SERIAL_SESSION == 0 {
+		log.Println("CKF_SERIAL_SESSION not set")
+		return C.CKR_SESSION_PARALLEL_NOT_SUPPORTED
+	}
+	if notify != nil {
+		log.Println("notify callback passed")
+	}
 	return C.CKR_OK
 }
 

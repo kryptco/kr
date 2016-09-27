@@ -67,9 +67,8 @@ type Profile struct {
 	Email            string `json:"email"`
 }
 
-func (p Profile) AuthorizedKeyString() (wireString string, err error) {
-	wireString = "ssh-rsa " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey) + " " + p.Email
-	return
+func (p Profile) AuthorizedKeyString() string {
+	return "ssh-rsa " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey) + " " + p.Email
 }
 
 func (p Profile) SSHPublicKey() (pk ssh.PublicKey, err error) {
