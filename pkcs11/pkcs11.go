@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/ssh"
 	"log"
+	"log/syslog"
 	"sync"
 	"unsafe"
 
@@ -27,6 +28,10 @@ import (
 
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
+	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krssh-pkcs11")
+	if e == nil {
+		log.SetOutput(logwriter)
+	}
 	log.Println("getFunctionList")
 	*l = &functions
 	return C.CKR_OK
