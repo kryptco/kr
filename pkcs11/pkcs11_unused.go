@@ -13,7 +13,7 @@ import (
 )
 
 //export C_GetMechanismList
-func C_GetMechanismList() C.CK_RV {
+func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, count *C.CK_ULONG) C.CK_RV {
 	log.Println("Unsupported PKCS11 function called: C_GetMechanismList")
 	return C.CKR_FUNCTION_NOT_SUPPORTED
 }
@@ -325,7 +325,7 @@ func C_CancelFunction() C.CK_RV {
 }
 
 //export C_WaitForSlotEvent
-func C_WaitForSlotEvent() C.CK_RV {
+func C_WaitForSlotEvent(flags C.CK_FLAGS, slot *C.CK_SLOT_ID, reserved C.CK_VOID_PTR) C.CK_RV {
 	log.Println("Unsupported PKCS11 function called: C_WaitForSlotEvent")
 	return C.CKR_FUNCTION_NOT_SUPPORTED
 }
