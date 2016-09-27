@@ -108,9 +108,9 @@ func SSHWireRSAPublicKeyToRSAPublicKey(wire []byte) (pk *rsa.PublicKey, err erro
 	//  https://github.com/golang/crypto/blob/077efaa604f994162e3307fafe5954640763fc08/ssh/keys.go#L302
 	var w struct {
 		//	assume type RSA
-		_ string
-		E *big.Int
-		N *big.Int
+		Type string
+		E    *big.Int
+		N    *big.Int
 	}
 	if err = ssh.Unmarshal(wire, &w); err != nil {
 		return
