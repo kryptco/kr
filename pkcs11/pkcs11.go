@@ -136,7 +136,7 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 			major: 0,
 			minor: 1,
 		},
-		flags: C.CKF_PROTECTED_AUTHENTICATION_PATH,
+		flags: C.CKF_PROTECTED_AUTHENTICATION_PATH | C.CKF_TOKEN_INITIALIZED,
 	}
 	return C.CKR_OK
 }
@@ -193,6 +193,7 @@ var sessionSentPk map[C.CK_SESSION_HANDLE]bool = map[C.CK_SESSION_HANDLE]bool{}
 
 //export C_FindObjects
 func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
+	log.Println("FindObjects")
 	//	TODO: error handle here
 	mutex.Lock()
 	defer mutex.Unlock()
