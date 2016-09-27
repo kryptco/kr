@@ -72,7 +72,6 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 			major: 0,
 			minor: 1,
 		},
-		flags: 0,
 	}
 	return C.CKR_OK
 }
@@ -80,12 +79,36 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 //export C_GetSlotList
 func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulong) C.CK_RV {
 	log.Println("getSlotList")
-	if *count == 0 {
+	if slot_list == nil {
+		//	just return count
 		*count = 1
 		return C.CKR_OK
 	}
+	if *count == 0 {
+		return C.CKR_BUFFER_TOO_SMALL
+	}
 	*count = 1
 	*slot_list = 0
+	return C.CKR_OK
+}
+
+//export C_GetSlotInfo
+func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
+	log.Println("getSlotInfo")
+	*slotInfo = C.CK_SLOT_INFO{
+		manufacturerID:  bytesToChar32([]byte("KryptCo Inc.")),
+		slotDescription: bytesToChar32([]byte("kryptonite pkcs11 middleware")),
+		hardwareVersion: C.struct__CK_VERSION{
+			major: 0,
+			minor: 1,
+		},
+		firmwareVersion: C.struct__CK_VERSION{
+			major: 0,
+			minor: 1,
+		},
+		flags: C.CKF_TOKEN_PRESENT | C.CKF_REMOVABLE_DEVICE,
+	}
+
 	return C.CKR_OK
 }
 
