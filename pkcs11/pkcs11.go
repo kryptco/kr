@@ -118,14 +118,25 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 	log.Println("getTokenInfo")
 	*tokenInfo = C.CK_TOKEN_INFO{
-		label:               bytesToChar32([]byte("iOS")),
+		label:               bytesToChar32([]byte("kryptonite iOS")),
 		manufacturerID:      bytesToChar32([]byte("KryptCo Inc.")),
+		model:               bytesToChar16([]byte("kryptonite iOS")),
+		serialNumber:        bytesToChar16([]byte("1")),
 		ulMaxSessionCount:   16,
 		ulSessionCount:      0,
 		ulMaxRwSessionCount: 16,
 		ulRwSessionCount:    0,
 		ulMaxPinLen:         0,
 		ulMinPinLen:         0,
+		hardwareVersion: C.struct__CK_VERSION{
+			major: 0,
+			minor: 1,
+		},
+		firmwareVersion: C.struct__CK_VERSION{
+			major: 0,
+			minor: 1,
+		},
+		flags: C.CKF_PROTECTED_AUTHENTICATION_PATH,
 	}
 	return C.CKR_OK
 }
@@ -146,6 +157,7 @@ func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID
 
 //export C_CloseSession
 func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
+	log.Println("closeSession")
 	mutex.Lock()
 	defer mutex.Unlock()
 	delete(sessionSentPk, session)
@@ -157,6 +169,7 @@ var mutex sync.Mutex
 
 //export C_FindObjectsInit
 func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
+	log.Println("FindObjectsInit")
 	mutex.Lock()
 	defer mutex.Unlock()
 	attributes := []C.CK_ATTRIBUTE{}
