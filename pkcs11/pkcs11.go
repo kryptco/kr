@@ -193,7 +193,6 @@ func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
 	log.Println("closeSession")
 	mutex.Lock()
 	defer mutex.Unlock()
-	delete(sessionSentPk, session)
 	return C.CKR_OK
 }
 
@@ -262,9 +261,6 @@ const PUBKEY_HANDLE C.CK_OBJECT_HANDLE = 1
 const PRIVKEY_HANDLE C.CK_OBJECT_HANDLE = 2
 
 var PUBKEY_ID []byte = []byte{1}
-
-var sessionSentPk map[C.CK_SESSION_HANDLE]bool = map[C.CK_SESSION_HANDLE]bool{}
-var sessionSentSk map[C.CK_SESSION_HANDLE]bool = map[C.CK_SESSION_HANDLE]bool{}
 
 //export C_FindObjects
 func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
@@ -379,7 +375,6 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 
 		templateIter = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templateIter)) + unsafe.Sizeof(*template)))
 	}
-	sessionSentPk[session] = true
 	return C.CKR_OK
 }
 
