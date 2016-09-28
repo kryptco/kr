@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>co.krypt.krsshd</string>
+	<string>co.krypt.krd</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/bin/krsshd</string>
+		<string>/usr/local/bin/krd</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
