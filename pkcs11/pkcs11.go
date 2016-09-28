@@ -153,7 +153,9 @@ func C_GetSessionInfo(session C.CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK
 	return C.CKR_OK
 }
 
-var mechanismTypes []C.CK_MECHANISM_TYPE = []C.CK_MECHANISM_TYPE{}
+var mechanismTypes []C.CK_MECHANISM_TYPE = []C.CK_MECHANISM_TYPE{
+	C.CKM_RSA_PKCS,
+}
 
 //export C_GetMechanismList
 func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, count *C.CK_ULONG) C.CK_RV {
