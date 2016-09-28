@@ -201,6 +201,31 @@ var sessionFindObjectTypes map[C.CK_SESSION_HANDLE][]C.CK_ATTRIBUTE = map[C.CK_S
 var mutex sync.Mutex
 
 var sessionFoundObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
+var sessionFindingObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
+
+func findOnce(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
+	if _, ok := sessionFindingObjects[session]; !ok {
+		sessionFindingObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+	}
+	if _, ok := sessionFoundObjects[session]; !ok {
+		sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+	}
+	if found, ok := sessionFoundObjects[session][object]; ok && found {
+		return
+	}
+	sessionFindingObjects[session][object] = true
+}
+
+func found(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
+	if _, ok := sessionFindingObjects[session]; !ok {
+		sessionFindingObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+	}
+	if _, ok := sessionFoundObjects[session]; !ok {
+		sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+	}
+	delete(sessionFindingObjects[session], object)
+	sessionFoundObjects[session][object] = true
+}
 
 //export C_FindObjectsInit
 func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
@@ -209,10 +234,10 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 	defer mutex.Unlock()
 	if count == 0 {
 		log.Println("count == 0")
-		sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{PUBKEY_HANDLE: true, PRIVKEY_HANDLE: true}
+		findOnce(session, PUBKEY_HANDLE)
+		findOnce(session, PRIVKEY_HANDLE)
 		return C.CKR_OK
 	}
-	sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
 	for i := C.CK_ULONG(0); i < count; i++ {
 		log.Println(templates._type)
 		switch templates._type {
@@ -220,10 +245,10 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 			switch *(*C.CK_OBJECT_CLASS)(templates.pValue) {
 			case C.CKO_PUBLIC_KEY:
 				log.Println("init search for CKO_PUBLIC_KEY")
-				sessionFoundObjects[session][PUBKEY_HANDLE] = true
+				findOnce(session, PUBKEY_HANDLE)
 			case C.CKO_PRIVATE_KEY:
 				log.Println("init search for CKO_PRIVATE_KEY")
-				sessionFoundObjects[session][PRIVKEY_HANDLE] = true
+				findOnce(session, PRIVKEY_HANDLE)
 			}
 		case C.CKO_MECHANISM:
 			log.Println("init search for CKO_MECHANISM")
@@ -249,14 +274,14 @@ func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, 
 	defer mutex.Unlock()
 	remainingCount := maxCount
 	foundCount := C.CK_ULONG(0)
-	for handle, _ := range sessionFoundObjects[session] {
+	for handle, _ := range sessionFindingObjects[session] {
 		switch handle {
 		case PUBKEY_HANDLE:
 			*objects = PUBKEY_HANDLE
-			delete(sessionFoundObjects[session], PUBKEY_HANDLE)
+			found(session, PUBKEY_HANDLE)
 		case PRIVKEY_HANDLE:
 			*objects = PRIVKEY_HANDLE
-			delete(sessionFoundObjects[session], PUBKEY_HANDLE)
+			found(session, PRIVKEY_HANDLE)
 		}
 		foundCount++
 		remainingCount--
@@ -325,7 +350,7 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 	}
 	e := eBytes.Bytes()
 	for i := C.CK_ULONG(0); i < count; i++ {
-		//	TODO: memory safety: should we be allocating?
+		//	TODO: memory safety/leak: should we be allocating?
 		switch (*templateIter)._type {
 		case C.CKA_ID:
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(PUBKEY_ID))
