@@ -21,6 +21,12 @@
 			"revisionTime": "2016-07-13T06:31:29Z"
 		},
 		{
+			"checksumSHA1": "EIp8NDL13q1/0q0xutBd/G+1njU=",
+			"path": "github.com/agrinman/kr",
+			"revision": "deb944a2e17dd30692cf793411f7fe1d8f1641db",
+			"revisionTime": "2016-09-28T22:06:01Z"
+		},
+		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
 			"path": "github.com/aws/aws-sdk-go/aws",
 			"revision": "d6b4bfeba6997082629986cac2a932a233ba745e",
