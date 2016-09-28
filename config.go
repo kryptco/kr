@@ -22,6 +22,8 @@ func DaemonListen() (listener net.Listener, err error) {
 	if err != nil {
 		return
 	}
+	//	delete UNIX socket in case daemon was not killed cleanly
+	_ = os.Remove(socketPath)
 	listener, err = net.Listen("unix", socketPath)
 	return
 }
