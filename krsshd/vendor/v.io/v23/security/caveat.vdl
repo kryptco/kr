@@ -1,0 +1,120 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package security
+
+import "v.io/v23/uniqueid"
+import "time"
+
+const (
+  // ConstCaveat represents a caveat that either always validates or never validates.
+  ConstCaveat = CaveatDescriptor{
+    ParamType: typeobject(bool), // If true, validation will always succeed. If false, will always fail.
+   }
+
+  // ExpiryCaveat represents a caveat that validates iff the current time is no later
+  // the specified time.Time.
+  ExpiryCaveat = CaveatDescriptor{
+    Id:        uniqueid.Id{0xa6, 0x4c, 0x2d, 0x1, 0x19, 0xfb, 0xa3, 0x34, 0x80, 0x71, 0xfe, 0xeb, 0x2f, 0x30, 0x80, 0x0},
+    ParamType: typeobject(time.Time),
+  }
+
+  // MethodCaveat represents a caveat that validates iff the method being
+  // invoked is included in this list. An empty list implies that the caveat is invalid.
+  MethodCaveat = CaveatDescriptor{
+    Id:        uniqueid.Id{0x54, 0xa6, 0x76, 0x39, 0x81, 0x37, 0x18, 0x7e, 0xcd, 0xb2, 0x6d, 0x2d, 0x69, 0xba, 0x0, 0x3},
+    ParamType: typeobject([]string),
+  }
+
+  PublicKeyThirdPartyCaveat = CaveatDescriptor{
+    Id:        uniqueid.Id{0x79, 0x72, 0xce, 0x17, 0x4a, 0x7b, 0xa9, 0x3f, 0x79, 0x54, 0x7d, 0x76, 0x9c, 0x91, 0x80, 0x0},
+    ParamType: typeobject(publicKeyThirdPartyCaveatParam),
+  }
+
+  // PeerBlessingsCaveat represents a caveat that validates iff the peer being communicated
+  // with (local end of the call) has a blessing name matching at least one of the patterns
+  // in the list. An empty list implies that the caveat is invalid.
+  PeerBlessingsCaveat = CaveatDescriptor {
+    Id:        uniqueid.Id{0x5, 0x77, 0xf8, 0x56, 0x4c, 0x8e, 0x5f, 0xfe, 0xff, 0x8e, 0x2b, 0x1f, 0x4d, 0x6d, 0x80, 0x0},
+    ParamType: typeobject([]BlessingPattern),
+  }
+)
+
+// Error definitions to allow for stable error checking across address spaces.
+error (
+  CaveatNotRegistered(id uniqueid.Id) {
+    "en": "no validation function registered for caveat id {id}",
+  }
+  CaveatParamAny(id uniqueid.Id) {
+    "en": "caveat {id} uses illegal param type any",
+  }
+  CaveatParamTypeMismatch(id uniqueid.Id, got, want typeobject) {
+    "en": "bad param type: caveat {id} got {got}, want {want}",
+  }
+  CaveatParamCoding(id uniqueid.Id, typ typeobject, err error) {
+    "en": "unable to encode/decode caveat param(type={typ}) for caveat {id}: {err}",
+  }
+  CaveatValidation(err error) {
+    "en": "caveat validation failed: {err}",
+  }
+  ConstCaveatValidation() {
+    "en": "false const caveat always fails validation",
+  }
+  ExpiryCaveatValidation(currentTime, expiryTime time.Time) {
+    "en": "now({currentTime}) is after expiry({expiryTime})",
+  }
+  MethodCaveatValidation(invokedMethod string, permittedMethods []string) {
+    "en": "method {invokedMethod} not in list {permittedMethods}",
+  }
+  PeerBlessingsCaveatValidation(peerBlessings []string, permittedPatterns []BlessingPattern) {
+    "en": "patterns in peer blessings caveat {permittedPatterns} not matched by the peer {peerBlessings}",
+  }
+)
+
+
+type nonce [16]byte
+
+// publicKeyThirdPartyCaveatParam represents a third-party caveat that requires
+// PublicKeyDischarge(s) to be issued by a principal identified by a public key.
+//
+// The Id of the caveat is base64-encoded:
+// hash(hash(Nonce), hash(DischargerKey), hash(Caveats[0]), hash(Caveats[1]), ...)
+// where hash is a cryptographic hash function with a security strength
+// equivalent to that of the DischargerKey. For example, if DischargerKey
+// represents an ECDSA public key with the P384 curve, then hash should be
+// SHA384.
+type publicKeyThirdPartyCaveatParam struct {
+  // Nonce specifies a cryptographically random nonce associated with an
+  // instance of the caveat. This prevents discharge replays, where
+  // discharges for ThirdPartyCaveats embedded in the certificates for
+  // one blessing can be used for another blessing.
+  //
+  // Whether discharge re-use is a desired or un-desired property is
+  // still under debate. Till the debate is settled, we err on the side
+  // of discouraging re-use.
+  Nonce nonce
+  // Caveats specifies the caveats that have to be validated
+  // before minting a discharge for a publicKeyCaveat.
+  Caveats []Caveat
+  // DER-encoded PKIX public key of the principal that can issue discharges.
+  DischargerKey []byte
+  // Object name where the third-party that can issue discharges can be found.
+  DischargerLocation string
+  // Information required by the third-party in order to issue a discharge.
+  DischargerRequirements ThirdPartyRequirements
+}
+
+// PublicKeyDischarge represents a discharge for third party caveats that
+// require a signature from a third-party's public key.
+//
+// The message digest of this structure is computed as follows:
+// hash(hash(ThirdPartyCaveatId), hash(Caveats[0]), hash(Caveats[1]), ...),
+// where hash is a cryptographic hash function with a security strength
+// equivalent to the strength of the public key of the principal issuing the
+// discharge.
+type PublicKeyDischarge struct {
+  ThirdPartyCaveatId string  // Id of the third party caveat for which this discharge was issued.
+  Caveats []Caveat           // Caveats on the use of this discharge.
+  Signature Signature        // Signature of the content hash of this discharge by the discharger.
+}
