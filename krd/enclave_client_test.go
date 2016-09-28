@@ -1,33 +1,33 @@
 package main
 
 import (
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 	"golang.org/x/crypto/ssh"
 )
 
 type mockedEnclaveClient struct {
-	pairingSecret *krssh.PairingSecret
+	pairingSecret *kr.PairingSecret
 }
 
-func (ec *mockedEnclaveClient) Pair(ps krssh.PairingSecret) {
+func (ec *mockedEnclaveClient) Pair(ps kr.PairingSecret) {
 	ec.pairingSecret = &ps
 }
 
-func (ec *mockedEnclaveClient) RequestMe() (response *krssh.MeResponse, err error) {
+func (ec *mockedEnclaveClient) RequestMe() (response *kr.MeResponse, err error) {
 	return
 }
 func (ec *mockedEnclaveClient) RequestMeSigner() (signer ssh.Signer, err error) {
 	return
 }
-func (ec *mockedEnclaveClient) GetCachedMe() (me *krssh.Profile) {
+func (ec *mockedEnclaveClient) GetCachedMe() (me *kr.Profile) {
 	return
 }
 func (ec *mockedEnclaveClient) GetCachedMeSigner() (signer ssh.Signer) {
 	return
 }
-func (ec *mockedEnclaveClient) RequestSignature(krssh.SignRequest) (response *krssh.SignResponse, err error) {
+func (ec *mockedEnclaveClient) RequestSignature(kr.SignRequest) (response *kr.SignResponse, err error) {
 	return
 }
-func (ec *mockedEnclaveClient) RequestList(krssh.ListRequest) (response *krssh.ListResponse, err error) {
+func (ec *mockedEnclaveClient) RequestList(kr.ListRequest) (response *kr.ListResponse, err error) {
 	return
 }

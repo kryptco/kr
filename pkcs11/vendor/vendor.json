@@ -21,12 +21,6 @@
 			"revisionTime": "2016-07-13T06:31:29Z"
 		},
 		{
-			"checksumSHA1": "fsZ77IkIoMAHfi1pnn/wEKLMOQQ=",
-			"path": "github.com/agrinman/krssh",
-			"revision": "20403b528ac3ee6b6ff35e8251863476ef20b848",
-			"revisionTime": "2016-09-28T18:07:14Z"
-		},
-		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
 			"path": "github.com/aws/aws-sdk-go/aws",
 			"revision": "d6b4bfeba6997082629986cac2a932a233ba745e",
@@ -227,5 +221,5 @@
 			"revisionTime": "2016-08-24T13:50:57Z"
 		}
 	],
-	"rootPath": "github.com/agrinman/krssh/pkcs11"
+	"rootPath": "github.com/agrinman/kr/pkcs11"
 }

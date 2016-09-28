@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 )
 
 type ControlServer struct {
@@ -77,7 +77,7 @@ func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
-	var enclaveRequest krssh.Request
+	var enclaveRequest kr.Request
 	err := json.NewDecoder(r.Body).Decode(&enclaveRequest)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -87,8 +87,8 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	if enclaveRequest.MeRequest != nil {
 		cachedMe := cs.enclaveClient.GetCachedMe()
 		if cachedMe != nil {
-			response := krssh.Response{
-				MeResponse: &krssh.MeResponse{
+			response := kr.Response{
+				MeResponse: &kr.MeResponse{
 					Me: *cachedMe,
 				},
 			}
@@ -115,7 +115,7 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if signResponse != nil {
-			response := krssh.Response{
+			response := kr.Response{
 				RequestID:    enclaveRequest.RequestID,
 				SignResponse: signResponse,
 			}

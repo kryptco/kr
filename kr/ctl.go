@@ -1,14 +1,14 @@
 package main
 
 /*
-* CLI to control krssh-agent
+* CLI to control krd
  */
 
 import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 	"github.com/urfave/cli"
 	"io/ioutil"
 	"net"
@@ -23,7 +23,7 @@ func PrintFatal(msg string, args ...interface{}) {
 }
 
 func connectToAgent() (conn net.Conn, err error) {
-	conn, err = krssh.DaemonDial()
+	conn, err = kr.DaemonDial()
 	return
 }
 
@@ -99,7 +99,7 @@ func pairCommand(c *cli.Context) (err error) {
 	default:
 	}
 	defer getResponse.Body.Close()
-	var me krssh.Profile
+	var me kr.Profile
 	responseBody, err := ioutil.ReadAll(getResponse.Body)
 	if err != nil {
 		PrintFatal(err.Error())
@@ -118,11 +118,11 @@ func meCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 
-	request, err := krssh.NewRequest()
+	request, err := kr.NewRequest()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
-	request.MeRequest = &krssh.MeRequest{}
+	request.MeRequest = &kr.MeRequest{}
 	httpRequest, err := request.HTTPRequest()
 	if err != nil {
 		PrintFatal(err.Error())
@@ -140,11 +140,11 @@ func meCommand(c *cli.Context) (err error) {
 	defer response.Body.Close()
 	switch response.StatusCode {
 	case 404:
-		PrintFatal("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the krSSH mobile app.")
+		PrintFatal("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
 	default:
 	}
 
-	var meResponse krssh.Response
+	var meResponse kr.Response
 	err = json.NewDecoder(response.Body).Decode(&meResponse)
 	if err != nil {
 		PrintFatal(err.Error())
@@ -164,7 +164,7 @@ func meCommand(c *cli.Context) (err error) {
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
-	app.Usage = "communicate with krssh-agent and krssh-iOS"
+	app.Usage = "communicate with kr-agent and kr-iOS"
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{

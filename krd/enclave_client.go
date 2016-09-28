@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 	"github.com/golang/groupcache/lru"
 	"golang.org/x/crypto/ssh"
 	"log"
@@ -56,26 +56,26 @@ func (err *ProtoError) Error() string {
 }
 
 type EnclaveClientI interface {
-	Pair() (pairing krssh.PairingSecret, err error)
-	RequestMe() (*krssh.MeResponse, error)
+	Pair() (pairing kr.PairingSecret, err error)
+	RequestMe() (*kr.MeResponse, error)
 	RequestMeSigner() (ssh.Signer, error)
-	GetCachedMe() *krssh.Profile
+	GetCachedMe() *kr.Profile
 	GetCachedMeSigner() ssh.Signer
-	RequestSignature(krssh.SignRequest) (*krssh.SignResponse, error)
-	RequestList(krssh.ListRequest) (*krssh.ListResponse, error)
+	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
+	RequestList(kr.ListRequest) (*kr.ListResponse, error)
 }
 
 type EnclaveClient struct {
 	mutex                       sync.Mutex
-	pairingSecret               *krssh.PairingSecret
+	pairingSecret               *kr.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
 	outgoingQueue               [][]byte
 	snsEndpointARN              *string
-	cachedMe                    *krssh.Profile
+	cachedMe                    *kr.Profile
 	bt                          BluetoothDriverI
 }
 
-func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
+func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
 
@@ -89,7 +89,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 		}
 	}
 
-	pairingSecret, err = krssh.GeneratePairingSecretAndCreateQueues()
+	pairingSecret, err = kr.GeneratePairingSecretAndCreateQueues()
 	if err != nil {
 		log.Println(err)
 		return
@@ -129,14 +129,14 @@ func (ec *EnclaveClient) Pair() (pairingSecret krssh.PairingSecret, err error) {
 	return
 }
 
-func (ec *EnclaveClient) getPairingSecret() (pairingSecret *krssh.PairingSecret) {
+func (ec *EnclaveClient) getPairingSecret() (pairingSecret *kr.PairingSecret) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
 	pairingSecret = ec.pairingSecret
 	return
 }
 
-func (ec *EnclaveClient) GetCachedMe() (me *krssh.Profile) {
+func (ec *EnclaveClient) GetCachedMe() (me *kr.Profile) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
 	me = ec.cachedMe
@@ -149,7 +149,7 @@ func UnpairedEnclaveClient() EnclaveClientI {
 	}
 }
 
-func (ec *EnclaveClient) proxyKey(me krssh.Profile) (signer ssh.Signer, err error) {
+func (ec *EnclaveClient) proxyKey(me kr.Profile) (signer ssh.Signer, err error) {
 	proxiedKey, err := ProxySSHWireRSAPublicKey(ec, me.SSHWirePublicKey)
 	if err != nil {
 		return
@@ -180,13 +180,13 @@ func (ec *EnclaveClient) RequestMeSigner() (signer ssh.Signer, err error) {
 	return
 }
 
-func (client *EnclaveClient) RequestMe() (meResponse *krssh.MeResponse, err error) {
-	meRequest, err := krssh.NewRequest()
+func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) {
+	meRequest, err := kr.NewRequest()
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	meRequest.MeRequest = &krssh.MeRequest{}
+	meRequest.MeRequest = &kr.MeRequest{}
 	response, err := client.tryRequest(meRequest, 20*time.Second)
 	if err != nil {
 		log.Println(err)
@@ -202,9 +202,9 @@ func (client *EnclaveClient) RequestMe() (meResponse *krssh.MeResponse, err erro
 	}
 	return
 }
-func (client *EnclaveClient) RequestSignature(signRequest krssh.SignRequest) (signResponse *krssh.SignResponse, err error) {
+func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signResponse *kr.SignResponse, err error) {
 	start := time.Now()
-	request, err := krssh.NewRequest()
+	request, err := kr.NewRequest()
 	if err != nil {
 		log.Println(err)
 		return
@@ -221,8 +221,8 @@ func (client *EnclaveClient) RequestSignature(signRequest krssh.SignRequest) (si
 	}
 	return
 }
-func (client *EnclaveClient) RequestList(listRequest krssh.ListRequest) (listResponse *krssh.ListResponse, err error) {
-	request, err := krssh.NewRequest()
+func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listResponse *kr.ListResponse, err error) {
+	request, err := kr.NewRequest()
 	if err != nil {
 		log.Println(err)
 		return
@@ -241,8 +241,8 @@ func (client *EnclaveClient) RequestList(listRequest krssh.ListRequest) (listRes
 	return
 }
 
-func (client *EnclaveClient) tryRequest(request krssh.Request, timeout time.Duration) (response *krssh.Response, err error) {
-	cb := make(chan *krssh.Response, 1)
+func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration) (response *kr.Response, err error) {
+	cb := make(chan *kr.Response, 1)
 	go func() {
 		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
 		if err != nil {
@@ -259,7 +259,7 @@ func (client *EnclaveClient) tryRequest(request krssh.Request, timeout time.Dura
 
 //	Send one request and receive pending responses, not necessarily associated
 //	with this request
-func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Request, cb chan *krssh.Response, timeout time.Duration) (err error) {
+func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, cb chan *kr.Response, timeout time.Duration) (err error) {
 	pairingSecret := client.getPairingSecret()
 	if pairingSecret == nil {
 		err = errors.New("EnclaveClient pairing never initiated")
@@ -297,7 +297,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 		for _, ctxt := range ciphertexts {
 			ctxtErr := client.handleCiphertext(ctxt)
 			switch ctxtErr {
-			case krssh.ErrWaitingForKey:
+			case kr.ErrWaitingForKey:
 			default:
 				err = ctxtErr
 			}
@@ -316,7 +316,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request krssh.Reques
 	client.mutex.Lock()
 	if cb, ok := client.requestCallbacksByRequestID.Get(request.RequestID); ok {
 		//	request still not processed, give up on it
-		cb.(chan *krssh.Response) <- nil
+		cb.(chan *kr.Response) <- nil
 		client.requestCallbacksByRequestID.Remove(request.RequestID)
 		log.Println("evicting request", request.RequestID)
 	}
@@ -376,7 +376,7 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 	client.mutex.Unlock()
 	ciphertext, err := client.pairingSecret.EncryptMessage(message)
 	if err != nil {
-		if err == krssh.ErrWaitingForKey {
+		if err == kr.ErrWaitingForKey {
 			client.mutex.Lock()
 			if len(client.outgoingQueue) < 128 {
 				client.outgoingQueue = append(client.outgoingQueue, message)
@@ -391,7 +391,7 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 	go func() {
 		ctxtString := base64.StdEncoding.EncodeToString(ciphertext)
 		if snsEndpointARN != nil {
-			if pushErr := krssh.PushToSNSEndpoint(ctxtString, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
+			if pushErr := kr.PushToSNSEndpoint(ctxtString, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
 				log.Println("Push error:", pushErr)
 			}
 		}
@@ -413,7 +413,7 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 }
 
 func (client *EnclaveClient) handleMessage(message []byte) (err error) {
-	var response krssh.Response
+	var response kr.Response
 	err = json.Unmarshal(message, &response)
 	if err != nil {
 		return
@@ -428,7 +428,7 @@ func (client *EnclaveClient) handleMessage(message []byte) (err error) {
 	client.mutex.Lock()
 	if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
 		log.Println("found callback for request", response.RequestID)
-		requestCb.(chan *krssh.Response) <- &response
+		requestCb.(chan *kr.Response) <- &response
 	} else {
 		log.Println("callback not found for request", response.RequestID)
 	}

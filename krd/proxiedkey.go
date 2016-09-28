@@ -4,7 +4,7 @@ import (
 	"crypto"
 	"crypto/sha256"
 	"errors"
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 	"io"
 	"log"
 )
@@ -25,7 +25,7 @@ func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts
 	if command != nil {
 		log.Println("command:", *command)
 	}
-	request := krssh.SignRequest{
+	request := kr.SignRequest{
 		PublicKeyFingerprint: pk.publicKeyFingerprint,
 		Digest:               digest,
 		Command:              command,
@@ -56,7 +56,7 @@ func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts
 }
 
 func ProxySSHWireRSAPublicKey(enclaveClient EnclaveClientI, wire []byte) (proxiedKey crypto.Signer, err error) {
-	pk, err := krssh.SSHWireRSAPublicKeyToRSAPublicKey(wire)
+	pk, err := kr.SSHWireRSAPublicKeyToRSAPublicKey(wire)
 	if err != nil {
 		return
 	}

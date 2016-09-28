@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestControlServerPair(t *testing.T) {
-	pairingSecret, err := krssh.GeneratePairingSecret()
+	pairingSecret, err := kr.GeneratePairingSecret()
 	if err != nil {
 		t.Fatal(err)
 	}

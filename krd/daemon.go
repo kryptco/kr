@@ -7,18 +7,18 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 )
 
 func main() {
 	//	redirect stdout > stderr
 	syscall.Dup2(2, 1)
-	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krsshd")
+	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krd")
 	if e == nil {
 		log.SetOutput(logwriter)
 	}
 
-	daemonSocket, err := krssh.DaemonListen()
+	daemonSocket, err := kr.DaemonListen()
 	if err != nil {
 		log.Fatal(err)
 	}

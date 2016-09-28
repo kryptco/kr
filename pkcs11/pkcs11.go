@@ -19,12 +19,12 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/agrinman/krssh"
+	"github.com/agrinman/kr"
 )
 
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
-	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krssh-pkcs11")
+	logwriter, e := syslog.New(syslog.LOG_NOTICE, "kr-pkcs11")
 	if e == nil {
 		log.SetOutput(logwriter)
 	}
@@ -292,7 +292,7 @@ func C_FindObjectsFinal(session C.CK_SESSION_HANDLE) C.CK_RV {
 	return C.CKR_OK
 }
 
-var staticMe = krssh.Profile{}
+var staticMe = kr.Profile{}
 
 //export C_GetAttributeValue
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
