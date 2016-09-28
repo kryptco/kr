@@ -1,4 +1,4 @@
-package krssh
+package kr
 
 import (
 	"crypto/sha256"
