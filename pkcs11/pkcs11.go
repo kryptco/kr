@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/ssh"
 	"log"
-	"log/syslog"
+	//"log/syslog"
 	"sync"
 	"unsafe"
 
@@ -28,10 +28,10 @@ import (
 
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
-	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krssh-pkcs11")
-	if e == nil {
-		log.SetOutput(logwriter)
-	}
+	//logwriter, e := syslog.New(syslog.LOG_NOTICE, "krssh-pkcs11")
+	//if e == nil {
+	//log.SetOutput(logwriter)
+	//}
 	log.Println("getFunctionList")
 	*l = &functions
 	return C.CKR_OK
@@ -51,6 +51,7 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 			major: 2,
 			minor: 20,
 		},
+		flags:              0,
 		manufacturerID:     bytesToChar32([]byte("KryptCo Inc.")),
 		libraryDescription: bytesToChar32([]byte("kryptonite pkcs11 middleware")),
 		libraryVersion: C.struct__CK_VERSION{
@@ -71,6 +72,7 @@ func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulon
 		return C.CKR_OK
 	}
 	if *count == 0 {
+		log.Println("buffer too small")
 		return C.CKR_BUFFER_TOO_SMALL
 	}
 	*count = 1
@@ -137,6 +139,36 @@ func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID
 	if notify != nil {
 		log.Println("notify callback passed")
 	}
+	return C.CKR_OK
+}
+
+//export C_GetSessionInfo
+func C_GetSessionInfo(session C.CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK_RV {
+	log.Println("GetSessionInfo")
+	*info = C.CK_SESSION_INFO{
+		slotID: 0,
+		state:  C.CKS_RW_USER_FUNCTIONS,
+		flags:  C.CKF_RW_SESSION | C.CKF_SERIAL_SESSION,
+	}
+	return C.CKR_OK
+}
+
+var mechanismTypes []C.CK_MECHANISM_TYPE = []C.CK_MECHANISM_TYPE{}
+
+//export C_GetMechanismList
+func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, count *C.CK_ULONG) C.CK_RV {
+	if mechList == nil {
+		*count = C.CK_ULONG(len(mechanismTypes))
+		return C.CKR_OK
+	}
+	if *count < C.CK_ULONG(len(mechanismTypes)) {
+		return C.CKR_BUFFER_TOO_SMALL
+	}
+	for i := C.CK_ULONG(0); i < *count; i++ {
+		*mechList = mechanismTypes[i]
+		mechList = (*C.CK_MECHANISM_TYPE)(unsafe.Pointer(uintptr(unsafe.Pointer(mechList)) + unsafe.Sizeof(*mechList)))
+	}
+	log.Println("C_GetMechanismList")
 	return C.CKR_OK
 }
 
@@ -385,6 +417,7 @@ var functions C.CK_FUNCTION_LIST = C.CK_FUNCTION_LIST{
 	C_Initialize:          C.CK_C_Initialize(C.C_Initialize),
 	C_GetInfo:             C.CK_C_GetInfo(C.C_GetInfo),
 	C_GetSlotList:         C.CK_C_GetSlotList(C.C_GetSlotList),
+	C_GetSlotInfo:         C.CK_C_GetSlotInfo(C.C_GetSlotInfo),
 	C_GetTokenInfo:        C.CK_C_GetTokenInfo(C.C_GetTokenInfo),
 	C_OpenSession:         C.CK_C_OpenSession(C.C_OpenSession),
 	C_CloseSession:        C.CK_C_CloseSession(C.C_CloseSession),

@@ -12,12 +12,6 @@ import (
 	"log"
 )
 
-//export C_GetMechanismList
-func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, count *C.CK_ULONG) C.CK_RV {
-	log.Println("Unsupported PKCS11 function called: C_GetMechanismList")
-	return C.CKR_FUNCTION_NOT_SUPPORTED
-}
-
 //export C_GetMechanismInfo
 func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.CK_MECHANISM_INFO) C.CK_RV {
 	log.Println("Unsupported PKCS11 function called: C_GetMechanismInfo")
@@ -45,12 +39,6 @@ func C_SetPIN(session C.CK_SESSION_HANDLE, oldPin *C.CK_CHAR, oldPinLen C.CK_ULO
 //export C_CloseAllSessions
 func C_CloseAllSessions(slot C.CK_SLOT_ID) C.CK_RV {
 	log.Println("Unsupported PKCS11 function called: C_CloseAllSessions")
-	return C.CKR_FUNCTION_NOT_SUPPORTED
-}
-
-//export C_GetSessionInfo
-func C_GetSessionInfo(session C.CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK_RV {
-	log.Println("Unsupported PKCS11 function called: C_GetSessionInfo")
 	return C.CKR_FUNCTION_NOT_SUPPORTED
 }
 
