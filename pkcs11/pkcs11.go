@@ -16,7 +16,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
-	"fmt"
 	"golang.org/x/crypto/ssh"
 	"log"
 	//"log/syslog"
@@ -155,6 +154,7 @@ func C_GetSessionInfo(session C.CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK
 
 var mechanismTypes []C.CK_MECHANISM_TYPE = []C.CK_MECHANISM_TYPE{
 	C.CKM_RSA_PKCS,
+	C.CKM_SHA256_RSA_PKCS,
 }
 
 //export C_GetMechanismList
@@ -174,6 +174,20 @@ func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, coun
 	return C.CKR_OK
 }
 
+//export C_GetMechanismInfo
+func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.CK_MECHANISM_INFO) C.CK_RV {
+	log.Println("C_GetMechanismInfo")
+	if _type == C.CKM_RSA_PKCS {
+		log.Println("CKM_RSA_PKCS")
+		*info = C.CK_MECHANISM_INFO{
+			ulMinKeySize: 4096,
+			ulMaxKeySize: 4096,
+			flags:        C.CKF_SIGN | C.CKF_HW,
+		}
+	}
+	return C.CKR_OK
+}
+
 //export C_CloseSession
 func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
 	log.Println("closeSession")
@@ -186,19 +200,35 @@ func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
 var sessionFindObjectTypes map[C.CK_SESSION_HANDLE][]C.CK_ATTRIBUTE = map[C.CK_SESSION_HANDLE][]C.CK_ATTRIBUTE{}
 var mutex sync.Mutex
 
+var sessionFoundObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
+
 //export C_FindObjectsInit
 func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
 	log.Println("FindObjectsInit")
 	mutex.Lock()
 	defer mutex.Unlock()
-	attributes := []C.CK_ATTRIBUTE{}
-	log.Println(fmt.Sprintf("count %d", count))
-	for i := C.CK_ULONG(0); i < count; i++ {
-		attributes = append(attributes, *templates)
-		templates = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templates)) + unsafe.Sizeof(*templates)))
+	if count == 0 {
+		log.Println("count == 0")
+		sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{PUBKEY_HANDLE: true, PRIVKEY_HANDLE: true}
+		return C.CKR_OK
 	}
-	if len(attributes) > 0 {
-		sessionFindObjectTypes[session] = attributes
+	sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+	for i := C.CK_ULONG(0); i < count; i++ {
+		log.Println(templates._type)
+		switch templates._type {
+		case C.CKA_CLASS:
+			switch *(*C.CK_OBJECT_CLASS)(templates.pValue) {
+			case C.CKO_PUBLIC_KEY:
+				log.Println("init search for CKO_PUBLIC_KEY")
+				sessionFoundObjects[session][PUBKEY_HANDLE] = true
+			case C.CKO_PRIVATE_KEY:
+				log.Println("init search for CKO_PRIVATE_KEY")
+				sessionFoundObjects[session][PRIVKEY_HANDLE] = true
+			}
+		case C.CKO_MECHANISM:
+			log.Println("init search for CKO_MECHANISM")
+		}
+		templates = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templates)) + unsafe.Sizeof(*templates)))
 	}
 	return C.CKR_OK
 }
@@ -209,6 +239,7 @@ const PRIVKEY_HANDLE C.CK_OBJECT_HANDLE = 2
 var PUBKEY_ID []byte = []byte{1}
 
 var sessionSentPk map[C.CK_SESSION_HANDLE]bool = map[C.CK_SESSION_HANDLE]bool{}
+var sessionSentSk map[C.CK_SESSION_HANDLE]bool = map[C.CK_SESSION_HANDLE]bool{}
 
 //export C_FindObjects
 func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
@@ -216,48 +247,25 @@ func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, 
 	//	TODO: error handle here
 	mutex.Lock()
 	defer mutex.Unlock()
-	attributes, ok := sessionFindObjectTypes[session]
-	if !ok || maxCount == 0 {
-		return C.CKR_GENERAL_ERROR
-	}
-	log.Println(fmt.Sprintf("count %d maxCount %d", *count, maxCount))
-	foundModulus := false
-	foundPublicExponent := false
-	for _, attribute := range attributes {
-		switch attribute._type {
-		case C.CKA_CLASS:
-			class := C.CK_OBJECT_CLASS_PTR(attribute.pValue)
-			if *class == C.CKO_PUBLIC_KEY {
-				if sent, ok := sessionSentPk[session]; ok && sent {
-					*count = C.CK_ULONG(0)
-					return C.CKR_OK
-				}
-				me, err := getMe()
-				if err != nil {
-					log.Println("getMe error " + err.Error())
-					*count = C.CK_ULONG(0)
-					return C.CKR_OK
-				}
-				staticMe = me
-				*count = C.CK_ULONG(1)
-				*objects = PUBKEY_HANDLE
-				return C.CKR_OK
-			}
-			if *class == C.CKO_PRIVATE_KEY {
-				*count = C.CK_ULONG(1)
-				*objects = PRIVKEY_HANDLE
-				return C.CKR_OK
-			}
-		case C.CKA_KEY_TYPE:
-			log.Println(fmt.Sprintf("found key type %d", *C.CK_ULONG_PTR(attribute.pValue)))
+	remainingCount := maxCount
+	foundCount := C.CK_ULONG(0)
+	for handle, _ := range sessionFoundObjects[session] {
+		switch handle {
+		case PUBKEY_HANDLE:
+			*objects = PUBKEY_HANDLE
+			delete(sessionFoundObjects[session], PUBKEY_HANDLE)
+		case PRIVKEY_HANDLE:
+			*objects = PRIVKEY_HANDLE
+			delete(sessionFoundObjects[session], PUBKEY_HANDLE)
 		}
+		foundCount++
+		remainingCount--
+		if remainingCount == 0 {
+			break
+		}
+		objects = (*C.CK_OBJECT_HANDLE)(unsafe.Pointer((uintptr(unsafe.Pointer(objects)) + unsafe.Sizeof(*objects))))
 	}
-	if foundModulus && foundPublicExponent {
-		log.Println(fmt.Sprintf("found rsa"))
-		*count = 1
-	} else {
-		*count = 0
-	}
+	*count = foundCount
 	return C.CKR_OK
 }
 
@@ -286,10 +294,18 @@ var staticMe = krssh.Profile{}
 
 //export C_GetAttributeValue
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
-	pk, err := staticMe.RSAPublicKey()
+	mutex.Lock()
+	defer mutex.Unlock()
+	log.Println("C_GetAttributeValue")
+	me, err := getMe()
+	if err != nil {
+		log.Println("getMe error " + err.Error())
+		return C.CKR_GENERAL_ERROR
+	}
+	pk, err := me.RSAPublicKey()
 	if err != nil {
 		log.Println("me.RSAPublicKey error " + err.Error())
-		return C.CKR_FUNCTION_NOT_SUPPORTED
+		return C.CKR_GENERAL_ERROR
 	}
 
 	sshPk, err := ssh.NewPublicKey(pk)
@@ -309,17 +325,33 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 	}
 	e := eBytes.Bytes()
 	for i := C.CK_ULONG(0); i < count; i++ {
+		//	TODO: memory safety: should we be allocating?
 		switch (*templateIter)._type {
 		case C.CKA_ID:
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(PUBKEY_ID))
 			(*templateIter).ulValueLen = C.ulong(len(PUBKEY_ID))
 		case C.CKA_MODULUS:
+			log.Println("CKA_MODULUS")
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(modulus))
 			(*templateIter).ulValueLen = C.ulong(len(modulus))
+		case C.CKA_MODULUS_BITS:
+			log.Println("MODULUS_BITS")
+			*(*C.CK_ULONG)((*templateIter).pValue) = C.CK_ULONG(pk.N.BitLen())
 		case C.CKA_PUBLIC_EXPONENT:
+			log.Println("CKA_PUBLIC_EXPONENT")
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(e))
 			(*templateIter).ulValueLen = C.ulong(len(e))
+		case C.CKA_KEY_TYPE:
+			log.Println("CKA_KEY_TYPE")
+			rsaKeyType := (*C.CK_KEY_TYPE)(C.malloc(C.size_t(unsafe.Sizeof(C.CKK_RSA))))
+			*rsaKeyType = C.CKK_RSA
+			(*templateIter).pValue = unsafe.Pointer(rsaKeyType)
+			(*templateIter).ulValueLen = C.ulong(unsafe.Sizeof(*rsaKeyType))
+		case C.CKA_SIGN:
+			log.Println("CKA_SIGN")
+			*(*C.CK_BBOOL)((*templateIter).pValue) = C.CK_TRUE
 		}
+
 		templateIter = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templateIter)) + unsafe.Sizeof(*template)))
 	}
 	sessionSentPk[session] = true
@@ -328,6 +360,17 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 
 //export C_SignInit
 func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C.CK_OBJECT_HANDLE) C.CK_RV {
+	log.Println("C_SignInit")
+	log.Println(mechanism.mechanism)
+	switch mechanism.mechanism {
+	case C.CKM_RSA_PKCS:
+		return C.CKR_OK
+	case C.CKM_RSA_X_509:
+		log.Println("CKM_RSA_X_509 not supported")
+		return C.CKR_MECHANISM_INVALID
+	default:
+		return C.CKR_MECHANISM_INVALID
+	}
 	return C.CKR_OK
 }
 
@@ -335,6 +378,15 @@ func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C
 func C_Sign(session C.CK_SESSION_HANDLE,
 	data C.CK_BYTE_PTR, dataLen C.ulong,
 	signature C.CK_BYTE_PTR, signatureLen *C.ulong) C.CK_RV {
+	log.Println("C_Sign")
+	log.Println("in sigLen", *signatureLen, "dataLen", dataLen)
+	if signature == nil {
+		*signatureLen = 512
+		return C.CKR_OK
+	}
+	if *signatureLen < 512 {
+		return C.CKR_BUFFER_TOO_SMALL
+	}
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
 	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
 	sigBytes, err := sign(pkFingerprint[:], message)
@@ -343,6 +395,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 		log.Println("sig error: " + err.Error())
 		return C.CKR_GENERAL_ERROR
 	} else {
+		log.Println("got sig of", len(sigBytes), "bytes")
 		for _, b := range sigBytes {
 			*signature = C.CK_BYTE(b)
 			signature = C.CK_BYTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(signature)) + 1))

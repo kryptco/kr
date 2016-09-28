@@ -12,12 +12,6 @@ import (
 	"log"
 )
 
-//export C_GetMechanismInfo
-func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.CK_MECHANISM_INFO) C.CK_RV {
-	log.Println("Unsupported PKCS11 function called: C_GetMechanismInfo")
-	return C.CKR_FUNCTION_NOT_SUPPORTED
-}
-
 //export C_InitToken
 func C_InitToken(slot C.CK_SLOT_ID, pin *C.CK_CHAR, pinLen C.CK_ULONG, label *C.CK_CHAR) C.CK_RV {
 	log.Println("Unsupported PKCS11 function called: C_InitToken")
