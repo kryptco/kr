@@ -1,6 +1,7 @@
 package main
 
 /*
+#cgo pkg-config: nspr
 #include <stdio.h>
 #include <stdlib.h>
 #include "pkcs11.h"
@@ -23,7 +24,7 @@ import (
 )
 
 //export C_GetFunctionList
-func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
+func C_GetFunctionList(l C.CK_FUNCTION_LIST_PTR_PTR) C.CK_RV {
 	//logwriter, e := syslog.New(syslog.LOG_NOTICE, "krssh-pkcs11")
 	//if e == nil {
 	//log.SetOutput(logwriter)
@@ -43,14 +44,14 @@ func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
 func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 	log.Println("getInfo")
 	*ck_info = C.CK_INFO{
-		cryptokiVersion: C.struct__CK_VERSION{
+		cryptokiVersion: C.CK_VERSION{
 			major: 2,
 			minor: 20,
 		},
 		flags:              0,
 		manufacturerID:     bytesToChar32([]byte("KryptCo Inc.")),
 		libraryDescription: bytesToChar32([]byte("kryptonite pkcs11 middleware")),
-		libraryVersion: C.struct__CK_VERSION{
+		libraryVersion: C.CK_VERSION{
 			major: 0,
 			minor: 1,
 		},
@@ -82,11 +83,11 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 	*slotInfo = C.CK_SLOT_INFO{
 		manufacturerID:  bytesToChar32([]byte("KryptCo Inc.")),
 		slotDescription: bytesToChar64([]byte("kryptonite pkcs11 middleware")),
-		hardwareVersion: C.struct__CK_VERSION{
+		hardwareVersion: C.CK_VERSION{
 			major: 0,
 			minor: 1,
 		},
-		firmwareVersion: C.struct__CK_VERSION{
+		firmwareVersion: C.CK_VERSION{
 			major: 0,
 			minor: 1,
 		},
@@ -103,7 +104,7 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 	*tokenInfo = C.CK_TOKEN_INFO{
 		label:               bytesToChar32([]byte("kryptonite iOS")),
 		manufacturerID:      bytesToChar32([]byte("KryptCo Inc.")),
-		model:               bytesToChar16([]byte("kryptonite iOS")),
+		model:               bytesToUTF8Char16([]byte("kryptonite iOS")),
 		serialNumber:        bytesToChar16([]byte("1")),
 		ulMaxSessionCount:   16,
 		ulSessionCount:      0,
@@ -111,11 +112,11 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 		ulRwSessionCount:    0,
 		ulMaxPinLen:         0,
 		ulMinPinLen:         0,
-		hardwareVersion: C.struct__CK_VERSION{
+		hardwareVersion: C.CK_VERSION{
 			major: 0,
 			minor: 1,
 		},
-		firmwareVersion: C.struct__CK_VERSION{
+		firmwareVersion: C.CK_VERSION{
 			major: 0,
 			minor: 1,
 		},
@@ -330,25 +331,25 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 		//	TODO: memory safety/leak: should we be allocating?
 		switch (*templateIter)._type {
 		case C.CKA_ID:
-			(*templateIter).pValue = unsafe.Pointer(C.CBytes(PUBKEY_ID))
-			(*templateIter).ulValueLen = C.ulong(len(PUBKEY_ID))
+			(*templateIter).pValue = C.CK_VOID_PTR(unsafe.Pointer(C.CBytes(PUBKEY_ID)))
+			(*templateIter).ulValueLen = C.CK_ULONG(len(PUBKEY_ID))
 		case C.CKA_MODULUS:
 			log.Println("CKA_MODULUS")
-			(*templateIter).pValue = unsafe.Pointer(C.CBytes(modulus))
-			(*templateIter).ulValueLen = C.ulong(len(modulus))
+			(*templateIter).pValue = C.CK_VOID_PTR(unsafe.Pointer(C.CBytes(modulus)))
+			(*templateIter).ulValueLen = C.CK_ULONG(len(modulus))
 		case C.CKA_MODULUS_BITS:
 			log.Println("MODULUS_BITS")
 			*(*C.CK_ULONG)((*templateIter).pValue) = C.CK_ULONG(pk.N.BitLen())
 		case C.CKA_PUBLIC_EXPONENT:
 			log.Println("CKA_PUBLIC_EXPONENT")
-			(*templateIter).pValue = unsafe.Pointer(C.CBytes(e))
-			(*templateIter).ulValueLen = C.ulong(len(e))
+			(*templateIter).pValue = C.CK_VOID_PTR(unsafe.Pointer(C.CBytes(e)))
+			(*templateIter).ulValueLen = C.CK_ULONG(len(e))
 		case C.CKA_KEY_TYPE:
 			log.Println("CKA_KEY_TYPE")
 			rsaKeyType := (*C.CK_KEY_TYPE)(C.malloc(C.size_t(unsafe.Sizeof(C.CKK_RSA))))
 			*rsaKeyType = C.CKK_RSA
-			(*templateIter).pValue = unsafe.Pointer(rsaKeyType)
-			(*templateIter).ulValueLen = C.ulong(unsafe.Sizeof(*rsaKeyType))
+			(*templateIter).pValue = C.CK_VOID_PTR(unsafe.Pointer(rsaKeyType))
+			(*templateIter).ulValueLen = C.CK_ULONG(unsafe.Sizeof(*rsaKeyType))
 		case C.CKA_SIGN:
 			log.Println("CKA_SIGN")
 			*(*C.CK_BBOOL)((*templateIter).pValue) = C.CK_TRUE
@@ -411,62 +412,74 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 func C_Finalize(reserved C.CK_VOID_PTR) C.CK_RV {
 	return C.CKR_OK
 }
-func bytesToChar64(b []byte) [64]C.uchar {
+func bytesToChar64(b []byte) [64]C.CK_UTF8CHAR {
 	for len(b) < 64 {
 		b = append(b, byte(0))
 	}
-	return [64]C.uchar{
-		C.uchar(b[0]), C.uchar(b[1]), C.uchar(b[2]), C.uchar(b[3]),
-		C.uchar(b[4]), C.uchar(b[5]), C.uchar(b[6]), C.uchar(b[7]),
-		C.uchar(b[8]), C.uchar(b[9]), C.uchar(b[10]), C.uchar(b[11]),
-		C.uchar(b[12]), C.uchar(b[13]), C.uchar(b[14]), C.uchar(b[15]),
-		C.uchar(b[16]), C.uchar(b[17]), C.uchar(b[18]), C.uchar(b[19]),
-		C.uchar(b[20]), C.uchar(b[21]), C.uchar(b[22]), C.uchar(b[23]),
-		C.uchar(b[24]), C.uchar(b[25]), C.uchar(b[26]), C.uchar(b[27]),
-		C.uchar(b[28]), C.uchar(b[29]), C.uchar(b[30]), C.uchar(b[31]),
-		C.uchar(b[32]), C.uchar(b[33]), C.uchar(b[34]), C.uchar(b[35]),
-		C.uchar(b[36]), C.uchar(b[37]), C.uchar(b[38]), C.uchar(b[39]),
-		C.uchar(b[40]), C.uchar(b[41]), C.uchar(b[42]), C.uchar(b[43]),
-		C.uchar(b[44]), C.uchar(b[45]), C.uchar(b[46]), C.uchar(b[47]),
-		C.uchar(b[48]), C.uchar(b[49]), C.uchar(b[50]), C.uchar(b[51]),
-		C.uchar(b[52]), C.uchar(b[53]), C.uchar(b[54]), C.uchar(b[55]),
-		C.uchar(b[56]), C.uchar(b[57]), C.uchar(b[58]), C.uchar(b[59]),
-		C.uchar(b[60]), C.uchar(b[61]), C.uchar(b[62]), C.uchar(b[63]),
+	return [64]C.CK_UTF8CHAR{
+		C.CK_UTF8CHAR(b[0]), C.CK_UTF8CHAR(b[1]), C.CK_UTF8CHAR(b[2]), C.CK_UTF8CHAR(b[3]),
+		C.CK_UTF8CHAR(b[4]), C.CK_UTF8CHAR(b[5]), C.CK_UTF8CHAR(b[6]), C.CK_UTF8CHAR(b[7]),
+		C.CK_UTF8CHAR(b[8]), C.CK_UTF8CHAR(b[9]), C.CK_UTF8CHAR(b[10]), C.CK_UTF8CHAR(b[11]),
+		C.CK_UTF8CHAR(b[12]), C.CK_UTF8CHAR(b[13]), C.CK_UTF8CHAR(b[14]), C.CK_UTF8CHAR(b[15]),
+		C.CK_UTF8CHAR(b[16]), C.CK_UTF8CHAR(b[17]), C.CK_UTF8CHAR(b[18]), C.CK_UTF8CHAR(b[19]),
+		C.CK_UTF8CHAR(b[20]), C.CK_UTF8CHAR(b[21]), C.CK_UTF8CHAR(b[22]), C.CK_UTF8CHAR(b[23]),
+		C.CK_UTF8CHAR(b[24]), C.CK_UTF8CHAR(b[25]), C.CK_UTF8CHAR(b[26]), C.CK_UTF8CHAR(b[27]),
+		C.CK_UTF8CHAR(b[28]), C.CK_UTF8CHAR(b[29]), C.CK_UTF8CHAR(b[30]), C.CK_UTF8CHAR(b[31]),
+		C.CK_UTF8CHAR(b[32]), C.CK_UTF8CHAR(b[33]), C.CK_UTF8CHAR(b[34]), C.CK_UTF8CHAR(b[35]),
+		C.CK_UTF8CHAR(b[36]), C.CK_UTF8CHAR(b[37]), C.CK_UTF8CHAR(b[38]), C.CK_UTF8CHAR(b[39]),
+		C.CK_UTF8CHAR(b[40]), C.CK_UTF8CHAR(b[41]), C.CK_UTF8CHAR(b[42]), C.CK_UTF8CHAR(b[43]),
+		C.CK_UTF8CHAR(b[44]), C.CK_UTF8CHAR(b[45]), C.CK_UTF8CHAR(b[46]), C.CK_UTF8CHAR(b[47]),
+		C.CK_UTF8CHAR(b[48]), C.CK_UTF8CHAR(b[49]), C.CK_UTF8CHAR(b[50]), C.CK_UTF8CHAR(b[51]),
+		C.CK_UTF8CHAR(b[52]), C.CK_UTF8CHAR(b[53]), C.CK_UTF8CHAR(b[54]), C.CK_UTF8CHAR(b[55]),
+		C.CK_UTF8CHAR(b[56]), C.CK_UTF8CHAR(b[57]), C.CK_UTF8CHAR(b[58]), C.CK_UTF8CHAR(b[59]),
+		C.CK_UTF8CHAR(b[60]), C.CK_UTF8CHAR(b[61]), C.CK_UTF8CHAR(b[62]), C.CK_UTF8CHAR(b[63]),
 	}
 }
 
-func bytesToChar32(b []byte) [32]C.uchar {
+func bytesToChar32(b []byte) [32]C.CK_UTF8CHAR {
 	for len(b) < 32 {
 		b = append(b, byte(0))
 	}
-	return [32]C.uchar{
-		C.uchar(b[0]), C.uchar(b[1]), C.uchar(b[2]), C.uchar(b[3]),
-		C.uchar(b[4]), C.uchar(b[5]), C.uchar(b[6]), C.uchar(b[7]),
-		C.uchar(b[8]), C.uchar(b[9]), C.uchar(b[10]), C.uchar(b[11]),
-		C.uchar(b[12]), C.uchar(b[13]), C.uchar(b[14]), C.uchar(b[15]),
-		C.uchar(b[16]), C.uchar(b[17]), C.uchar(b[18]), C.uchar(b[19]),
-		C.uchar(b[20]), C.uchar(b[21]), C.uchar(b[22]), C.uchar(b[23]),
-		C.uchar(b[24]), C.uchar(b[25]), C.uchar(b[26]), C.uchar(b[27]),
-		C.uchar(b[28]), C.uchar(b[29]), C.uchar(b[30]), C.uchar(b[31]),
+	return [32]C.CK_UTF8CHAR{
+		C.CK_UTF8CHAR(b[0]), C.CK_UTF8CHAR(b[1]), C.CK_UTF8CHAR(b[2]), C.CK_UTF8CHAR(b[3]),
+		C.CK_UTF8CHAR(b[4]), C.CK_UTF8CHAR(b[5]), C.CK_UTF8CHAR(b[6]), C.CK_UTF8CHAR(b[7]),
+		C.CK_UTF8CHAR(b[8]), C.CK_UTF8CHAR(b[9]), C.CK_UTF8CHAR(b[10]), C.CK_UTF8CHAR(b[11]),
+		C.CK_UTF8CHAR(b[12]), C.CK_UTF8CHAR(b[13]), C.CK_UTF8CHAR(b[14]), C.CK_UTF8CHAR(b[15]),
+		C.CK_UTF8CHAR(b[16]), C.CK_UTF8CHAR(b[17]), C.CK_UTF8CHAR(b[18]), C.CK_UTF8CHAR(b[19]),
+		C.CK_UTF8CHAR(b[20]), C.CK_UTF8CHAR(b[21]), C.CK_UTF8CHAR(b[22]), C.CK_UTF8CHAR(b[23]),
+		C.CK_UTF8CHAR(b[24]), C.CK_UTF8CHAR(b[25]), C.CK_UTF8CHAR(b[26]), C.CK_UTF8CHAR(b[27]),
+		C.CK_UTF8CHAR(b[28]), C.CK_UTF8CHAR(b[29]), C.CK_UTF8CHAR(b[30]), C.CK_UTF8CHAR(b[31]),
 	}
 }
 
-func bytesToChar16(b []byte) [16]C.uchar {
+func bytesToUTF8Char16(b []byte) [16]C.CK_UTF8CHAR {
 	for len(b) < 16 {
 		b = append(b, byte(0))
 	}
-	return [16]C.uchar{
-		C.uchar(b[0]), C.uchar(b[1]), C.uchar(b[2]), C.uchar(b[3]),
-		C.uchar(b[4]), C.uchar(b[5]), C.uchar(b[6]), C.uchar(b[7]),
-		C.uchar(b[8]), C.uchar(b[9]), C.uchar(b[10]), C.uchar(b[11]),
-		C.uchar(b[12]), C.uchar(b[13]), C.uchar(b[14]), C.uchar(b[15]),
+	return [16]C.CK_UTF8CHAR{
+		C.CK_UTF8CHAR(b[0]), C.CK_UTF8CHAR(b[1]), C.CK_UTF8CHAR(b[2]), C.CK_UTF8CHAR(b[3]),
+		C.CK_UTF8CHAR(b[4]), C.CK_UTF8CHAR(b[5]), C.CK_UTF8CHAR(b[6]), C.CK_UTF8CHAR(b[7]),
+		C.CK_UTF8CHAR(b[8]), C.CK_UTF8CHAR(b[9]), C.CK_UTF8CHAR(b[10]), C.CK_UTF8CHAR(b[11]),
+		C.CK_UTF8CHAR(b[12]), C.CK_UTF8CHAR(b[13]), C.CK_UTF8CHAR(b[14]), C.CK_UTF8CHAR(b[15]),
+	}
+}
+
+func bytesToChar16(b []byte) [16]C.CK_CHAR {
+	for len(b) < 16 {
+		b = append(b, byte(0))
+	}
+	return [16]C.CK_CHAR{
+		C.CK_CHAR(b[0]), C.CK_CHAR(b[1]), C.CK_CHAR(b[2]), C.CK_CHAR(b[3]),
+		C.CK_CHAR(b[4]), C.CK_CHAR(b[5]), C.CK_CHAR(b[6]), C.CK_CHAR(b[7]),
+		C.CK_CHAR(b[8]), C.CK_CHAR(b[9]), C.CK_CHAR(b[10]), C.CK_CHAR(b[11]),
+		C.CK_CHAR(b[12]), C.CK_CHAR(b[13]), C.CK_CHAR(b[14]), C.CK_CHAR(b[15]),
 	}
 }
 
 func main() {}
 
 var functions C.CK_FUNCTION_LIST = C.CK_FUNCTION_LIST{
-	version: C.struct__CK_VERSION{
+	version: C.CK_VERSION{
 		major: 0,
 		minor: 1,
 	},
