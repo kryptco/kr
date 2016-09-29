@@ -75,6 +75,13 @@ func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 
 //	route request to enclave
 func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
+	cachedMe := cs.enclaveClient.GetCachedMe()
+	if cachedMe == nil {
+		//	not paired
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	var enclaveRequest kr.Request
 	err := json.NewDecoder(r.Body).Decode(&enclaveRequest)
 	if err != nil {
@@ -83,20 +90,14 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if enclaveRequest.MeRequest != nil {
-		cachedMe := cs.enclaveClient.GetCachedMe()
-		if cachedMe != nil {
-			response := kr.Response{
-				MeResponse: &kr.MeResponse{
-					Me: *cachedMe,
-				},
-			}
-			err = json.NewEncoder(w).Encode(response)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-		} else {
-			w.WriteHeader(http.StatusNotFound)
+		response := kr.Response{
+			MeResponse: &kr.MeResponse{
+				Me: *cachedMe,
+			},
+		}
+		err = json.NewEncoder(w).Encode(response)
+		if err != nil {
+			log.Println(err)
 			return
 		}
 		return
