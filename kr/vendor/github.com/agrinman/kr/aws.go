@@ -2,7 +2,6 @@ package kr
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"strconv"
 
@@ -13,8 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
-
-var ErrNoMessages = errors.New("No messages in SQS Queue")
 
 func getAWSSession() (conf client.ConfigProvider, err error) {
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")

@@ -2,15 +2,9 @@ package kr
 
 import (
 	"bytes"
-	"crypto/rsa"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
-	"math/big"
 	"net/http"
 	"time"
-
-	"golang.org/x/crypto/ssh"
 )
 
 type Request struct {
@@ -44,7 +38,7 @@ type Response struct {
 type SignRequest struct {
 	//	N.B. []byte marshals to base64 encoding in JSON
 	Digest []byte `json:"digest"`
-	//	SHA256 hash of public key DER
+	//	SHA256 hash of SSH wire format
 	PublicKeyFingerprint []byte  `json:"public_key_fingerprint"`
 	Command              *string `json:"command"`
 }
@@ -62,28 +56,6 @@ type ListResponse struct {
 	Profiles []Profile `json:"profiles"`
 }
 
-type Profile struct {
-	SSHWirePublicKey []byte `json:"rsa_public_key_wire"`
-	Email            string `json:"email"`
-}
-
-func (p Profile) AuthorizedKeyString() string {
-	return "ssh-rsa " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey) + " " + p.Email
-}
-
-func (p Profile) SSHPublicKey() (pk ssh.PublicKey, err error) {
-	return ssh.ParsePublicKey(p.SSHWirePublicKey)
-}
-
-func (p Profile) RSAPublicKey() (pk *rsa.PublicKey, err error) {
-	return SSHWireRSAPublicKeyToRSAPublicKey(p.SSHWirePublicKey)
-}
-
-func (p Profile) PublicKeyFingerprint() []byte {
-	digest := sha256.Sum256(p.SSHWirePublicKey)
-	return digest[:]
-}
-
 type MeRequest struct{}
 
 type MeResponse struct {
@@ -98,25 +70,6 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 	httpRequest, err = http.NewRequest("PUT", "/enclave", bytes.NewReader(requestJson))
 	if err != nil {
 		return
-	}
-	return
-}
-
-func SSHWireRSAPublicKeyToRSAPublicKey(wire []byte) (pk *rsa.PublicKey, err error) {
-	//	parse RSA SSH wire format
-	//  https://github.com/golang/crypto/blob/077efaa604f994162e3307fafe5954640763fc08/ssh/keys.go#L302
-	var w struct {
-		//	assume type RSA
-		Type string
-		E    *big.Int
-		N    *big.Int
-	}
-	if err = ssh.Unmarshal(wire, &w); err != nil {
-		return
-	}
-	pk = &rsa.PublicKey{
-		N: w.N,
-		E: int(w.E.Int64()),
 	}
 	return
 }

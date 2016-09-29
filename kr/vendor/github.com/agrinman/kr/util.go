@@ -3,6 +3,7 @@ package kr
 import (
 	"crypto/rand"
 	"encoding/base64"
+	//	base62 for random and compatible strings
 	"github.com/keybase/saltpack/encoding/basex"
 )
 

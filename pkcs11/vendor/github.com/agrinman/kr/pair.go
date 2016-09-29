@@ -17,6 +17,7 @@ const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
 
 var ErrWaitingForKey = fmt.Errorf("Pairing in progress, waiting for symmetric key")
 
+//	TODO: Indicate whether bluetooth support enabled
 type PairingSecret struct {
 	SymmetricSecretKey   *[]byte `json:"-"`
 	WorkstationPublicKey []byte  `json:"pk"`
@@ -44,8 +45,11 @@ func (ps PairingSecret) SQSRecvQueueName() string {
 }
 
 func (ps PairingSecret) SQSBaseQueueName() string {
-	//	TODO: dont ignore
-	derivedUUID, _ := ps.DeriveUUID()
+	derivedUUID, err := ps.DeriveUUID()
+	if err != nil {
+		log.Println("error deriving UUID in PairingSecret:", err.Error())
+		return ""
+	}
 	return strings.ToUpper(derivedUUID.String())
 }
 
@@ -107,7 +111,7 @@ func (ps *PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err 
 func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphertext *[]byte, didUnwrapKey bool, err error) {
 	ps.Lock()
 	defer ps.Unlock()
-	if len(ciphertext) < 1 {
+	if len(ciphertext) == 0 {
 		err = fmt.Errorf("ciphertext empty")
 		return
 	}

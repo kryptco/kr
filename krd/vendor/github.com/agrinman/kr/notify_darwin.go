@@ -6,9 +6,9 @@ import (
 
 func DesktopNotify(message string) (err error) {
 	note := gosxnotifier.NewNotification(message)
-	note.Title = "krssh-agent"
-	note.Group = "co.krypt.krssh " + message
-	note.AppIcon = "/usr/local/share/krssh/kryptonite.png"
+	note.Title = "kr"
+	note.Group = "co.krypt.krd " + message
+	note.AppIcon = "/usr/local/share/krssh/kr.png"
 	err = note.Push()
 	return
 }
