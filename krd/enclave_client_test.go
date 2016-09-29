@@ -9,8 +9,9 @@ type mockedEnclaveClient struct {
 	pairingSecret *kr.PairingSecret
 }
 
-func (ec *mockedEnclaveClient) Pair(ps kr.PairingSecret) {
-	ec.pairingSecret = &ps
+func (ec *mockedEnclaveClient) Pair() (ps kr.PairingSecret, err error) {
+	ps, err = kr.GeneratePairingSecret()
+	return
 }
 
 func (ec *mockedEnclaveClient) RequestMe() (response *kr.MeResponse, err error) {

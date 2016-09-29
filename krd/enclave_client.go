@@ -80,12 +80,14 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 	defer ec.mutex.Unlock()
 	ec.cachedMe = nil
 
-	if ec.pairingSecret != nil {
-		oldBtUUID, uuidErr := ec.pairingSecret.DeriveUUID()
-		if uuidErr == nil {
-			btErr := ec.bt.RemoveService(oldBtUUID)
-			if btErr != nil {
-				log.Println("error removing bluetooth service:", btErr.Error())
+	if ec.bt != nil {
+		if ec.pairingSecret != nil {
+			oldBtUUID, uuidErr := ec.pairingSecret.DeriveUUID()
+			if uuidErr == nil {
+				btErr := ec.bt.RemoveService(oldBtUUID)
+				if btErr != nil {
+					log.Println("error removing bluetooth service:", btErr.Error())
+				}
 			}
 		}
 	}
@@ -104,7 +106,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 			log.Println(err)
 			return
 		}
-		//	spawn reader
+		//	spawn at most one reader
 		go func() {
 			readChan, err := ec.bt.ReadChan()
 			if err != nil {
@@ -236,8 +238,6 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 	}
 	if response != nil {
 		listResponse = response.ListResponse
-	} else {
-		//	TODO: handle timeout
 	}
 	return
 }
@@ -398,7 +398,6 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 		}
 	}()
 	go func() {
-		log.Println("writing to peripheral...")
 		err := client.bt.Write(ciphertext)
 		if err != nil {
 			log.Println("error writing BT", err)

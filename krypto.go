@@ -40,7 +40,6 @@ func UnwrapKey(c, pk, sk []byte) (key []byte, err error) {
 	if err != nil {
 		return
 	}
-	//TODO: check key length here
 	if len(key) != AES_KEY_NUM_BYTES {
 		err = fmt.Errorf("incorrect key length of %d expected %d", len(key), AES_KEY_NUM_BYTES)
 		return
@@ -105,6 +104,12 @@ func Open(ciphertext []byte, key SymmetricSecretKey) (message []byte, err error)
 	}
 
 	macFunc := hmac.New(sha256.New, key.Bytes)
+
+	minCiphertextSize := aes.BlockSize + aes.BlockSize + macFunc.Size()
+	if len(ciphertext) < minCiphertextSize {
+		err = fmt.Errorf("Ciphertext of size %d too small, must be atleast %d", len(ciphertext), minCiphertextSize)
+		return
+	}
 
 	encryptedData := ciphertext[:len(ciphertext)-macFunc.Size()]
 	mac := ciphertext[len(ciphertext)-macFunc.Size():]

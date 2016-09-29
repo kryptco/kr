@@ -25,9 +25,6 @@ func (cs *ControlServer) HandleControlHTTP(listener net.Listener) (err error) {
 	return
 }
 
-//	Generate PairingSecret if not present
-//	Remove any existing symmetric key
-//	Reply with public fields of PairingSecret
 func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -60,7 +57,7 @@ func (cs *ControlServer) handleGetPair(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//	initiate new pairing
+//	initiate new pairing (clearing any existing)
 func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 	pairingSecret, err := cs.enclaveClient.Pair()
 	if err != nil {
@@ -76,6 +73,7 @@ func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//	route request to enclave
 func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	var enclaveRequest kr.Request
 	err := json.NewDecoder(r.Body).Decode(&enclaveRequest)
