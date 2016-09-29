@@ -161,6 +161,53 @@ func meCommand(c *cli.Context) (err error) {
 	return
 }
 
+func listCommand(c *cli.Context) (err error) {
+	agentConn, err := connectToAgent()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+
+	request, err := kr.NewRequest()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	request.ListRequest = &kr.ListRequest{}
+	httpRequest, err := request.HTTPRequest()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	err = httpRequest.Write(agentConn)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+
+	bufReader := bufio.NewReader(agentConn)
+	response, err := http.ReadResponse(bufReader, httpRequest)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	defer response.Body.Close()
+	switch response.StatusCode {
+	case 404:
+		PrintFatal("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
+	default:
+	}
+
+	var krResponse kr.Response
+	err = json.NewDecoder(response.Body).Decode(&krResponse)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	if krResponse.ListResponse == nil {
+		PrintFatal("Response missing profiles")
+	}
+	profiles := krResponse.ListResponse.Profiles
+	for _, profile := range profiles {
+		fmt.Println(profile.AuthorizedKeyString())
+	}
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -182,7 +229,7 @@ func main() {
 		cli.Command{
 			Name:    "list",
 			Aliases: []string{"ls"},
-			Action:  pairCommand,
+			Action:  listCommand,
 		},
 	}
 	app.Run(os.Args)

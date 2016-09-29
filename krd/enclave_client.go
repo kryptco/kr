@@ -231,7 +231,7 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 		return
 	}
 	request.ListRequest = &listRequest
-	response, err := client.tryRequest(request, 0)
+	response, err := client.tryRequest(request, 5*time.Second)
 	if err != nil {
 		log.Println(err)
 		return

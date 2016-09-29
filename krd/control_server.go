@@ -128,5 +128,28 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if enclaveRequest.ListRequest != nil {
+		listResponse, err := cs.enclaveClient.RequestList(*enclaveRequest.ListRequest)
+		if err != nil {
+			log.Println("list request error:", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if listResponse != nil {
+			response := kr.Response{
+				RequestID:    enclaveRequest.RequestID,
+				ListResponse: listResponse,
+			}
+			err = json.NewEncoder(w).Encode(response)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+		return
+	}
+
 	w.WriteHeader(http.StatusBadRequest)
 }
