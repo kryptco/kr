@@ -164,7 +164,7 @@ func meCommand(c *cli.Context) (err error) {
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
-	app.Usage = "communicate with kr-agent and kr-iOS"
+	app.Usage = "communicate with krd and Kryptonite"
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{
