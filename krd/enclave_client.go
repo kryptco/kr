@@ -78,6 +78,7 @@ type EnclaveClient struct {
 func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 	ec.mutex.Lock()
 	defer ec.mutex.Unlock()
+	ec.cachedMe = nil
 
 	if ec.pairingSecret != nil {
 		oldBtUUID, uuidErr := ec.pairingSecret.DeriveUUID()
