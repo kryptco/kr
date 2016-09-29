@@ -12,7 +12,6 @@ import (
 func getMe() (me kr.Profile, err error) {
 	daemonConn, err := kr.DaemonDial()
 	if err != nil {
-		//	TODO: restart daemon?
 		err = fmt.Errorf("DaemonDial error: %s", err.Error())
 		return
 	}
@@ -65,7 +64,6 @@ func getMe() (me kr.Profile, err error) {
 func sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	daemonConn, err := kr.DaemonDial()
 	if err != nil {
-		//	TODO: restart daemon?
 		err = fmt.Errorf("DaemonDial error: %s", err.Error())
 		return
 	}
@@ -112,8 +110,6 @@ func sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 			signature = *signResponse.Signature
 			return
 		}
-		//	TODO: handle sign error
-		return
 	}
 	err = fmt.Errorf("response missing signature")
 	return
