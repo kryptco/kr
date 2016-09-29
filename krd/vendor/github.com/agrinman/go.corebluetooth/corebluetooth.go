@@ -21,11 +21,11 @@ package corebluetooth
 
 import (
 	"errors"
-	"log"
 	"strings"
 	"sync"
 	"unsafe"
 
+	"github.com/op/go-logging"
 	"github.com/vanadium/go.ref/lib/discovery/plugins/ble"
 	"github.com/vanadium/go.v23/context"
 )
@@ -41,6 +41,45 @@ static int objcBOOL2int(BOOL b) {
 }
 */
 import "C"
+
+var log *logging.Logger
+
+func SetLogger(logger *logging.Logger) {
+	driverMu.Lock()
+	defer driverMu.Unlock()
+	log = logger
+}
+
+func logPrintln(args ...interface{}) {
+	driverMu.Lock()
+	defer driverMu.Unlock()
+	if log != nil {
+		log.Info([]interface{}{"CoreBluetooth:", args}...)
+	}
+}
+func logError(args ...interface{}) {
+	driverMu.Lock()
+	defer driverMu.Unlock()
+	if log != nil {
+		log.Error([]interface{}{"CoreBluetooth:", args}...)
+	}
+}
+
+func logNotice(args ...interface{}) {
+	driverMu.Lock()
+	defer driverMu.Unlock()
+	if log != nil {
+		log.Notice([]interface{}{"CoreBluetooth:", args}...)
+	}
+}
+
+func logInfo(args ...interface{}) {
+	driverMu.Lock()
+	defer driverMu.Unlock()
+	if log != nil {
+		log.Info([]interface{}{"CoreBluetooth:", args}...)
+	}
+}
 
 type (
 	// CoreBluetoothDriver provides an abstraction for an underlying mechanism to discover
@@ -137,7 +176,7 @@ func (d *CoreBluetoothDriver) AddService(uuid string, characteristics map[string
 		return err
 	}
 	// Success
-	log.Println("Added service ", uuid)
+	logNotice("added service ", uuid)
 	return nil
 }
 
@@ -154,7 +193,7 @@ func (d *CoreBluetoothDriver) WriteData(data []byte) error {
 		return err
 	}
 	// Success
-	log.Println("Wrote data", len(data), "bytes")
+	logInfo("wrote", len(data), "bytes")
 	return nil
 }
 
@@ -164,6 +203,7 @@ func (d *CoreBluetoothDriver) RemoveService(uuid string) {
 	// This is thread-safe in obj-c
 	C.v23_cbdriver_removeService(cUuid)
 	C.free(unsafe.Pointer(cUuid))
+	logNotice("removed service ", uuid)
 }
 
 // StartScan implements v.io/x/lib/discovery/plugins/ble.Driver.StartService
@@ -221,7 +261,7 @@ func v23_corebluetooth_scan_handler_on_discovered(cUuid *C.char, cEntries *C.CBD
 	driverMu.Lock()
 	defer driverMu.Unlock()
 	if driver == nil {
-		log.Println("got onDiscovered event from CoreBluetooth but missing driver -- dropping")
+		logError("got onDiscovered event from CoreBluetooth but missing driver -- dropping")
 		return
 	}
 	driver.mu.Lock()
@@ -260,7 +300,7 @@ func v23_corebluetooth_go_log(message *C.char) {
 	// Run asynchronously to prevent deadlocks where us calling functions like stopScan log
 	// while already retaining this lock.
 	go func() {
-		log.Println(msg)
+		logInfo(msg)
 	}()
 }
 
@@ -271,7 +311,7 @@ func v23_corebluetooth_go_log_error(message *C.char) {
 	// Run asynchronously to prevent deadlocks where us calling functions like stopScan log
 	// while already retaining this lock.
 	go func() {
-		log.Println(msg)
+		logError(msg)
 	}()
 }
 
@@ -290,13 +330,13 @@ func v23_corebluetooth_go_data_received(data unsafe.Pointer, dataLength C.int) {
 		driver.splitMessage = []byte{}
 		select {
 		case driver.Read <- message:
-			log.Printf("Received %d byte message over BT\n", len(message))
+			logPrintln("received", len(message), "byte message over BT")
 		default:
-			log.Printf("BT receive queue unavailable\n")
+			logPrintln("receive queue unavailable")
 		}
 	} else {
 		driver.splitMessage = append(driver.splitMessage, msg...)
-		log.Printf("Received %d byte message split over BT\n", len(copiedBytes))
+		logPrintln(" Received", len(copiedBytes), "byte message split over BT")
 	}
 }
 

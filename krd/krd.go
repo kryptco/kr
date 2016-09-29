@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/agrinman/go.corebluetooth"
 	"github.com/agrinman/kr"
 	"github.com/op/go-logging"
 )
@@ -13,6 +14,7 @@ var log *logging.Logger
 
 func main() {
 	log = kr.SetupLogging("krd", logging.NOTICE, true)
+	corebluetooth.SetLogger(log)
 	daemonSocket, err := kr.DaemonListen()
 	if err != nil {
 		log.Fatal(err)
