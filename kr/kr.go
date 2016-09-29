@@ -211,7 +211,8 @@ func listCommand(c *cli.Context) (err error) {
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
-	app.Usage = "communicate with krd and Kryptonite"
+	app.Usage = "communicate with Kryptonite and krd - the Kryptonite daemon"
+	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{
