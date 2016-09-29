@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"github.com/agrinman/kr"
 	"github.com/golang/groupcache/lru"
-	"golang.org/x/crypto/ssh"
 	"log"
 	"sync"
 	"time"
@@ -58,9 +57,7 @@ func (err *ProtoError) Error() string {
 type EnclaveClientI interface {
 	Pair() (pairing kr.PairingSecret, err error)
 	RequestMe() (*kr.MeResponse, error)
-	RequestMeSigner() (ssh.Signer, error)
 	GetCachedMe() *kr.Profile
-	GetCachedMeSigner() ssh.Signer
 	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
 	RequestList(kr.ListRequest) (*kr.ListResponse, error)
 }
@@ -150,37 +147,6 @@ func UnpairedEnclaveClient() EnclaveClientI {
 	return &EnclaveClient{
 		requestCallbacksByRequestID: lru.New(128),
 	}
-}
-
-func (ec *EnclaveClient) proxyKey(me kr.Profile) (signer ssh.Signer, err error) {
-	proxiedKey, err := ProxySSHWireRSAPublicKey(ec, me.SSHWirePublicKey)
-	if err != nil {
-		return
-	}
-	signer, err = ssh.NewSignerFromSigner(proxiedKey)
-	if err != nil {
-		return
-	}
-	return
-}
-
-func (ec *EnclaveClient) GetCachedMeSigner() (signer ssh.Signer) {
-	me := ec.GetCachedMe()
-	if me != nil {
-		signer, _ = ec.proxyKey(*me)
-	}
-	return
-}
-
-func (ec *EnclaveClient) RequestMeSigner() (signer ssh.Signer, err error) {
-	meResponse, err := ec.RequestMe()
-	if err != nil {
-		return
-	}
-	if meResponse != nil {
-		signer, _ = ec.proxyKey(meResponse.Me)
-	}
-	return
 }
 
 func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) {

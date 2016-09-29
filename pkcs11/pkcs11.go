@@ -262,7 +262,6 @@ var PUBKEY_ID []byte = []byte{1}
 //export C_FindObjects
 func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
 	log.Println("FindObjects")
-	//	TODO: error handle here
 	mutex.Lock()
 	defer mutex.Unlock()
 	remainingCount := maxCount
