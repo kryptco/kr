@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"github.com/agrinman/kr"
 	"github.com/golang/groupcache/lru"
-	"log"
 	"sync"
 	"time"
 )
@@ -83,7 +82,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 			if uuidErr == nil {
 				btErr := ec.bt.RemoveService(oldBtUUID)
 				if btErr != nil {
-					log.Println("error removing bluetooth service:", btErr.Error())
+					log.Error("error removing bluetooth service:", btErr.Error())
 				}
 			}
 		}
@@ -91,7 +90,7 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 
 	pairingSecret, err = kr.GeneratePairingSecretAndCreateQueues()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	//	erase any existing pairing
@@ -100,14 +99,14 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 	if ec.bt == nil {
 		ec.bt, err = NewBluetoothDriver()
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return
 		}
 		//	spawn at most one reader
 		go func() {
 			readChan, err := ec.bt.ReadChan()
 			if err != nil {
-				log.Println("error retrieving bluetooth read channel:", err)
+				log.Error("error retrieving bluetooth read channel:", err)
 				return
 			}
 			for ciphertext := range readChan {
@@ -118,12 +117,12 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 	btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
 	if uuidErr != nil {
 		err = uuidErr
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	err = ec.bt.AddService(btUUID)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	return
@@ -152,13 +151,13 @@ func UnpairedEnclaveClient() EnclaveClientI {
 func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) {
 	meRequest, err := kr.NewRequest()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
 	response, err := client.tryRequest(meRequest, 20*time.Second)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	if response != nil {
@@ -175,31 +174,31 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 	start := time.Now()
 	request, err := kr.NewRequest()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	request.SignRequest = &signRequest
-	response, err := client.tryRequest(request, 30*time.Second)
+	response, err := client.tryRequest(request, 15*time.Second)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	if response != nil {
 		signResponse = response.SignResponse
-		log.Println("successful signature took", int(time.Since(start)/time.Millisecond), "ms")
+		log.Notice("successful signature took", int(time.Since(start)/time.Millisecond), "ms")
 	}
 	return
 }
 func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listResponse *kr.ListResponse, err error) {
 	request, err := kr.NewRequest()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	request.ListRequest = &listRequest
 	response, err := client.tryRequest(request, 5*time.Second)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	if response != nil {
@@ -213,7 +212,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 	go func() {
 		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
 		if err != nil {
-			log.Println("error sendRequestAndReceiveResponses: ", err.Error())
+			log.Error("error sendRequestAndReceiveResponses: ", err.Error())
 		}
 	}()
 	select {
@@ -249,6 +248,8 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 	if err != nil {
 		switch err.(type) {
 		case *SendQueued:
+			log.Notice(err)
+			err = nil
 		default:
 			return
 		}
@@ -276,7 +277,9 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 		n, err := receive()
 		_, requestPending := client.requestCallbacksByRequestID.Get(request.RequestID)
 		if err != nil || (n == 0 && time.Now().After(timeoutAt)) || !requestPending {
-			log.Println("done reading queue, err:", err)
+			if err != nil {
+				log.Error("queue err:", err)
+			}
 			break
 		}
 	}
@@ -285,7 +288,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 		//	request still not processed, give up on it
 		cb.(chan *kr.Response) <- nil
 		client.requestCallbacksByRequestID.Remove(request.RequestID)
-		log.Println("evicting request", request.RequestID)
+		log.Error("evicting request", request.RequestID)
 	}
 	client.mutex.Unlock()
 
@@ -306,7 +309,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 		for _, queuedMessage := range queue {
 			err = client.sendMessage(queuedMessage)
 			if err != nil {
-				log.Println("error sending queued message:", err.Error())
+				log.Error("error sending queued message:", err.Error())
 			}
 		}
 	}
@@ -317,7 +320,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 	message, err := client.pairingSecret.DecryptMessage(*unwrappedCiphertext)
 	client.mutex.Unlock()
 	if err != nil {
-		log.Println("decrypt error:", err)
+		log.Error("decrypt error:", err)
 		return
 	}
 	if message == nil {
@@ -326,7 +329,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 	responseJson := *message
 	err = client.handleMessage(responseJson)
 	if err != nil {
-		log.Println("handleMessage error:", err)
+		log.Error("handleMessage error:", err)
 		return
 	}
 	return
@@ -359,14 +362,14 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 		ctxtString := base64.StdEncoding.EncodeToString(ciphertext)
 		if snsEndpointARN != nil {
 			if pushErr := kr.PushToSNSEndpoint(ctxtString, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
-				log.Println("Push error:", pushErr)
+				log.Error("Push error:", pushErr)
 			}
 		}
 	}()
 	go func() {
 		err := client.bt.Write(ciphertext)
 		if err != nil {
-			log.Println("error writing BT", err)
+			log.Error("error writing BT", err)
 		}
 	}()
 
@@ -393,10 +396,10 @@ func (client *EnclaveClient) handleMessage(message []byte) (err error) {
 
 	client.mutex.Lock()
 	if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
-		log.Println("found callback for request", response.RequestID)
+		log.Info("found callback for request", response.RequestID)
 		requestCb.(chan *kr.Response) <- &response
 	} else {
-		log.Println("callback not found for request", response.RequestID)
+		log.Info("callback not found for request", response.RequestID)
 	}
 	client.requestCallbacksByRequestID.Remove(response.RequestID)
 	client.mutex.Unlock()

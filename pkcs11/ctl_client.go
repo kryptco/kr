@@ -9,6 +9,9 @@ import (
 	"github.com/agrinman/kr"
 )
 
+var ErrNotPaired = fmt.Errorf("phone not paired with workstation")
+var ErrTimedOut = fmt.Errorf("request timed out")
+
 func getMe() (me kr.Profile, err error) {
 	daemonConn, err := kr.DaemonDial()
 	if err != nil {
@@ -41,6 +44,14 @@ func getMe() (me kr.Profile, err error) {
 	defer httpResponse.Body.Close()
 	if httpResponse.StatusCode == http.StatusNotFound {
 		kr.DesktopNotify("Not paired, please run \"kr pair\" and scan the QR code with kryptonite.")
+	}
+	if httpResponse.StatusCode == http.StatusNotFound {
+		err = ErrNotPaired
+		return
+	}
+	if httpResponse.StatusCode == http.StatusInternalServerError {
+		err = ErrTimedOut
+		return
 	}
 	if httpResponse.StatusCode != http.StatusOK {
 		err = fmt.Errorf("Non-200 status code %d", httpResponse.StatusCode)
@@ -94,6 +105,10 @@ func sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 		return
 	}
 	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode == http.StatusNotFound {
+		err = ErrNotPaired
+		return
+	}
 	if httpResponse.StatusCode != http.StatusOK {
 		err = fmt.Errorf("Non-200 status code %d", httpResponse.StatusCode)
 		return

@@ -1,23 +1,18 @@
 package main
 
 import (
-	"log"
-	"log/syslog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/agrinman/kr"
+	"github.com/op/go-logging"
 )
 
-func main() {
-	//	redirect stdout > stderr
-	syscall.Dup2(2, 1)
-	logwriter, e := syslog.New(syslog.LOG_NOTICE, "krd")
-	if e == nil {
-		log.SetOutput(logwriter)
-	}
+var log *logging.Logger
 
+func main() {
+	log = kr.SetupLogging("krd", logging.NOTICE, true)
 	daemonSocket, err := kr.DaemonListen()
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +23,7 @@ func main() {
 	go func() {
 		err := controlServer.HandleControlHTTP(daemonSocket)
 		if err != nil {
-			log.Println("controlServer return:", err)
+			log.Error("controlServer return:", err)
 		}
 	}()
 
@@ -36,6 +31,6 @@ func main() {
 	signal.Notify(stopSignal, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
 	sig, ok := <-stopSignal
 	if ok {
-		log.Println("stopping with signal", sig)
+		log.Notice("stopping with signal", sig)
 	}
 }

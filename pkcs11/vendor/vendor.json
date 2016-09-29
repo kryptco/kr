@@ -21,10 +21,10 @@
 			"revisionTime": "2016-07-13T06:31:29Z"
 		},
 		{
-			"checksumSHA1": "CxpkUwehbU/s+qiQX5txBHk3qsU=",
+			"checksumSHA1": "rcQYQuthNEQx7XmuQ8LsFDn1c+A=",
 			"path": "github.com/agrinman/kr",
-			"revision": "921062a4d36db9169af242f18909a9407cfbd4a3",
-			"revisionTime": "2016-09-29T02:53:24Z"
+			"revision": "04e2971e3d5beb164365f1764a70c40b031e9fc5",
+			"revisionTime": "2016-09-29T19:44:19Z"
 		},
 		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
@@ -195,6 +195,12 @@
 			"path": "github.com/keybase/saltpack/encoding/basex",
 			"revision": "bde25349b648d471c05bfc77062eba282e887e98",
 			"revisionTime": "2016-05-05T18:20:05Z"
+		},
+		{
+			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
+			"path": "github.com/op/go-logging",
+			"revision": "970db520ece77730c7e4724c61121037378659d9",
+			"revisionTime": "2016-03-15T20:05:05Z"
 		},
 		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",

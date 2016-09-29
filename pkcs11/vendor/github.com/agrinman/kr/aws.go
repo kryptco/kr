@@ -2,7 +2,6 @@ package kr
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -84,7 +83,7 @@ func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err
 func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 	sqsService, err := getSQSService()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
@@ -96,7 +95,7 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 
 	receiveResponse, err := sqsService.ReceiveMessage(receiveMessageInput)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
@@ -116,7 +115,7 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 
 		_, err = sqsService.DeleteMessageBatch(deleteMessageInput)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return
 		}
 	}
@@ -127,7 +126,7 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 func SendToQueue(queueUrl string, message string) (err error) {
 	sqsService, err := getSQSService()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
@@ -138,7 +137,7 @@ func SendToQueue(queueUrl string, message string) (err error) {
 
 	_, err = sqsService.SendMessage(sendMessageInput)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	return
@@ -148,7 +147,7 @@ func SendToQueue(queueUrl string, message string) (err error) {
 func CreateQueue(queue string) (queueURL string, err error) {
 	sqsService, err := getSQSService()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	createQueueInput := &sqs.CreateQueueInput{

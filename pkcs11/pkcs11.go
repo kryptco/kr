@@ -11,37 +11,35 @@ import (
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/binary"
-	"golang.org/x/crypto/ssh"
-	"log"
-	"log/syslog"
 	"sync"
 	"unsafe"
 
 	"github.com/agrinman/kr"
+	"github.com/op/go-logging"
 )
+
+var log = kr.SetupLogging("", logging.ERROR, false)
+
+var mutex sync.Mutex
 
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
-	logwriter, e := syslog.New(syslog.LOG_NOTICE, "kr-pkcs11")
-	if e == nil {
-		log.SetOutput(logwriter)
-	}
-	log.Println("getFunctionList")
+
+	log.Info("GetFunctionList")
 	*l = &functions
 	return C.CKR_OK
 }
 
 //export C_Initialize
 func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
-	log.Println("initialize")
+	log.Info("Initialize")
 	return C.CKR_OK
 }
 
 //export C_GetInfo
 func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
-	log.Println("getInfo")
+	log.Info("GetInfo")
 	*ck_info = C.CK_INFO{
 		cryptokiVersion: C.struct__CK_VERSION{
 			major: 2,
@@ -60,15 +58,15 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 
 //export C_GetSlotList
 func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulong) C.CK_RV {
-	log.Println("getSlotList input count", *count)
+	log.Info("GetSlotList input count", *count)
 	if slot_list == nil {
-		log.Println("slot_list nil")
+		log.Info("slot_list nil")
 		//	just return count
 		*count = 1
 		return C.CKR_OK
 	}
 	if *count == 0 {
-		log.Println("buffer too small")
+		log.Info("buffer too small")
 		return C.CKR_BUFFER_TOO_SMALL
 	}
 	*count = 1
@@ -78,7 +76,7 @@ func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulon
 
 //export C_GetSlotInfo
 func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
-	log.Println("getSlotInfo")
+	log.Info("GetSlotInfo")
 	*slotInfo = C.CK_SLOT_INFO{
 		manufacturerID:  bytesToChar32([]byte("KryptCo Inc.")),
 		slotDescription: bytesToChar64([]byte("kryptonite pkcs11 middleware")),
@@ -99,7 +97,7 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 
 //export C_GetTokenInfo
 func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
-	log.Println("getTokenInfo")
+	log.Info("GetTokenInfo")
 	*tokenInfo = C.CK_TOKEN_INFO{
 		label:               bytesToChar32([]byte("kryptonite iOS")),
 		manufacturerID:      bytesToChar32([]byte("KryptCo Inc.")),
@@ -127,20 +125,20 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 //export C_OpenSession
 func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID_PTR,
 	notify C.CK_NOTIFY, sessionHandle C.CK_SESSION_HANDLE_PTR) C.CK_RV {
-	log.Println("openSession")
+	log.Info("OpenSession")
 	if flags&C.CKF_SERIAL_SESSION == 0 {
-		log.Println("CKF_SERIAL_SESSION not set")
+		log.Error("CKF_SERIAL_SESSION not set")
 		return C.CKR_SESSION_PARALLEL_NOT_SUPPORTED
 	}
 	if notify != nil {
-		log.Println("notify callback passed")
+		log.Warning("notify callback passed in, but not supported")
 	}
 	return C.CKR_OK
 }
 
 //export C_GetSessionInfo
 func C_GetSessionInfo(session C.CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK_RV {
-	log.Println("GetSessionInfo")
+	log.Info("GetSessionInfo")
 	*info = C.CK_SESSION_INFO{
 		slotID: 0,
 		state:  C.CKS_RW_USER_FUNCTIONS,
@@ -156,6 +154,7 @@ var mechanismTypes []C.CK_MECHANISM_TYPE = []C.CK_MECHANISM_TYPE{
 
 //export C_GetMechanismList
 func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, count *C.CK_ULONG) C.CK_RV {
+	log.Info("GetMechanismList")
 	if mechList == nil {
 		*count = C.CK_ULONG(len(mechanismTypes))
 		return C.CKR_OK
@@ -167,15 +166,14 @@ func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, coun
 		*mechList = mechanismTypes[i]
 		mechList = (*C.CK_MECHANISM_TYPE)(unsafe.Pointer(uintptr(unsafe.Pointer(mechList)) + unsafe.Sizeof(*mechList)))
 	}
-	log.Println("C_GetMechanismList")
 	return C.CKR_OK
 }
 
 //export C_GetMechanismInfo
 func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.CK_MECHANISM_INFO) C.CK_RV {
-	log.Println("C_GetMechanismInfo")
+	log.Info("GetMechanismInfo")
 	if _type == C.CKM_RSA_PKCS {
-		log.Println("CKM_RSA_PKCS")
+		log.Info("CKM_RSA_PKCS")
 		*info = C.CK_MECHANISM_INFO{
 			ulMinKeySize: 4096,
 			ulMaxKeySize: 4096,
@@ -187,14 +185,11 @@ func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.
 
 //export C_CloseSession
 func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
-	log.Println("closeSession")
+	log.Info("CloseSession")
 	mutex.Lock()
 	defer mutex.Unlock()
 	return C.CKR_OK
 }
-
-var sessionFindObjectTypes map[C.CK_SESSION_HANDLE][]C.CK_ATTRIBUTE = map[C.CK_SESSION_HANDLE][]C.CK_ATTRIBUTE{}
-var mutex sync.Mutex
 
 var sessionFoundObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
 var sessionFindingObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
@@ -225,29 +220,29 @@ func found(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
 
 //export C_FindObjectsInit
 func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
-	log.Println("FindObjectsInit")
+	log.Info("FindObjectsInit")
 	mutex.Lock()
 	defer mutex.Unlock()
 	if count == 0 {
-		log.Println("count == 0")
+		log.Info("count == 0, find all objects")
 		findOnce(session, PUBKEY_HANDLE)
 		findOnce(session, PRIVKEY_HANDLE)
 		return C.CKR_OK
 	}
 	for i := C.CK_ULONG(0); i < count; i++ {
-		log.Println(templates._type)
+		log.Info("Template type:", templates._type)
 		switch templates._type {
 		case C.CKA_CLASS:
 			switch *(*C.CK_OBJECT_CLASS)(templates.pValue) {
 			case C.CKO_PUBLIC_KEY:
-				log.Println("init search for CKO_PUBLIC_KEY")
+				log.Info("init search for CKO_PUBLIC_KEY")
 				findOnce(session, PUBKEY_HANDLE)
 			case C.CKO_PRIVATE_KEY:
-				log.Println("init search for CKO_PRIVATE_KEY")
+				log.Info("init search for CKO_PRIVATE_KEY")
 				findOnce(session, PRIVKEY_HANDLE)
+			case C.CKO_MECHANISM:
+				log.Info("init search for CKO_MECHANISM unsupported")
 			}
-		case C.CKO_MECHANISM:
-			log.Println("init search for CKO_MECHANISM")
 		}
 		templates = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templates)) + unsafe.Sizeof(*templates)))
 	}
@@ -261,7 +256,7 @@ var PUBKEY_ID []byte = []byte{1}
 
 //export C_FindObjects
 func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
-	log.Println("FindObjects")
+	log.Info("FindObjects")
 	mutex.Lock()
 	defer mutex.Unlock()
 	remainingCount := maxCount
@@ -297,23 +292,26 @@ var staticMe = kr.Profile{}
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
 	mutex.Lock()
 	defer mutex.Unlock()
-	log.Println("C_GetAttributeValue")
+	log.Info("C_GetAttributeValue")
 	me, err := getMe()
+	if err == ErrNotPaired {
+		log.Error("Kryptonite not paired, please pair to use your SSH key.")
+		//	return OK to silence SSH error output
+		return C.CKR_OK
+	}
+	if err == ErrTimedOut {
+		log.Error("Signature timed out. Make sure your phone and workstation are paired and connected to the internet.")
+		//	return OK to silence SSH error output
+		return C.CKR_OK
+	}
 	if err != nil {
-		log.Println("getMe error " + err.Error())
+		log.Error("unexpected error " + err.Error())
 		return C.CKR_GENERAL_ERROR
 	}
 	pk, err := me.RSAPublicKey()
 	if err != nil {
-		log.Println("me.RSAPublicKey error " + err.Error())
+		log.Error("me.RSAPublicKey error " + err.Error())
 		return C.CKR_GENERAL_ERROR
-	}
-
-	sshPk, err := ssh.NewPublicKey(pk)
-	if err != nil {
-		log.Println("ssh pk err: " + err.Error())
-	} else {
-		log.Println(sshPk.Type() + " " + base64.StdEncoding.EncodeToString(sshPk.Marshal()))
 	}
 
 	templateIter := template
@@ -321,35 +319,35 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 	eBytes := &bytes.Buffer{}
 	err = binary.Write(eBytes, binary.BigEndian, int64(pk.E))
 	if err != nil {
-		log.Println("public exponent binary encoding error: " + err.Error())
+		log.Error("public exponent binary encoding error: " + err.Error())
 		return C.CKR_GENERAL_ERROR
 	}
 	e := eBytes.Bytes()
 	for i := C.CK_ULONG(0); i < count; i++ {
-		//	TODO: memory safety/leak: should we be allocating?
+		//	TODO: memory safety/leak: some PKCS11 clients allocate memory
 		switch (*templateIter)._type {
 		case C.CKA_ID:
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(PUBKEY_ID))
 			(*templateIter).ulValueLen = C.ulong(len(PUBKEY_ID))
 		case C.CKA_MODULUS:
-			log.Println("CKA_MODULUS")
+			log.Info("CKA_MODULUS")
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(modulus))
 			(*templateIter).ulValueLen = C.ulong(len(modulus))
 		case C.CKA_MODULUS_BITS:
-			log.Println("MODULUS_BITS")
+			log.Info("MODULUS_BITS")
 			*(*C.CK_ULONG)((*templateIter).pValue) = C.CK_ULONG(pk.N.BitLen())
 		case C.CKA_PUBLIC_EXPONENT:
-			log.Println("CKA_PUBLIC_EXPONENT")
+			log.Info("CKA_PUBLIC_EXPONENT")
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(e))
 			(*templateIter).ulValueLen = C.ulong(len(e))
 		case C.CKA_KEY_TYPE:
-			log.Println("CKA_KEY_TYPE")
+			log.Info("CKA_KEY_TYPE")
 			rsaKeyType := (*C.CK_KEY_TYPE)(C.malloc(C.size_t(unsafe.Sizeof(C.CKK_RSA))))
 			*rsaKeyType = C.CKK_RSA
 			(*templateIter).pValue = unsafe.Pointer(rsaKeyType)
 			(*templateIter).ulValueLen = C.ulong(unsafe.Sizeof(*rsaKeyType))
 		case C.CKA_SIGN:
-			log.Println("CKA_SIGN")
+			log.Info("CKA_SIGN")
 			*(*C.CK_BBOOL)((*templateIter).pValue) = C.CK_TRUE
 		}
 
@@ -360,13 +358,12 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 
 //export C_SignInit
 func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C.CK_OBJECT_HANDLE) C.CK_RV {
-	log.Println("C_SignInit")
-	log.Println(mechanism.mechanism)
+	log.Info("C_SignInit mechanism", mechanism.mechanism)
 	switch mechanism.mechanism {
 	case C.CKM_RSA_PKCS:
 		return C.CKR_OK
 	case C.CKM_RSA_X_509:
-		log.Println("CKM_RSA_X_509 not supported")
+		log.Error("CKM_RSA_X_509 not supported")
 		return C.CKR_MECHANISM_INVALID
 	default:
 		return C.CKR_MECHANISM_INVALID
@@ -378,8 +375,8 @@ func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C
 func C_Sign(session C.CK_SESSION_HANDLE,
 	data C.CK_BYTE_PTR, dataLen C.ulong,
 	signature C.CK_BYTE_PTR, signatureLen *C.ulong) C.CK_RV {
-	log.Println("C_Sign")
-	log.Println("in sigLen", *signatureLen, "dataLen", dataLen)
+	log.Info("C_Sign")
+	log.Info("in sigLen", *signatureLen, "dataLen", dataLen)
 	if signature == nil {
 		*signatureLen = 512
 		return C.CKR_OK
@@ -390,24 +387,24 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
 	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
 	sigBytes, err := sign(pkFingerprint[:], message)
-	//sigBytes, err := rsa.SignPKCS1v15(rand.Reader, sk, crypto.Hash(0), message)
 	if err != nil {
-		log.Println("sig error: " + err.Error())
+		log.Error("sig error: " + err.Error())
 		return C.CKR_GENERAL_ERROR
 	} else {
-		log.Println("got sig of", len(sigBytes), "bytes")
+		log.Info("got sig of", len(sigBytes), "bytes")
 		for _, b := range sigBytes {
 			*signature = C.CK_BYTE(b)
 			signature = C.CK_BYTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(signature)) + 1))
 		}
 		*signatureLen = C.ulong(len(sigBytes))
-		log.Println("set sig")
+		log.Info("set sig")
 	}
 	return C.CKR_OK
 }
 
 //export C_Finalize
 func C_Finalize(reserved C.CK_VOID_PTR) C.CK_RV {
+	log.Info("Finalize")
 	return C.CKR_OK
 }
 func bytesToChar64(b []byte) [64]C.uchar {

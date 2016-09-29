@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net"
 	"net/http"
 
@@ -45,13 +44,13 @@ func (cs *ControlServer) handleGetPair(w http.ResponseWriter, r *http.Request) {
 	if err == nil && meResponse != nil {
 		err = json.NewEncoder(w).Encode(meResponse.Me)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return
 		}
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 		}
 		return
 	}
@@ -63,12 +62,12 @@ func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	err = json.NewEncoder(w).Encode(pairingSecret)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 }
@@ -97,7 +96,7 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		}
 		err = json.NewEncoder(w).Encode(response)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return
 		}
 		return
@@ -109,7 +108,7 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		}
 		signResponse, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest)
 		if err != nil {
-			log.Println("signature request error:", err)
+			log.Error("signature request error:", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -120,7 +119,7 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 			}
 			err = json.NewEncoder(w).Encode(response)
 			if err != nil {
-				log.Println(err)
+				log.Error(err)
 				return
 			}
 		} else {
@@ -132,7 +131,7 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	if enclaveRequest.ListRequest != nil {
 		listResponse, err := cs.enclaveClient.RequestList(*enclaveRequest.ListRequest)
 		if err != nil {
-			log.Println("list request error:", err)
+			log.Error("list request error:", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -143,7 +142,7 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 			}
 			err = json.NewEncoder(w).Encode(response)
 			if err != nil {
-				log.Println(err)
+				log.Error(err)
 				return
 			}
 		} else {

@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -47,7 +46,7 @@ func (ps PairingSecret) SQSRecvQueueName() string {
 func (ps PairingSecret) SQSBaseQueueName() string {
 	derivedUUID, err := ps.DeriveUUID()
 	if err != nil {
-		log.Println("error deriving UUID in PairingSecret:", err.Error())
+		log.Error("error deriving UUID in PairingSecret:", err.Error())
 		return ""
 	}
 	return strings.ToUpper(derivedUUID.String())
@@ -132,7 +131,7 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		}
 		ps.SymmetricSecretKey = &key
 		didUnwrapKey = true
-		log.Println("stored symmetric key")
+		log.Notice("stored symmetric key")
 		return
 	}
 	return
@@ -181,7 +180,7 @@ func (ps PairingSecret) ReadQueue() (ciphertexts [][]byte, err error) {
 	for _, ctxtString := range ctxtStrings {
 		ctxt, err := base64.StdEncoding.DecodeString(ctxtString)
 		if err != nil {
-			log.Println("base64 ciphertext decoding error")
+			log.Error("base64 ciphertext decoding error")
 			continue
 		}
 		ciphertexts = append(ciphertexts, ctxt)
