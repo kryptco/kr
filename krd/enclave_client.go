@@ -55,6 +55,8 @@ func (err *ProtoError) Error() string {
 
 type EnclaveClientI interface {
 	Pair() (pairing kr.PairingSecret, err error)
+	Start() (err error)
+	Stop() (err error)
 	RequestMe() (*kr.MeResponse, error)
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
@@ -62,7 +64,7 @@ type EnclaveClientI interface {
 }
 
 type EnclaveClient struct {
-	mutex                       sync.Mutex
+	sync.Mutex
 	pairingSecret               *kr.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
 	outgoingQueue               [][]byte
@@ -72,10 +74,41 @@ type EnclaveClient struct {
 }
 
 func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
-	ec.mutex.Lock()
-	defer ec.mutex.Unlock()
+	ec.Lock()
+	defer ec.Unlock()
 	ec.cachedMe = nil
 
+	ec.deactivatePairing()
+	ec.generatePairing()
+	ec.activatePairing()
+
+	pairingSecret = *ec.pairingSecret
+
+	return
+}
+
+func (ec *EnclaveClient) generatePairing() (err error) {
+	ec.deactivatePairing()
+	kr.DeletePairing()
+
+	pairingSecret, err := kr.GeneratePairingSecretAndCreateQueues()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	//	erase any existing pairing
+	ec.pairingSecret = &pairingSecret
+	ec.outgoingQueue = [][]byte{}
+	pairingSecret = *ec.pairingSecret
+
+	savePairingErr := kr.SavePairing(pairingSecret)
+	if savePairingErr != nil {
+		log.Error("error saving pairing:", savePairingErr.Error())
+	}
+	return
+}
+
+func (ec *EnclaveClient) deactivatePairing() (err error) {
 	if ec.bt != nil {
 		if ec.pairingSecret != nil {
 			oldBtUUID, uuidErr := ec.pairingSecret.DeriveUUID()
@@ -87,33 +120,10 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 			}
 		}
 	}
+	return
+}
 
-	pairingSecret, err = kr.GeneratePairingSecretAndCreateQueues()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	//	erase any existing pairing
-	ec.pairingSecret = &pairingSecret
-
-	if ec.bt == nil {
-		ec.bt, err = NewBluetoothDriver()
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		//	spawn at most one reader
-		go func() {
-			readChan, err := ec.bt.ReadChan()
-			if err != nil {
-				log.Error("error retrieving bluetooth read channel:", err)
-				return
-			}
-			for ciphertext := range readChan {
-				err = ec.handleCiphertext(ciphertext)
-			}
-		}()
-	}
+func (ec *EnclaveClient) activatePairing() (err error) {
 	btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
 	if uuidErr != nil {
 		err = uuidErr
@@ -127,17 +137,57 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 	}
 	return
 }
+func (ec *EnclaveClient) Stop() (err error) {
+	ec.deactivatePairing()
+	return
+}
+
+func (ec *EnclaveClient) Start() (err error) {
+	ec.Lock()
+	loadedPairing, loadErr := kr.LoadPairing()
+	if loadErr == nil && loadedPairing != nil {
+		ec.pairingSecret = loadedPairing
+	} else {
+		log.Notice("pairing not loaded:", loadErr)
+	}
+
+	bt, err := NewBluetoothDriver()
+	if err != nil {
+		log.Error("error starting bluetooth driver:", err)
+	} else {
+		ec.bt = bt
+		go func() {
+			readChan, err := ec.bt.ReadChan()
+			if err != nil {
+				log.Error("error retrieving bluetooth read channel:", err)
+				return
+			}
+			for ciphertext := range readChan {
+				err = ec.handleCiphertext(ciphertext)
+			}
+		}()
+	}
+
+	if ec.bt != nil {
+		ec.activatePairing()
+	}
+	ec.Unlock()
+	if ec.pairingSecret != nil {
+		ec.RequestMe()
+	}
+	return
+}
 
 func (ec *EnclaveClient) getPairingSecret() (pairingSecret *kr.PairingSecret) {
-	ec.mutex.Lock()
-	defer ec.mutex.Unlock()
+	ec.Lock()
+	defer ec.Unlock()
 	pairingSecret = ec.pairingSecret
 	return
 }
 
 func (ec *EnclaveClient) GetCachedMe() (me *kr.Profile) {
-	ec.mutex.Lock()
-	defer ec.mutex.Unlock()
+	ec.Lock()
+	defer ec.Unlock()
 	me = ec.cachedMe
 	return
 }
@@ -163,9 +213,9 @@ func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) 
 	if response != nil {
 		meResponse = response.MeResponse
 		if meResponse != nil {
-			client.mutex.Lock()
+			client.Lock()
 			client.cachedMe = &meResponse.Me
-			client.mutex.Unlock()
+			client.Unlock()
 		}
 	}
 	return
@@ -239,9 +289,9 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 
 	timeoutAt := time.Now().Add(timeout)
 
-	client.mutex.Lock()
+	client.Lock()
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
-	client.mutex.Unlock()
+	client.Unlock()
 
 	err = client.sendMessage(requestJson)
 
@@ -283,29 +333,40 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 			break
 		}
 	}
-	client.mutex.Lock()
+	client.Lock()
 	if cb, ok := client.requestCallbacksByRequestID.Get(request.RequestID); ok {
 		//	request still not processed, give up on it
 		cb.(chan *kr.Response) <- nil
 		client.requestCallbacksByRequestID.Remove(request.RequestID)
 		log.Error("evicting request", request.RequestID)
 	}
-	client.mutex.Unlock()
+	client.Unlock()
 
 	return
 }
 
 func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
-	unwrappedCiphertext, didUnwrapKey, err := client.pairingSecret.UnwrapKeyIfPresent(ciphertext)
+	pairingSecret := client.getPairingSecret()
+	unwrappedCiphertext, didUnwrapKey, err := pairingSecret.UnwrapKeyIfPresent(ciphertext)
+	if pairingSecret == nil {
+		err = errors.New("EnclaveClient pairing never initiated")
+		return
+	}
 	if err != nil {
 		err = &ProtoError{err}
 		return
 	}
 	if didUnwrapKey {
-		client.mutex.Lock()
+		client.Lock()
 		queue := client.outgoingQueue
 		client.outgoingQueue = [][]byte{}
-		client.mutex.Unlock()
+		client.Unlock()
+
+		savePairingErr := kr.SavePairing(*pairingSecret)
+		if savePairingErr != nil {
+			log.Error("error saving pairing:", savePairingErr.Error())
+		}
+
 		for _, queuedMessage := range queue {
 			err = client.sendMessage(queuedMessage)
 			if err != nil {
@@ -316,9 +377,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 	if unwrappedCiphertext == nil {
 		return
 	}
-	client.mutex.Lock()
-	message, err := client.pairingSecret.DecryptMessage(*unwrappedCiphertext)
-	client.mutex.Unlock()
+	message, err := pairingSecret.DecryptMessage(*unwrappedCiphertext)
 	if err != nil {
 		log.Error("decrypt error:", err)
 		return
@@ -341,17 +400,17 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 		err = errors.New("EnclaveClient pairing never initiated")
 		return
 	}
-	client.mutex.Lock()
+	client.Lock()
 	snsEndpointARN := client.snsEndpointARN
-	client.mutex.Unlock()
-	ciphertext, err := client.pairingSecret.EncryptMessage(message)
+	client.Unlock()
+	ciphertext, err := pairingSecret.EncryptMessage(message)
 	if err != nil {
 		if err == kr.ErrWaitingForKey {
-			client.mutex.Lock()
+			client.Lock()
 			if len(client.outgoingQueue) < 128 {
 				client.outgoingQueue = append(client.outgoingQueue, message)
 			}
-			client.mutex.Unlock()
+			client.Unlock()
 			err = &SendQueued{err}
 		} else {
 			err = &SendError{err}
@@ -389,12 +448,12 @@ func (client *EnclaveClient) handleMessage(message []byte) (err error) {
 	}
 
 	if response.SNSEndpointARN != nil {
-		client.mutex.Lock()
+		client.Lock()
 		client.snsEndpointARN = response.SNSEndpointARN
-		client.mutex.Unlock()
+		client.Unlock()
 	}
 
-	client.mutex.Lock()
+	client.Lock()
 	if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
 		log.Info("found callback for request", response.RequestID)
 		requestCb.(chan *kr.Response) <- &response
@@ -402,6 +461,6 @@ func (client *EnclaveClient) handleMessage(message []byte) (err error) {
 		log.Info("callback not found for request", response.RequestID)
 	}
 	client.requestCallbacksByRequestID.Remove(response.RequestID)
-	client.mutex.Unlock()
+	client.Unlock()
 	return
 }

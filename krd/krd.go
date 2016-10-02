@@ -23,15 +23,19 @@ func main() {
 
 	controlServer := NewControlServer()
 	go func() {
+		controlServer.enclaveClient.Start()
 		err := controlServer.HandleControlHTTP(daemonSocket)
 		if err != nil {
 			log.Error("controlServer return:", err)
 		}
 	}()
 
+	log.Notice("krd launched and listening on UNIX socket")
+
 	stopSignal := make(chan os.Signal, 1)
 	signal.Notify(stopSignal, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
 	sig, ok := <-stopSignal
+	controlServer.enclaveClient.Stop()
 	if ok {
 		log.Notice("stopping with signal", sig)
 	}

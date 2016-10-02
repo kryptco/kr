@@ -13,7 +13,8 @@ type ControlServer struct {
 }
 
 func NewControlServer() *ControlServer {
-	return &ControlServer{UnpairedEnclaveClient()}
+	cs := &ControlServer{UnpairedEnclaveClient()}
+	return cs
 }
 
 func (cs *ControlServer) HandleControlHTTP(listener net.Listener) (err error) {
