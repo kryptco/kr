@@ -83,7 +83,7 @@ typedef void (^CBBoolHandler)(BOOL result, NSError *_Nullable error);
  @param callback Called on the driver's queue indicating if the service was added successfully.
  */
 - (void)addService:(CBUUID *_Nonnull)uuid
-   characteristics:(NSDictionary<CBUUID *, NSData *> *_Nonnull)characteristics
+   characteristics:(NSDictionary *_Nonnull)characteristics
           callback:(CBAddServiceHandler _Nonnull)handler;
 
 - (void)writeData:(NSData*_Nonnull)data

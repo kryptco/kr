@@ -67,7 +67,7 @@ BOOL v23_cbdriver_addService(const char *_Nonnull cUuid,
                              CBDriverCharacteristicMapEntry *_Nonnull entries, int entriesLength,
                              char *_Nullable *_Nullable errorOut) {
   CBUUID *uuid = [CBUUID UUIDWithString:[NSString stringWithUTF8String:cUuid]];
-  NSMutableDictionary<CBUUID *, NSData *> *_Nonnull characteristics = [NSMutableDictionary new];
+  NSMutableDictionary *_Nonnull characteristics = [NSMutableDictionary new];
   for (int i = 0; i < entriesLength; i++) {
     CBDriverCharacteristicMapEntry entry = entries[i];
     CBUUID *characteristicUuid = [CBUUID UUIDWithString:[NSString stringWithUTF8String:entry.uuid]];
@@ -138,14 +138,14 @@ BOOL v23_cbdriver_writeData(const char *_Nonnull data,
 }
 
 static CBDriverCharacteristicMapEntry *characteristicsMapToEntries(
-    NSDictionary<CBUUID *, NSData *> *_Nullable characteristics);
+    NSDictionary *_Nullable characteristics);
 
 static void freeCharacteristicsEntriesMap(CBDriverCharacteristicMapEntry *entries, int length);
 
 // This is exported from go
 extern void v23_corebluetooth_scan_handler_on_discovered(
     const char *_Nonnull uuid, CBDriverCharacteristicMapEntry *_Nonnull entries, int entriesLength,
-    int rssi);
+                                                  int rssi);
 
 void v23_cbdriver_removeService(const char *_Nonnull cUuid) {
   CBUUID *uuid = [CBUUID UUIDWithString:[NSString stringWithUTF8String:cUuid]];
@@ -159,7 +159,7 @@ void v23_cbdriver_setAdRotateDelay(float seconds) {
 BOOL v23_cbdriver_startScan(const char *_Nonnull *_Nonnull cUuids, int uuidsLength,
                             const char *_Nonnull cBaseUuid, const char *_Nonnull cMaskUuid,
                             char *_Nullable *_Nullable errorOut) {
-  NSMutableArray<CBUUID *> *uuids = [NSMutableArray new];
+  NSMutableArray *uuids = [NSMutableArray new];
   for (int i = 0; i < uuidsLength; i++) {
     [uuids addObject:[CBUUID UUIDWithString:[NSString stringWithUTF8String:cUuids[i]]]];
   }
@@ -171,7 +171,7 @@ BOOL v23_cbdriver_startScan(const char *_Nonnull *_Nonnull cUuids, int uuidsLeng
        baseUuid:baseUuid
        maskUuid:maskUuid
         handler:^(CBUUID *_Nonnull uuid,
-                  NSDictionary<CBUUID *, NSData *> *_Nullable characteristics, int rssi) {
+                  NSDictionary *_Nullable characteristics, int rssi) {
           // Go assumes characteristics -- if empty then it crashes.
           if (characteristics.count == 0) {
             CBErrorLog(@"Got vanadium service %@ but no characteristics; ignoring", uuid);
@@ -196,7 +196,7 @@ void v23_cbdriver_stopScan() { [[CBDriver instance].scanningDriver stopScan]; }
 void v23_cbdriver_clean() { [CBDriver shutdown]; }
 
 static CBDriverCharacteristicMapEntry *characteristicsMapToEntries(
-    NSDictionary<CBUUID *, NSData *> *_Nullable characteristics) {
+    NSDictionary *_Nullable characteristics) {
   if (!characteristics.count) return NULL;
   CBDriverCharacteristicMapEntry *entries =
       malloc(sizeof(CBDriverCharacteristicMapEntry) * characteristics.count);

@@ -10,7 +10,7 @@
  The valid range is [-127, 0).
  */
 typedef void (^CBOnDiscoveredHandler)(CBUUID *_Nonnull uuid,
-                                      NSDictionary<CBUUID *, NSData *> *_Nullable characteristics,
+                                      NSDictionary *_Nullable characteristics,
                                       int rssi);
 
 @interface CBScanningDriver : NSObject<CBCentralManagerDelegate>
@@ -49,7 +49,7 @@ typedef void (^CBOnDiscoveredHandler)(CBUUID *_Nonnull uuid,
               the scan has failed and there is no need to call stopScan -- currently this only
               occurs if the hardware is unsupported (such as running in an iOS simulator).
  */
-- (BOOL)startScan:(NSArray<CBUUID *> *_Nonnull)uuids
+- (BOOL)startScan:(NSArray *_Nonnull)uuids
          baseUuid:(CBUUID *_Nonnull)baseUuid
          maskUuid:(CBUUID *_Nonnull)maskUuid
           handler:(CBOnDiscoveredHandler _Nonnull)handler

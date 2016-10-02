@@ -16,6 +16,6 @@ void CBDispatchSync(dispatch_queue_t _Nonnull queue, dispatch_block_t _Nonnull b
 
 + (CBMutableService *_Nonnull)cb_mutableService:(CBUUID *_Nonnull)uuid
                     withReadOnlyCharacteristics:
-                        (NSDictionary<CBUUID *, NSData *> *_Nonnull)characteristics;
+                        (NSDictionary *_Nonnull)characteristics;
 
 @end

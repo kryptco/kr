@@ -76,21 +76,21 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
 @property(nonatomic, strong) NSDate *_Nonnull lastActivity;
 @property(nonatomic, strong) CBPeripheral *_Nonnull peripheral;
 @property(nonatomic, strong) NSNumber *_Nonnull rssi;
-@property(nonatomic, strong) NSMutableSet<CBPeripheralServiceScan *> *_Nonnull serviceScans;
-@property(nonatomic, strong) NSMutableSet<CBPeripheralServiceScan *> *_Nonnull completedScans;
+@property(nonatomic, strong) NSMutableSet *_Nonnull serviceScans;
+@property(nonatomic, strong) NSMutableSet *_Nonnull completedScans;
 - (id)initWithPeripheral:(CBPeripheral *_Nonnull)peripheral
                     rssi:(NSNumber *)rssi
                 delegate:(id<CBPeripheralScanDelegate, CBPeripheralServiceScanDelegate>)delegate;
-- (void)start:(NSArray<CBUUID *> *_Nullable)scanUuids;
-- (NSMutableSet<CBUUID *> *_Nonnull)seenUUIDs;
+- (void)start:(NSArray *_Nullable)scanUuids;
+- (NSMutableSet *_Nonnull)seenUUIDs;
 @end
 
 /** CBPeripheralServiceScan controls connecting to a service and reading its characteristics. */
 @interface CBPeripheralServiceScan : NSObject<CBPeripheralDelegate>
 @property(nonatomic, weak) id<CBPeripheralServiceScanDelegate> delegate;
 @property(nonatomic, strong) CBService *_Nonnull service;
-@property(nonatomic, strong) NSMutableSet<CBCharacteristic *> *_Nonnull queryingCharacteristics;
-@property(nonatomic, strong) NSMutableDictionary<CBUUID *, NSData *> *_Nonnull characteristics;
+@property(nonatomic, strong) NSMutableSet *_Nonnull queryingCharacteristics;
+@property(nonatomic, strong) NSMutableDictionary *_Nonnull characteristics;
 @property(nonatomic, strong) NSNumber *_Nonnull rssi;
 - (id)initWithService:(CBService *_Nonnull)service
                  rssi:(NSNumber *)rssi
@@ -100,11 +100,11 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
 
 @interface CBScanningDriver ()<CBPeripheralScanDelegate, CBPeripheralServiceScanDelegate>
 @property(nonatomic, assign) BOOL isScanning;
-@property(nonatomic, strong) NSArray<CBUUID *> *_Nullable scanUuids;
+@property(nonatomic, strong) NSArray *_Nullable scanUuids;
 @property(nonatomic, strong) CBUUID *_Nullable baseUuid;
 @property(nonatomic, strong) CBUUID *_Nullable maskUuid;
 @property(nonatomic, strong) CBOnDiscoveredHandler _Nullable onDiscoveredHandler;
-@property(nonatomic, strong) NSMutableSet<CBPeripheralScan *> *_Nonnull scans;
+@property(nonatomic, strong) NSMutableSet *_Nonnull scans;
 @end
 
 @implementation CBScanningDriver
@@ -185,7 +185,7 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
   [self scheduleFlush];
 }
 
-- (BOOL)startScan:(NSArray<CBUUID *> *_Nonnull)uuids
+- (BOOL)startScan:(NSArray *_Nonnull)uuids
          baseUuid:(CBUUID *_Nonnull)baseUuid
          maskUuid:(CBUUID *_Nonnull)maskUuid
           handler:(CBOnDiscoveredHandler _Nonnull)handler
@@ -317,12 +317,12 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
   return YES;
 }
 
-- (NSSet *)targetServiceUuidsInAdData:(NSDictionary<NSString *, id> *_Nonnull)adData {
+- (NSSet *)targetServiceUuidsInAdData:(NSDictionary *_Nonnull)adData {
   // Extract and find service UUIDs that we care about
   NSMutableSet *serviceUuids = [NSMutableSet new];
-  NSArray<CBUUID *> *dataServiceUuids = adData[CBAdvertisementDataServiceUUIDsKey];
+  NSArray *dataServiceUuids = adData[CBAdvertisementDataServiceUUIDsKey];
   if (dataServiceUuids) [serviceUuids addObjectsFromArray:dataServiceUuids];
-  NSArray<CBUUID *> *overflowServiceUuids = adData[CBAdvertisementDataOverflowServiceUUIDsKey];
+  NSArray *overflowServiceUuids = adData[CBAdvertisementDataOverflowServiceUUIDsKey];
   if (overflowServiceUuids) [serviceUuids addObjectsFromArray:overflowServiceUuids];
   NSSet *matchingUuids = [self filterMatchingUUIDs:serviceUuids];
   return matchingUuids;
@@ -330,7 +330,7 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
 
 - (void)centralManager:(CBCentralManager *)central
  didDiscoverPeripheral:(CBPeripheral *)peripheral
-     advertisementData:(NSDictionary<NSString *, id> *)adData
+     advertisementData:(NSDictionary *)adData
                   RSSI:(NSNumber *)RSSI {
   if (![self canHandleDiscovery:peripheral]) {
     return;
@@ -549,7 +549,7 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
   return self;
 }
 
-- (void)start:(NSArray<CBUUID *> *_Nullable)scanUuids {
+- (void)start:(NSArray *_Nullable)scanUuids {
   if (self.peripheral.state != CBPeripheralStateConnected) {
     CBErrorLog(@"Peripheral not connected -- can't discover services on %@", self.peripheral);
     [self.delegate peripheralScanDidComplete:self];
@@ -579,8 +579,8 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
     return;
   }
   // Filter for Vanadium services
-  NSMutableSet<CBService *> *discoveredServices = [NSMutableSet new];
-  NSMutableSet<CBUUID *> *discoveredUuids = [NSMutableSet new];
+  NSMutableSet *discoveredServices = [NSMutableSet new];
+  NSMutableSet *discoveredUuids = [NSMutableSet new];
   for (CBService *service in peripheral.services) {
     if ([self.delegate uuidMatchesScanFilter:service.UUID]) {
       [discoveredServices addObject:service];
@@ -615,7 +615,7 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral
- didModifyServices:(NSArray<CBService *> *)invalidatedServices {
+ didModifyServices:(NSArray *)invalidatedServices {
   [self updateLastActivity];
   CBInfoLog(@"peripheral %@ didModifyServices by invalidating %@", peripheral, invalidatedServices);
   NSMutableArray *invalidatedScans = [NSMutableArray new];
@@ -678,8 +678,8 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
 
 #pragma mark - CBPeripheralScan Util
 
-- (NSMutableSet<CBUUID *> *_Nonnull)seenUUIDs {
-  NSMutableSet<CBUUID *> *set = [NSMutableSet new];
+- (NSMutableSet *_Nonnull)seenUUIDs {
+  NSMutableSet *set = [NSMutableSet new];
   for (CBPeripheralServiceScan *scan in self.serviceScans) {
     [set addObject:scan.service.UUID];
   }
@@ -724,7 +724,7 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
 }
 
 - (void)start {
-  NSArray<CBUUID *> *uuids = [CBPeripheralServiceScan possibleCharacteristicUUIDs];
+  NSArray *uuids = [CBPeripheralServiceScan possibleCharacteristicUUIDs];
   if (self.service.peripheral.state != CBPeripheralStateConnected) {
     CBErrorLog(@"Can't discover characteristics for service %@ -- we're not connected",
                self.service.UUID);
@@ -795,7 +795,7 @@ static const NSTimeInterval kMaxTimeForDiscoverServices = 90;
                                     self.characteristics];
 }
 
-+ (NSArray<CBUUID *> *)possibleCharacteristicUUIDs {
++ (NSArray *)possibleCharacteristicUUIDs {
   static NSArray *_cached = nil;
   if (!_cached) {
     // Compute all possible UUIDs

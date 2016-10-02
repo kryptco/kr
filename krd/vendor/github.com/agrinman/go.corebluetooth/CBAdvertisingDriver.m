@@ -17,14 +17,14 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 @property(nonatomic, strong) NSDate *requestedAdvertisingStart;
 /** advertisedServices is the same as the keys of services, but the ordering maintained here is
  how we do this rotation business. */
-@property(nonatomic, strong) NSMutableArray<CBUUID *> *_Nonnull advertisedServices;
+@property(nonatomic, strong) NSMutableArray *_Nonnull advertisedServices;
 /** All added services by uuid */
-@property(nonatomic, strong) NSMutableDictionary<CBUUID *, CBMutableService *> *_Nonnull services;
+@property(nonatomic, strong) NSMutableDictionary *_Nonnull services;
 @property(nonatomic, strong)
-    NSMutableDictionary<CBUUID *, CBAddServiceHandler> *_Nonnull addServiceHandlers;
-@property(nonatomic, strong) NSMutableDictionary<CBUUID *, CBMutableCharacteristic*>
+    NSMutableDictionary *_Nonnull addServiceHandlers;
+@property(nonatomic, strong) NSMutableDictionary
     *_Nonnull serviceCharacteristics;
-@property(nonatomic, strong) NSMutableArray<NSData*>*_Nonnull writeQueue;
+@property(nonatomic, strong) NSMutableArray*_Nonnull writeQueue;
 @property(nonatomic, strong) NSData*_Nullable lastMessage;
 @property(nonatomic, assign) int centralMTU;
 @end
@@ -66,7 +66,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 }
 
 - (void)addService:(CBUUID *_Nonnull)uuid
-   characteristics:(NSDictionary<CBUUID *, NSData *> *_Nonnull)characteristics
+   characteristics:(NSDictionary *_Nonnull)characteristics
           callback:(CBAddServiceHandler _Nonnull)handler {
   // Allow shutdown in between to occur.
     CBDebugLog(@"addService");
@@ -123,7 +123,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
       return;
     }
 	this.lastMessage = [NSData dataWithData:data];
-	NSMutableArray<NSData*>* splitMessage = [this splitMessage:data];
+	NSMutableArray* splitMessage = [this splitMessage:data];
     CBDebugLog(@"writeData %d bytes split into %d messages", data.length, splitMessage.count);
 	BOOL result = YES;
 	for (NSData* split in splitMessage) {
@@ -135,8 +135,8 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
     });
 }
 
--(NSMutableArray<NSData*>*)splitMessage:(NSData*_Nonnull)message {
-	NSMutableArray<NSData*>* split = [NSMutableArray new];
+-(NSMutableArray*)splitMessage:(NSData*_Nonnull)message {
+	NSMutableArray* split = [NSMutableArray new];
 	int offset = 0;
 	int msgBlockSize = self.centralMTU - 1;
 	if (message.length / msgBlockSize > 255) {
@@ -399,7 +399,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 }
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral
-  didReceiveWriteRequests:(NSArray<CBATTRequest *> *)requests {
+  didReceiveWriteRequests:(NSArray *)requests {
   CBDebugLog(@"didReceiveWriteRequests %@", requests);
   for (CBATTRequest *request in requests) {
 	  if (request.value != nil ) {

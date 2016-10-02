@@ -20,11 +20,11 @@ void CBDispatchSync(dispatch_queue_t _Nonnull queue, dispatch_block_t _Nonnull b
 
 + (CBMutableService *_Nonnull)cb_mutableService:(CBUUID *_Nonnull)uuid
                     withReadOnlyCharacteristics:
-                        (NSDictionary<CBUUID *, NSData *> *_Nonnull)characteristics {
+                        (NSDictionary *_Nonnull)characteristics {
   CBMutableService *service = [[CBMutableService alloc] initWithType:uuid primary:YES];
   if (characteristics.count > 0) {
     // Create CBCharacteristics from our map
-    NSMutableArray<CBMutableCharacteristic *> *cbChars = [NSMutableArray new];
+    NSMutableArray *cbChars = [NSMutableArray new];
     for (CBUUID *uuid in characteristics) {
       // We don't pass the data here because it would cause it to aggressively
       // cache the data
