@@ -124,16 +124,20 @@ func (ec *EnclaveClient) deactivatePairing() (err error) {
 }
 
 func (ec *EnclaveClient) activatePairing() (err error) {
-	btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
-	if uuidErr != nil {
-		err = uuidErr
-		log.Error(err)
-		return
-	}
-	err = ec.bt.AddService(btUUID)
-	if err != nil {
-		log.Error(err)
-		return
+	if ec.bt != nil {
+		if ec.pairingSecret != nil {
+			btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
+			if uuidErr != nil {
+				err = uuidErr
+				log.Error(err)
+				return
+			}
+			err = ec.bt.AddService(btUUID)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+		}
 	}
 	return
 }
@@ -168,11 +172,9 @@ func (ec *EnclaveClient) Start() (err error) {
 		}()
 	}
 
-	if ec.bt != nil {
-		ec.activatePairing()
-	}
+	ec.activatePairing()
 	ec.Unlock()
-	if ec.pairingSecret != nil {
+	if ec.getPairingSecret() != nil {
 		ec.RequestMe()
 	}
 	return
