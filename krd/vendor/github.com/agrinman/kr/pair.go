@@ -187,3 +187,9 @@ func (ps PairingSecret) ReadQueue() (ciphertexts [][]byte, err error) {
 	}
 	return
 }
+
+func (ps PairingSecret) IsPaired() bool {
+	ps.Lock()
+	defer ps.Unlock()
+	return ps.SymmetricSecretKey != nil
+}

@@ -75,8 +75,7 @@ func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 
 //	route request to enclave
 func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
-	cachedMe := cs.enclaveClient.GetCachedMe()
-	if cachedMe == nil {
+	if !cs.enclaveClient.IsPaired() {
 		//	not paired
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -90,67 +89,98 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if enclaveRequest.MeRequest != nil {
+		cs.handleEnclaveMe(w, enclaveRequest)
+		return
+	}
+
+	if enclaveRequest.SignRequest != nil {
+		cs.handleEnclaveSign(w, enclaveRequest)
+		return
+	}
+
+	if enclaveRequest.ListRequest != nil {
+		cs.handleEnclaveList(w, enclaveRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
+}
+
+func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest kr.Request) {
+	var me kr.Profile
+	cachedMe := cs.enclaveClient.GetCachedMe()
+	if cachedMe != nil {
+		me = *cachedMe
+	} else {
+		meResponse, err := cs.enclaveClient.RequestMe()
+		if err != nil {
+			log.Error("me request error:", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if meResponse != nil {
+			me = meResponse.Me
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	}
+	response := kr.Response{
+		MeResponse: &kr.MeResponse{
+			Me: me,
+		},
+	}
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+}
+
+func (cs *ControlServer) handleEnclaveList(w http.ResponseWriter, enclaveRequest kr.Request) {
+	listResponse, err := cs.enclaveClient.RequestList(*enclaveRequest.ListRequest)
+	if err != nil {
+		log.Error("list request error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if listResponse != nil {
 		response := kr.Response{
-			MeResponse: &kr.MeResponse{
-				Me: *cachedMe,
-			},
+			RequestID:    enclaveRequest.RequestID,
+			ListResponse: listResponse,
 		}
 		err = json.NewEncoder(w).Encode(response)
 		if err != nil {
 			log.Error(err)
 			return
 		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
+}
+
+func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest kr.Request) {
+	if enclaveRequest.SignRequest.Command == nil {
+		enclaveRequest.SignRequest.Command = getLastCommand()
+	}
+	signResponse, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest)
+	if err != nil {
+		log.Error("signature request error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	if enclaveRequest.SignRequest != nil {
-		if enclaveRequest.SignRequest.Command == nil {
-			enclaveRequest.SignRequest.Command = getLastCommand()
+	if signResponse != nil {
+		response := kr.Response{
+			RequestID:    enclaveRequest.RequestID,
+			SignResponse: signResponse,
 		}
-		signResponse, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest)
+		err = json.NewEncoder(w).Encode(response)
 		if err != nil {
-			log.Error("signature request error:", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			log.Error(err)
 			return
 		}
-		if signResponse != nil {
-			response := kr.Response{
-				RequestID:    enclaveRequest.RequestID,
-				SignResponse: signResponse,
-			}
-			err = json.NewEncoder(w).Encode(response)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-		}
-		return
+	} else {
+		w.WriteHeader(http.StatusNotFound)
 	}
 
-	if enclaveRequest.ListRequest != nil {
-		listResponse, err := cs.enclaveClient.RequestList(*enclaveRequest.ListRequest)
-		if err != nil {
-			log.Error("list request error:", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if listResponse != nil {
-			response := kr.Response{
-				RequestID:    enclaveRequest.RequestID,
-				ListResponse: listResponse,
-			}
-			err = json.NewEncoder(w).Encode(response)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-		}
-		return
-	}
-
-	w.WriteHeader(http.StatusBadRequest)
 }
