@@ -300,7 +300,7 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 		return C.CKR_OK
 	}
 	if err == ErrTimedOut {
-		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet.")
+		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.")
 		//	return OK to silence SSH error output
 		return C.CKR_OK
 	}

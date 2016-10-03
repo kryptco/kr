@@ -28,11 +28,12 @@ func NewRequest() (request Request, err error) {
 }
 
 type Response struct {
-	RequestID      string        `json:"request_id"`
-	SignResponse   *SignResponse `json:"sign_response"`
-	ListResponse   *ListResponse `json:"list_response"`
-	MeResponse     *MeResponse   `json:"me_response"`
-	SNSEndpointARN *string       `json:"sns_endpoint_arn"`
+	RequestID             string        `json:"request_id"`
+	SignResponse          *SignResponse `json:"sign_response"`
+	ListResponse          *ListResponse `json:"list_response"`
+	MeResponse            *MeResponse   `json:"me_response"`
+	SNSEndpointARN        *string       `json:"sns_endpoint_arn"`
+	RequireManualApproval bool          `json:"require_manual_approval"`
 }
 
 type SignRequest struct {

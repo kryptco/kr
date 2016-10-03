@@ -215,7 +215,7 @@ func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) 
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
-	response, err := client.tryRequest(meRequest, 20*time.Second)
+	response, err := client.tryRequest(meRequest, 20*time.Second, 5*time.Second, "Incoming SSH request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
@@ -238,7 +238,16 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 		return
 	}
 	request.SignRequest = &signRequest
-	response, err := client.tryRequest(request, 15*time.Second)
+	requestTimeout := 15 * time.Second
+	alertTimeout := 5 * time.Second
+	alertText := "Incoming SSH request. Open Kryptonite to continue."
+	ps := client.getPairingSecret()
+	if ps != nil && ps.RequireManualApproval {
+		requestTimeout = 20 * time.Second
+		alertTimeout = 19 * time.Second
+		alertText = "Manual approval enabled but app not running. Open Kryptonite to approve requests."
+	}
+	response, err := client.tryRequest(request, requestTimeout, alertTimeout, alertText)
 	if err != nil {
 		log.Error(err)
 		return
@@ -256,7 +265,7 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 		return
 	}
 	request.ListRequest = &listRequest
-	response, err := client.tryRequest(request, 5*time.Second)
+	response, err := client.tryRequest(request, 10*time.Second, 5*time.Second, "Incoming SSH request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
@@ -267,7 +276,7 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 	return
 }
 
-func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration) (response *kr.Response, err error) {
+func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string) (response *kr.Response, err error) {
 	cb := make(chan *kr.Response, 1)
 	go func() {
 		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
@@ -275,11 +284,31 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 			log.Error("error sendRequestAndReceiveResponses: ", err.Error())
 		}
 	}()
-	select {
-	case response = <-cb:
-	case <-time.After(timeout):
-		err = ErrTimeout
-	}
+	timeoutChan := time.After(timeout)
+	sendAlertChan := time.After(alertTimeout)
+	func() {
+		for {
+			select {
+			case response = <-cb:
+				return
+			case <-timeoutChan:
+				err = ErrTimeout
+				return
+			case <-sendAlertChan:
+				client.Lock()
+				ps := client.pairingSecret
+				client.Unlock()
+				requestJson, err := json.Marshal(request)
+				if err != nil {
+					err = &ProtoError{err}
+					continue
+				}
+				if ps != nil {
+					ps.PushAlert(alertText, requestJson)
+				}
+			}
+		}
+	}()
 	return
 }
 
@@ -450,6 +479,10 @@ func (client *EnclaveClient) handleMessage(message []byte) (err error) {
 		client.Lock()
 		if client.pairingSecret != nil {
 			client.pairingSecret.SetSNSEndpointARN(response.SNSEndpointARN)
+			kr.SavePairing(*client.pairingSecret)
+		}
+		if response.RequireManualApproval != client.pairingSecret.RequireManualApproval {
+			client.pairingSecret.RequireManualApproval = response.RequireManualApproval
 			kr.SavePairing(*client.pairingSecret)
 		}
 		client.Unlock()

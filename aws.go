@@ -45,11 +45,22 @@ func getSNSService() (snsService *sns.SNS, err error) {
 	return
 }
 
+func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueName string) (err error) {
+	apnsPayload, _ := json.Marshal(
+		map[string]interface{}{
+			"aps": map[string]interface{}{
+				"alert":             alertText,
+				"sound":             "",
+				"content-available": 1,
+				"queue":             sqsQueueName,
+				"c":                 requestCiphertext,
+			},
+		})
+	pushToSNS(endpointARN, apnsPayload)
+	return
+}
+
 func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err error) {
-	snsService, err := getSNSService()
-	if err != nil {
-		return
-	}
 
 	apnsPayload, _ := json.Marshal(
 		map[string]interface{}{
@@ -61,8 +72,17 @@ func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err
 				"c":                 requestCiphertext,
 			},
 		})
+	pushToSNS(endpointARN, apnsPayload)
+	return
+}
+
+func pushToSNS(endpointARN string, payload []byte) (err error) {
+	snsService, err := getSNSService()
+	if err != nil {
+		return
+	}
 	message := map[string]interface{}{
-		"APNS_SANDBOX": string(apnsPayload),
+		"APNS_SANDBOX": string(payload),
 	}
 	messageJson, err := json.Marshal(message)
 	if err != nil {
