@@ -22,6 +22,7 @@ type PairingSecret struct {
 	WorkstationPublicKey []byte  `json:"pk"`
 	workstationSecretKey []byte
 	WorkstationName      string `json:"n"`
+	snsEndpointARN       *string
 	sync.Mutex
 }
 
@@ -156,6 +157,12 @@ func (ps *PairingSecret) DecryptMessage(ciphertext []byte) (message *[]byte, err
 	return
 }
 
+func (ps *PairingSecret) SetSNSEndpointARN(arn *string) {
+	ps.Lock()
+	defer ps.Unlock()
+	ps.snsEndpointARN = arn
+}
+
 func (ps PairingSecret) SendMessage(message []byte) (err error) {
 	ctxt, err := ps.EncryptMessage(message)
 	if err != nil {
@@ -163,6 +170,16 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 	}
 
 	ctxtString := base64.StdEncoding.EncodeToString(ctxt)
+	go func() {
+		ps.Lock()
+		arn := ps.snsEndpointARN
+		ps.Unlock()
+		if arn != nil {
+			if pushErr := PushToSNSEndpoint(ctxtString, *arn, ps.SQSSendQueueName()); pushErr != nil {
+				log.Error("Push error:", pushErr)
+			}
+		}
+	}()
 
 	err = SendToQueue(ps.SQSSendQueueURL(), ctxtString)
 	if err != nil {

@@ -13,6 +13,7 @@ type persistedPairing struct {
 	WorkstationPublicKey []byte
 	WorkstationSecretKey []byte
 	WorkstationName      string
+	SNSEndpointARN       *string
 }
 
 func pairingToPersisted(ps PairingSecret) persistedPairing {
@@ -21,6 +22,7 @@ func pairingToPersisted(ps PairingSecret) persistedPairing {
 		WorkstationPublicKey: ps.WorkstationPublicKey,
 		WorkstationSecretKey: ps.workstationSecretKey,
 		WorkstationName:      ps.WorkstationName,
+		SNSEndpointARN:       ps.snsEndpointARN,
 	}
 }
 
@@ -30,6 +32,7 @@ func pairingFromPersisted(pp persistedPairing) PairingSecret {
 		WorkstationPublicKey: pp.WorkstationPublicKey,
 		workstationSecretKey: pp.WorkstationSecretKey,
 		WorkstationName:      pp.WorkstationName,
+		snsEndpointARN:       pp.SNSEndpointARN,
 	}
 }
 

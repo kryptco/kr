@@ -5,7 +5,6 @@ package main
  */
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -411,9 +410,6 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 		err = errors.New("EnclaveClient pairing never initiated")
 		return
 	}
-	client.Lock()
-	snsEndpointARN := client.snsEndpointARN
-	client.Unlock()
 	ciphertext, err := pairingSecret.EncryptMessage(message)
 	if err != nil {
 		if err == kr.ErrWaitingForKey {
@@ -428,14 +424,6 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 		}
 		return
 	}
-	go func() {
-		ctxtString := base64.StdEncoding.EncodeToString(ciphertext)
-		if snsEndpointARN != nil {
-			if pushErr := kr.PushToSNSEndpoint(ctxtString, *snsEndpointARN, pairingSecret.SQSSendQueueName()); pushErr != nil {
-				log.Error("Push error:", pushErr)
-			}
-		}
-	}()
 	go func() {
 		err := client.bt.Write(ciphertext)
 		if err != nil {
@@ -460,7 +448,10 @@ func (client *EnclaveClient) handleMessage(message []byte) (err error) {
 
 	if response.SNSEndpointARN != nil {
 		client.Lock()
-		client.snsEndpointARN = response.SNSEndpointARN
+		if client.pairingSecret != nil {
+			client.pairingSecret.SetSNSEndpointARN(response.SNSEndpointARN)
+			kr.SavePairing(*client.pairingSecret)
+		}
 		client.Unlock()
 	}
 
