@@ -12,7 +12,7 @@ var syslogFormat = logging.MustStringFormatter(
 	`%{time:15:04:05.000} %{level:.6s} ▶ %{message}`,
 )
 var stderrFormat = logging.MustStringFormatter(
-	`%{color}kr ▶ %{message}%{color:reset}`,
+	`%{color}kryptonite ▶ %{message}%{color:reset}`,
 )
 
 func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) *logging.Logger {

@@ -19,7 +19,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-var log = kr.SetupLogging("", logging.ERROR, false)
+var log = kr.SetupLogging("", logging.WARNING, false)
 
 var mutex sync.Mutex
 
@@ -295,12 +295,12 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 	log.Info("C_GetAttributeValue")
 	me, err := getMe()
 	if err == ErrNotPaired {
-		log.Error("Kryptonite not paired, please pair to use your SSH key.")
+		log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
 		//	return OK to silence SSH error output
 		return C.CKR_OK
 	}
 	if err == ErrTimedOut {
-		log.Error("Signature timed out. Make sure your phone and workstation are paired and connected to the internet.")
+		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet.")
 		//	return OK to silence SSH error output
 		return C.CKR_OK
 	}
@@ -388,10 +388,10 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
 	sigBytes, err := sign(pkFingerprint[:], message)
 	if err != nil {
-		log.Error("sig error: " + err.Error())
+		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet or bluetooth.")
 		return C.CKR_GENERAL_ERROR
 	} else {
-		log.Info("got sig of", len(sigBytes), "bytes")
+		log.Info("received signature size", len(sigBytes), "bytes")
 		for _, b := range sigBytes {
 			*signature = C.CK_BYTE(b)
 			signature = C.CK_BYTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(signature)) + 1))
