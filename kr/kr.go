@@ -25,7 +25,7 @@ func PrintFatal(msg string, args ...interface{}) {
 func connectToAgent() (conn net.Conn, err error) {
 	conn, err = kr.DaemonDial()
 	if err != nil {
-		err = fmt.Errorf("Failed to connect to kryptonite daemon. Please make sure it is running by typing \"kr restart\".")
+		err = fmt.Errorf("Failed to connect to Kryptonite daemon. Please make sure it is running by typing \"kr restart\".")
 	}
 	return
 }
@@ -240,6 +240,10 @@ func main() {
 			Name:    "list",
 			Aliases: []string{"ls"},
 			Action:  listCommand,
+		},
+		cli.Command{
+			Name:   "restart",
+			Action: restartCommand,
 		},
 	}
 	app.Run(os.Args)
