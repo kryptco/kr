@@ -184,6 +184,7 @@ func copyCommand(c *cli.Context) (err error) {
 	if err != nil {
 		PrintFatal(err.Error())
 	}
+	PrintErr("Public key copied to clipboard.")
 	return
 }
 
