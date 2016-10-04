@@ -13,18 +13,52 @@ var ErrNotPaired = fmt.Errorf("Workstation not yet paired. Please run \"kr pair\
 var ErrTimedOut = fmt.Errorf("Request timed out. Make sure your phone and workstation are paired and connected to the internet and try again.")
 
 func RequestMe() (me kr.Profile, err error) {
-	daemonConn, err := kr.DaemonDial()
-	if err != nil {
-		return
-	}
-
 	meRequest, err := kr.NewRequest()
 	if err != nil {
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
 
-	httpRequest, err := meRequest.HTTPRequest()
+	response, err := makeRequestWithJsonResponse(meRequest)
+	if err != nil {
+		return
+	}
+
+	if response.MeResponse != nil {
+		me = response.MeResponse.Me
+		return
+	}
+	err = fmt.Errorf("Response missing profile")
+	return
+}
+
+func RequestList() (profiles []kr.Profile, err error) {
+	meRequest, err := kr.NewRequest()
+	if err != nil {
+		return
+	}
+	meRequest.ListRequest = &kr.ListRequest{}
+
+	response, err := makeRequestWithJsonResponse(meRequest)
+	if err != nil {
+		return
+	}
+
+	if response.ListResponse != nil {
+		profiles = response.ListResponse.Profiles
+		return
+	}
+	err = fmt.Errorf("Response missing profile")
+	return
+}
+
+func makeRequestWithJsonResponse(request kr.Request) (response kr.Response, err error) {
+	daemonConn, err := kr.DaemonDial()
+	if err != nil {
+		return
+	}
+
+	httpRequest, err := request.HTTPRequest()
 	if err != nil {
 		return
 	}
@@ -52,20 +86,14 @@ func RequestMe() (me kr.Profile, err error) {
 		return
 	}
 
-	var krResponse kr.Response
-	err = json.NewDecoder(httpResponse.Body).Decode(&krResponse)
+	err = json.NewDecoder(httpResponse.Body).Decode(&response)
 	if err != nil {
 		return
 	}
-	if krResponse.MeResponse != nil {
-		me = krResponse.MeResponse.Me
-		return
-	}
-	err = fmt.Errorf("Response missing profile")
 	return
 }
 
-func sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
+func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	daemonConn, err := kr.DaemonDial()
 	if err != nil {
 		err = fmt.Errorf("DaemonDial error: %s", err.Error())

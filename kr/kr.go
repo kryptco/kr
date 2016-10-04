@@ -6,6 +6,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -20,8 +21,12 @@ import (
 )
 
 func PrintFatal(msg string, args ...interface{}) {
-	os.Stderr.WriteString(fmt.Sprintf(msg, args...) + "\n")
+	PrintErr(msg, args...)
 	os.Exit(1)
+}
+
+func PrintErr(msg string, args ...interface{}) {
+	os.Stderr.WriteString(fmt.Sprintf(msg, args...) + "\n")
 }
 
 func pairCommand(c *cli.Context) (err error) {
@@ -170,49 +175,57 @@ func copyCommand(c *cli.Context) (err error) {
 	return
 }
 
+func addCommand(c *cli.Context) (err error) {
+	if len(c.Args()) < 2 {
+		PrintFatal("usage: kr add <server> <user email 1> <user email 2>...")
+		return
+	}
+	server := c.Args()[0]
+
+	profiles := []kr.Profile{}
+	me, err := krdclient.RequestMe()
+	if err == nil {
+		profiles = append(profiles, me)
+	} else {
+		PrintErr("error retrieving your key: ", err.Error())
+	}
+	peers, err := krdclient.RequestList()
+	if err == nil {
+		profiles = append(profiles, peers...)
+	} else {
+		PrintErr("error retrieving peer keys: ", err.Error())
+	}
+
+	filter := map[string]bool{}
+	for _, email := range c.Args()[1:] {
+		filter[email] = true
+	}
+
+	authorizedKeys := [][]byte{}
+	for _, profile := range profiles {
+		if _, ok := filter[profile.Email]; ok {
+			authorizedKeys = append(authorizedKeys, []byte(profile.AuthorizedKeyString()))
+		}
+	}
+
+	if len(authorizedKeys) == 0 {
+		PrintFatal("No keys match specified emails")
+	}
+
+	PrintErr("Adding %d keys to %s", len(authorizedKeys), server)
+
+	authorizedKeysReader := bytes.NewReader(bytes.Join(authorizedKeys, []byte("\n")))
+	sshCommand := exec.Command("ssh", server, "cat - >> ~/.ssh/authorized_keys")
+	sshCommand.Stdin = authorizedKeysReader
+	err = sshCommand.Run()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	return
+}
+
 func listCommand(c *cli.Context) (err error) {
-	agentConn, err := kr.DaemonDial()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-
-	request, err := kr.NewRequest()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	request.ListRequest = &kr.ListRequest{}
-	httpRequest, err := request.HTTPRequest()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	err = httpRequest.Write(agentConn)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-
-	bufReader := bufio.NewReader(agentConn)
-	response, err := http.ReadResponse(bufReader, httpRequest)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	defer response.Body.Close()
-	switch response.StatusCode {
-	case http.StatusNotFound:
-		PrintFatal("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
-	case http.StatusInternalServerError:
-		PrintFatal("Request timed out. Make sure your phone and workstation are paired and connected to the internet and try again.")
-	default:
-	}
-
-	var krResponse kr.Response
-	err = json.NewDecoder(response.Body).Decode(&krResponse)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	if krResponse.ListResponse == nil {
-		PrintFatal("Response missing profiles")
-	}
-	profiles := krResponse.ListResponse.Profiles
+	profiles, err := krdclient.RequestList()
 	for _, profile := range profiles {
 		fmt.Println(profile.AuthorizedKeyString())
 	}
@@ -229,6 +242,7 @@ func main() {
 		cli.Command{
 			Name:    "pair",
 			Aliases: []string{"p"},
+			Usage:   "Initiate pairing of this workstation with a phone running Kryptonite.",
 			Flags: []cli.Flag{
 				cli.BoolFlag{Name: "no-aws"},
 			},
@@ -236,24 +250,34 @@ func main() {
 		},
 		cli.Command{
 			Name:   "me",
+			Usage:  "Print your SSH public key.",
 			Action: meCommand,
 		},
 		cli.Command{
 			Name:    "list",
 			Aliases: []string{"ls"},
+			Usage:   "List your peers' public keys.",
 			Action:  listCommand,
 		},
 		cli.Command{
+			Name:   "copy",
+			Usage:  "Copy your SSH public key to the clipboard.",
+			Action: copyCommand,
+		},
+		cli.Command{
+			Name:   "add",
+			Usage:  "kr add <server> <email> -- adds the public key of the specified user to the server.",
+			Action: addCommand,
+		},
+		cli.Command{
 			Name:   "restart",
+			Usage:  "Restart the Kryptonite daemon.",
 			Action: restartCommand,
 		},
 		cli.Command{
 			Name:   "unpair",
+			Usage:  "Unpair this workstation from a phone running Kryptonite.",
 			Action: unpairCommand,
-		},
-		cli.Command{
-			Name:   "copy",
-			Action: copyCommand,
 		},
 	}
 	app.Run(os.Args)
