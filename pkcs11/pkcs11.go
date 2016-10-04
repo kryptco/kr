@@ -16,6 +16,7 @@ import (
 	"unsafe"
 
 	"github.com/agrinman/kr"
+	"github.com/agrinman/kr/krdclient"
 	"github.com/op/go-logging"
 )
 
@@ -293,13 +294,13 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 	mutex.Lock()
 	defer mutex.Unlock()
 	log.Info("C_GetAttributeValue")
-	me, err := getMe()
-	if err == ErrNotPaired {
+	me, err := krdclient.RequestMe()
+	if err == krdclient.ErrNotPaired {
 		log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
 		//	return OK to silence SSH error output
 		return C.CKR_OK
 	}
-	if err == ErrTimedOut {
+	if err == krdclient.ErrTimedOut {
 		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.")
 		//	return OK to silence SSH error output
 		return C.CKR_OK
@@ -386,15 +387,13 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	}
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
 	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
-	sigBytes, err := sign(pkFingerprint[:], message)
+	sigBytes, err := krdclient.Sign(pkFingerprint[:], message)
 	if err != nil {
 		switch err {
-		case ErrNotPaired:
+		case krdclient.ErrNotPaired:
 			log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
-		case ErrTimedOut:
+		case krdclient.ErrTimedOut:
 			log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet or bluetooth.")
-		case ErrTimedOut:
-			log.Error("Error signing:", err.Error())
 		}
 		return C.CKR_GENERAL_ERROR
 	} else {

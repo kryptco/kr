@@ -33,10 +33,22 @@
 			"revisionTime": "2016-07-13T06:31:29Z"
 		},
 		{
-			"checksumSHA1": "Vb3FH9CfySIx+1qRcwb5UFGzC6g=",
+			"checksumSHA1": "GVO0TE6c9+kgGsomjfdmBwbSJIs=",
 			"path": "github.com/agrinman/kr",
-			"revision": "dd924c207093a99f4c957cc163445eb72b996d00",
-			"revisionTime": "2016-10-04T01:31:21Z"
+			"revision": "ecf93d925f83bbf0d57bb8af018ae658421444de",
+			"revisionTime": "2016-10-04T17:18:09Z"
+		},
+		{
+			"checksumSHA1": "94mwQgGQGEgl7Dn3ySSEwa0L428=",
+			"path": "github.com/agrinman/kr/krdclient",
+			"revision": "ecf93d925f83bbf0d57bb8af018ae658421444de",
+			"revisionTime": "2016-10-04T17:18:09Z"
+		},
+		{
+			"checksumSHA1": "SNSgdp5ShDZ57VZqBkQ0PXJCJIM=",
+			"path": "github.com/atotto/clipboard",
+			"revision": "bb272b845f1112e10117e3e45ce39f690c0001ad",
+			"revisionTime": "2016-02-19T03:44:21Z"
 		},
 		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
@@ -213,6 +225,13 @@
 			"path": "github.com/kryptco/qr",
 			"revision": "29a3dc96057a503315f7b7a7a411b87d3fdeee4a",
 			"revisionTime": "2016-04-14T00:56:07Z"
+		},
+		{
+			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
+			"origin": "github.com/agrinman/kr/vendor/github.com/op/go-logging",
+			"path": "github.com/op/go-logging",
+			"revision": "ecf93d925f83bbf0d57bb8af018ae658421444de",
+			"revisionTime": "2016-10-04T17:18:09Z"
 		},
 		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",

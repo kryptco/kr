@@ -8,13 +8,15 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/agrinman/kr"
-	"github.com/urfave/cli"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
+
+	"github.com/agrinman/kr"
+	"github.com/agrinman/kr/krdclient"
+	"github.com/atotto/clipboard"
+	"github.com/urfave/cli"
 )
 
 func PrintFatal(msg string, args ...interface{}) {
@@ -22,16 +24,8 @@ func PrintFatal(msg string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func connectToAgent() (conn net.Conn, err error) {
-	conn, err = kr.DaemonDial()
-	if err != nil {
-		err = fmt.Errorf("Failed to connect to Kryptonite daemon. Please make sure it is running by typing \"kr restart\".")
-	}
-	return
-}
-
 func pairCommand(c *cli.Context) (err error) {
-	putConn, err := connectToAgent()
+	putConn, err := kr.DaemonDial()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -67,10 +61,10 @@ func pairCommand(c *cli.Context) (err error) {
 
 	fmt.Println()
 	fmt.Println(qr.Terminal)
-	fmt.Println("Scan this QR Code with the kryptonite mobile app to connect it with this workstation. Try lowering your terminal font size if the QR code does not fit on the screen.")
+	fmt.Println("Scan this QR Code with the Kryptonite mobile app to connect it with this workstation. Try lowering your terminal font size if the QR code does not fit on the screen.")
 	fmt.Println()
 
-	getConn, err := connectToAgent()
+	getConn, err := kr.DaemonDial()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -118,7 +112,7 @@ func pairCommand(c *cli.Context) (err error) {
 }
 
 func unpairCommand(c *cli.Context) (err error) {
-	conn, err := connectToAgent()
+	conn, err := kr.DaemonDial()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -151,48 +145,10 @@ func unpairCommand(c *cli.Context) (err error) {
 }
 
 func meCommand(c *cli.Context) (err error) {
-	agentConn, err := connectToAgent()
+	me, err := krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
-
-	request, err := kr.NewRequest()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	request.MeRequest = &kr.MeRequest{}
-	httpRequest, err := request.HTTPRequest()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	err = httpRequest.Write(agentConn)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-
-	bufReader := bufio.NewReader(agentConn)
-	response, err := http.ReadResponse(bufReader, httpRequest)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	defer response.Body.Close()
-	switch response.StatusCode {
-	case http.StatusNotFound:
-		PrintFatal("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
-	case http.StatusInternalServerError:
-		PrintFatal("Request timed out. Make sure your phone and workstation are paired and connected to the internet and try again.")
-	default:
-	}
-
-	var meResponse kr.Response
-	err = json.NewDecoder(response.Body).Decode(&meResponse)
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	if meResponse.MeResponse == nil {
-		PrintFatal("Response missing profile")
-	}
-	me := meResponse.MeResponse.Me
 	authorizedKey := me.AuthorizedKeyString()
 	if err != nil {
 		PrintFatal(err.Error())
@@ -201,8 +157,21 @@ func meCommand(c *cli.Context) (err error) {
 	return
 }
 
+func copyCommand(c *cli.Context) (err error) {
+	me, err := krdclient.RequestMe()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	authorizedKey := me.AuthorizedKeyString()
+	err = clipboard.WriteAll(authorizedKey)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	return
+}
+
 func listCommand(c *cli.Context) (err error) {
-	agentConn, err := connectToAgent()
+	agentConn, err := kr.DaemonDial()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -281,6 +250,10 @@ func main() {
 		cli.Command{
 			Name:   "unpair",
 			Action: unpairCommand,
+		},
+		cli.Command{
+			Name:   "copy",
+			Action: copyCommand,
 		},
 	}
 	app.Run(os.Args)
