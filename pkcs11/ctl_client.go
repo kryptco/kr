@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/agrinman/kr"
 )
@@ -82,11 +80,9 @@ func sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	if err != nil {
 		return
 	}
-	command := strings.Join(os.Args, " ")
 	signRequest.SignRequest = &kr.SignRequest{
 		PublicKeyFingerprint: pkFingerprint,
 		Digest:               data,
-		Command:              &command,
 	}
 
 	httpRequest, err := signRequest.HTTPRequest()

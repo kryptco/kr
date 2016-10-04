@@ -24,6 +24,9 @@ func PrintFatal(msg string, args ...interface{}) {
 
 func connectToAgent() (conn net.Conn, err error) {
 	conn, err = kr.DaemonDial()
+	if err != nil {
+		err = fmt.Errorf("Failed to connect to kryptonite daemon. Please make sure it is running by typing \"kr restart\".")
+	}
 	return
 }
 

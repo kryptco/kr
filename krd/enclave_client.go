@@ -333,11 +333,8 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 			}
 		}
 	}()
-	if response == nil {
-		ps := client.getPairingSecret()
-		if ps == nil || !ps.IsPaired() {
-			err = ErrNotPaired
-		}
+	if response == nil && !client.IsPaired() {
+		err = ErrNotPaired
 	}
 	return
 }
@@ -394,7 +391,9 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 
 	for {
 		n, err := receive()
+		client.Lock()
 		_, requestPending := client.requestCallbacksByRequestID.Get(request.RequestID)
+		client.Unlock()
 		if err != nil || (n == 0 && time.Now().After(timeoutAt)) || !requestPending {
 			if err != nil {
 				log.Error("queue err:", err)
