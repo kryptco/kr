@@ -117,6 +117,39 @@ func pairCommand(c *cli.Context) (err error) {
 	return
 }
 
+func unpairCommand(c *cli.Context) (err error) {
+	conn, err := connectToAgent()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	defer conn.Close()
+
+	deletePair, err := http.NewRequest("DELETE", "/pair", nil)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+
+	err = deletePair.Write(conn)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+
+	reader := bufio.NewReader(conn)
+	response, err := http.ReadResponse(reader, deletePair)
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	switch response.StatusCode {
+	case http.StatusNotFound, http.StatusInternalServerError:
+		PrintFatal("Unpair failed, ensure the Kryptonite daemon is running with \"kr reset\".")
+	case http.StatusOK:
+	default:
+		PrintFatal("Unpair failed with error %d", response.StatusCode)
+	}
+	fmt.Println("Unpaired Kryptonite.")
+	return
+}
+
 func meCommand(c *cli.Context) (err error) {
 	agentConn, err := connectToAgent()
 	if err != nil {
@@ -244,6 +277,10 @@ func main() {
 		cli.Command{
 			Name:   "restart",
 			Action: restartCommand,
+		},
+		cli.Command{
+			Name:   "unpair",
+			Action: unpairCommand,
 		},
 	}
 	app.Run(os.Args)

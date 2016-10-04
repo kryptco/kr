@@ -33,10 +33,18 @@ func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPut:
 		cs.handlePutPair(w, r)
 		return
+	case http.MethodDelete:
+		cs.handleDeletePair(w, r)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+}
+
+func (cs *ControlServer) handleDeletePair(w http.ResponseWriter, r *http.Request) {
+	cs.enclaveClient.Unpair()
+	w.WriteHeader(http.StatusOK)
+	return
 }
 
 //	check if pairing completed

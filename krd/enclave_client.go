@@ -56,6 +56,7 @@ func (err *ProtoError) Error() string {
 type EnclaveClientI interface {
 	Pair() (pairing kr.PairingSecret, err error)
 	IsPaired() bool
+	Unpair()
 	Start() (err error)
 	Stop() (err error)
 	RequestMe() (*kr.MeResponse, error)
@@ -83,6 +84,15 @@ func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 
 	pairingSecret = *ec.pairingSecret
 
+	return
+}
+
+func (ec *EnclaveClient) Unpair() {
+	ec.Lock()
+	defer ec.Unlock()
+	if ec.pairingSecret != nil {
+		ec.unpair(*ec.pairingSecret, true)
+	}
 	return
 }
 
