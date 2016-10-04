@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+	"os"
 	"sync"
 	"unsafe"
 
@@ -20,7 +21,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-var log = kr.SetupLogging("", logging.WARNING, false)
+var log = kr.SetupLogging("", logging.WARNING, os.Getenv("KR_LOG_SYSLOG") != "")
 
 var mutex sync.Mutex
 
