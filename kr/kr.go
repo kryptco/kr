@@ -30,6 +30,15 @@ func PrintErr(msg string, args ...interface{}) {
 }
 
 func pairCommand(c *cli.Context) (err error) {
+	_, err = krdclient.RequestMe()
+	if err == nil {
+		PrintErr("Already paired, unpair current session? [y/N] ")
+		var c string
+		fmt.Scan(&c)
+		if len(c) == 0 || c[0] != 'y' {
+			PrintFatal("Aborting.")
+		}
+	}
 	putConn, err := kr.DaemonDial()
 	if err != nil {
 		PrintFatal(err.Error())
