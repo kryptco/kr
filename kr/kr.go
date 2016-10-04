@@ -7,6 +7,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -17,7 +18,9 @@ import (
 	"github.com/agrinman/kr"
 	"github.com/agrinman/kr/krdclient"
 	"github.com/atotto/clipboard"
+	"github.com/fatih/color"
 	"github.com/urfave/cli"
+	"golang.org/x/crypto/ssh"
 )
 
 func PrintFatal(msg string, args ...interface{}) {
@@ -234,6 +237,57 @@ func addCommand(c *cli.Context) (err error) {
 }
 
 func listCommand(c *cli.Context) (err error) {
+	if len(c.Args()) == 0 {
+		PrintFatal("usage: kr list <server>")
+	}
+	server := c.Args()[0]
+
+	peers, err := krdclient.RequestList()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	me, err := krdclient.RequestMe()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+
+	profilesByWireB64 := map[string]kr.Profile{}
+	for _, peer := range append(peers, me) {
+		profilesByWireB64[base64.StdEncoding.EncodeToString(peer.SSHWirePublicKey)] = peer
+	}
+
+	authorizedKeysBuffer := bytes.Buffer{}
+	sshCommand := exec.Command("ssh", server, "cat ~/.ssh/authorized_keys")
+	sshCommand.Stdout = &authorizedKeysBuffer
+	sshCommand.Stderr = os.Stderr
+	err = sshCommand.Run()
+
+	authorizedKeysBytes := authorizedKeysBuffer.Bytes()
+	var key ssh.PublicKey
+	var comment string
+	nPeers := 0
+	nUnknown := 0
+	for {
+		key, comment, _, authorizedKeysBytes, err = ssh.ParseAuthorizedKey(authorizedKeysBytes)
+		if err == nil {
+			wireB64 := base64.StdEncoding.EncodeToString(key.Marshal())
+			if peer, ok := profilesByWireB64[wireB64]; ok {
+				color.Green(peer.Email)
+				nPeers++
+			} else {
+				color.Yellow("Unknown Key (" + comment + ")")
+				nUnknown++
+			}
+			fmt.Printf("%s %s\n\n", key.Type(), wireB64)
+		} else if err != nil || len(authorizedKeysBytes) == 0 {
+			break
+		}
+	}
+	fmt.Printf("Found %s and %s\n", color.GreenString("%d Peer Keys", nPeers), color.YellowString("%d Unknown Keys", nUnknown))
+	return
+}
+
+func peersCommand(c *cli.Context) (err error) {
 	profiles, err := krdclient.RequestList()
 	for _, profile := range profiles {
 		fmt.Println(profile.AuthorizedKeyString())
@@ -249,9 +303,8 @@ func main() {
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{
-			Name:    "pair",
-			Aliases: []string{"p"},
-			Usage:   "Initiate pairing of this workstation with a phone running Kryptonite.",
+			Name:  "pair",
+			Usage: "Initiate pairing of this workstation with a phone running Kryptonite.",
 			Flags: []cli.Flag{
 				cli.BoolFlag{Name: "no-aws"},
 			},
@@ -263,19 +316,23 @@ func main() {
 			Action: meCommand,
 		},
 		cli.Command{
-			Name:    "list",
-			Aliases: []string{"ls"},
-			Usage:   "List your peers' public keys.",
-			Action:  listCommand,
-		},
-		cli.Command{
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard.",
 			Action: copyCommand,
 		},
 		cli.Command{
+			Name:   "peers",
+			Usage:  "List your peers' public keys.",
+			Action: peersCommand,
+		},
+		cli.Command{
+			Name:   "list",
+			Usage:  "kr list [server] -- List public keys authorized on the specified server.",
+			Action: listCommand,
+		},
+		cli.Command{
 			Name:   "add",
-			Usage:  "kr add <server> <email> -- adds the public key of the specified user to the server.",
+			Usage:  "kr add <server> <first email> <second email>... -- add the public key of the specified user to the server.",
 			Action: addCommand,
 		},
 		cli.Command{

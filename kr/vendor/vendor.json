@@ -201,6 +201,12 @@
 			"revisionTime": "2016-02-05T06:52:41Z"
 		},
 		{
+			"checksumSHA1": "uArbzL2HwZagdpPO9QUXTARKCvk=",
+			"path": "github.com/fatih/color",
+			"revision": "9aae6aaa22315390f03959adca2c4d395b02fcef",
+			"revisionTime": "2015-11-11T12:02:02Z"
+		},
+		{
 			"checksumSHA1": "FCeEm2BWZV/n4oTy+SGd/k0Ab5c=",
 			"origin": "github.com/aws/aws-sdk-go/vendor/github.com/go-ini/ini",
 			"path": "github.com/go-ini/ini",
@@ -225,6 +231,18 @@
 			"path": "github.com/kryptco/qr",
 			"revision": "29a3dc96057a503315f7b7a7a411b87d3fdeee4a",
 			"revisionTime": "2016-04-14T00:56:07Z"
+		},
+		{
+			"checksumSHA1": "sEvWJKs6aL3UR/p4v7idVo54urY=",
+			"path": "github.com/mattn/go-colorable",
+			"revision": "40e4aedc8fabf8c23e040057540867186712faa5",
+			"revisionTime": "2015-06-25T15:46:42Z"
+		},
+		{
+			"checksumSHA1": "hxypwJUdn95KWXaCbCGEmcY3ci0=",
+			"path": "github.com/mattn/go-isatty",
+			"revision": "3f7a6730f55096ff7cd34816f520d9f4517e95ea",
+			"revisionTime": "2015-11-27T01:04:01Z"
 		},
 		{
 			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
@@ -268,6 +286,12 @@
 			"path": "golang.org/x/crypto/ssh",
 			"revision": "351dc6a5bf92a5f2ae22fadeee08eb6a45aa2d93",
 			"revisionTime": "2016-08-24T13:50:57Z"
+		},
+		{
+			"checksumSHA1": "oBKY8LJtCoSvmYA4ADFDY02A8NY=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "d4feaf1a7e61e1d9e79e6c4e76c6349e9cab0a03",
+			"revisionTime": "2016-05-16T12:31:02Z"
 		}
 	],
 	"rootPath": "github.com/agrinman/kr/kr"
