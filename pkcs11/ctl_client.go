@@ -43,9 +43,6 @@ func getMe() (me kr.Profile, err error) {
 	}
 	defer httpResponse.Body.Close()
 	if httpResponse.StatusCode == http.StatusNotFound {
-		kr.DesktopNotify("Not paired, please run \"kr pair\" and scan the QR code with kryptonite.")
-	}
-	if httpResponse.StatusCode == http.StatusNotFound {
 		err = ErrNotPaired
 		return
 	}

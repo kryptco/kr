@@ -115,7 +115,12 @@ func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest k
 		meResponse, err := cs.enclaveClient.RequestMe()
 		if err != nil {
 			log.Error("me request error:", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			switch err {
+			case ErrNotPaired:
+				w.WriteHeader(http.StatusNotFound)
+			default:
+				w.WriteHeader(http.StatusInternalServerError)
+			}
 			return
 		}
 		if meResponse != nil {
@@ -141,7 +146,12 @@ func (cs *ControlServer) handleEnclaveList(w http.ResponseWriter, enclaveRequest
 	listResponse, err := cs.enclaveClient.RequestList(*enclaveRequest.ListRequest)
 	if err != nil {
 		log.Error("list request error:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		switch err {
+		case ErrNotPaired:
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		return
 	}
 	if listResponse != nil {
@@ -166,7 +176,12 @@ func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest
 	signResponse, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest)
 	if err != nil {
 		log.Error("signature request error:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		switch err {
+		case ErrNotPaired:
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		return
 	}
 	if signResponse != nil {

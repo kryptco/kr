@@ -15,6 +15,7 @@ import (
 )
 
 var ErrTimeout = errors.New("Request timed out")
+var ErrNotPaired = errors.New("Phone not paired")
 
 //	Message queued during send
 type SendQueued struct {
@@ -76,9 +77,7 @@ type EnclaveClient struct {
 func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
 	ec.Lock()
 	defer ec.Unlock()
-	ec.cachedMe = nil
 
-	ec.deactivatePairing()
 	ec.generatePairing()
 	ec.activatePairing()
 
@@ -96,7 +95,9 @@ func (ec *EnclaveClient) IsPaired() bool {
 }
 
 func (ec *EnclaveClient) generatePairing() (err error) {
-	ec.deactivatePairing()
+	if ec.pairingSecret != nil {
+		ec.unpair(*ec.pairingSecret, true)
+	}
 	kr.DeletePairing()
 
 	pairingSecret, err := kr.GeneratePairingSecretAndCreateQueues()
@@ -107,7 +108,6 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 	//	erase any existing pairing
 	ec.pairingSecret = &pairingSecret
 	ec.outgoingQueue = [][]byte{}
-	pairingSecret = *ec.pairingSecret
 
 	savePairingErr := kr.SavePairing(pairingSecret)
 	if savePairingErr != nil {
@@ -116,15 +116,40 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 	return
 }
 
-func (ec *EnclaveClient) deactivatePairing() (err error) {
+func (ec *EnclaveClient) unpair(pairingSecret kr.PairingSecret, sendUnpairRequest bool) (err error) {
+	if ec.pairingSecret == nil || !ec.pairingSecret.Equals(pairingSecret) {
+		return
+	}
+	ec.deactivatePairing(pairingSecret)
+	ec.cachedMe = nil
+	ec.pairingSecret = nil
+	kr.DeletePairing()
+	if sendUnpairRequest {
+		func() {
+			unpairRequest, err := kr.NewRequest()
+			if err != nil {
+				log.Error("error creating request:", err)
+				return
+			}
+			unpairRequest.UnpairRequest = &kr.UnpairRequest{}
+			unpairJson, err := json.Marshal(unpairRequest)
+			if err != nil {
+				log.Error("error creating request:", err)
+				return
+			}
+			go ec.sendMessage(pairingSecret, unpairJson, false)
+		}()
+	}
+	return
+}
+
+func (ec *EnclaveClient) deactivatePairing(pairingSecret kr.PairingSecret) (err error) {
 	if ec.bt != nil {
-		if ec.pairingSecret != nil {
-			oldBtUUID, uuidErr := ec.pairingSecret.DeriveUUID()
-			if uuidErr == nil {
-				btErr := ec.bt.RemoveService(oldBtUUID)
-				if btErr != nil {
-					log.Error("error removing bluetooth service:", btErr.Error())
-				}
+		oldBtUUID, uuidErr := pairingSecret.DeriveUUID()
+		if uuidErr == nil {
+			btErr := ec.bt.RemoveService(oldBtUUID)
+			if btErr != nil {
+				log.Error("error removing bluetooth service:", btErr.Error())
 			}
 		}
 	}
@@ -150,7 +175,6 @@ func (ec *EnclaveClient) activatePairing() (err error) {
 	return
 }
 func (ec *EnclaveClient) Stop() (err error) {
-	ec.deactivatePairing()
 	return
 }
 
@@ -183,7 +207,7 @@ func (ec *EnclaveClient) Start() (err error) {
 	ec.activatePairing()
 	ec.Unlock()
 	if ec.getPairingSecret() != nil {
-		ec.RequestMe()
+		go ec.RequestMe()
 	}
 	return
 }
@@ -309,6 +333,12 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 			}
 		}
 	}()
+	if response == nil {
+		ps := client.getPairingSecret()
+		if ps == nil || !ps.IsPaired() {
+			err = ErrNotPaired
+		}
+	}
 	return
 }
 
@@ -332,7 +362,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
 	client.Unlock()
 
-	err = client.sendMessage(requestJson)
+	err = client.sendMessage(*pairingSecret, requestJson, true)
 
 	if err != nil {
 		switch err.(type) {
@@ -407,7 +437,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 		}
 
 		for _, queuedMessage := range queue {
-			err = client.sendMessage(queuedMessage)
+			err = client.sendMessage(*pairingSecret, queuedMessage, true)
 			if err != nil {
 				log.Error("error sending queued message:", err.Error())
 			}
@@ -425,7 +455,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 		return
 	}
 	responseJson := *message
-	err = client.handleMessage(responseJson)
+	err = client.handleMessage(*pairingSecret, responseJson)
 	if err != nil {
 		log.Error("handleMessage error:", err)
 		return
@@ -433,17 +463,12 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 	return
 }
 
-func (client *EnclaveClient) sendMessage(message []byte) (err error) {
-	pairingSecret := client.getPairingSecret()
-	if pairingSecret == nil {
-		err = errors.New("EnclaveClient pairing never initiated")
-		return
-	}
+func (client *EnclaveClient) sendMessage(pairingSecret kr.PairingSecret, message []byte, queue bool) (err error) {
 	ciphertext, err := pairingSecret.EncryptMessage(message)
 	if err != nil {
 		if err == kr.ErrWaitingForKey {
 			client.Lock()
-			if len(client.outgoingQueue) < 128 {
+			if len(client.outgoingQueue) < 128 && queue {
 				client.outgoingQueue = append(client.outgoingQueue, message)
 			}
 			client.Unlock()
@@ -468,10 +493,26 @@ func (client *EnclaveClient) sendMessage(message []byte) (err error) {
 	return
 }
 
-func (client *EnclaveClient) handleMessage(message []byte) (err error) {
+func (client *EnclaveClient) handleMessage(fromPairing kr.PairingSecret, message []byte) (err error) {
 	var response kr.Response
 	err = json.Unmarshal(message, &response)
 	if err != nil {
+		return
+	}
+
+	if response.UnpairResponse != nil {
+		log.Notice("Received unpair command from phone.")
+		client.Lock()
+		client.unpair(fromPairing, false)
+		//	cancel all pending callbacks
+		client.requestCallbacksByRequestID.OnEvicted = func(key lru.Key, callback interface{}) {
+			callback.(chan *kr.Response) <- nil
+		}
+		for client.requestCallbacksByRequestID.Len() > 0 {
+			client.requestCallbacksByRequestID.RemoveOldest()
+		}
+		client.requestCallbacksByRequestID.OnEvicted = nil
+		client.Unlock()
 		return
 	}
 

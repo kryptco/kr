@@ -8,11 +8,12 @@ import (
 )
 
 type Request struct {
-	RequestID   string       `json:"request_id"`
-	UnixSeconds int64        `json:"unix_seconds"`
-	SignRequest *SignRequest `json:"sign_request"`
-	ListRequest *ListRequest `json:"list_request"`
-	MeRequest   *MeRequest   `json:"me_request"`
+	RequestID     string         `json:"request_id"`
+	UnixSeconds   int64          `json:"unix_seconds"`
+	SignRequest   *SignRequest   `json:"sign_request"`
+	ListRequest   *ListRequest   `json:"list_request"`
+	MeRequest     *MeRequest     `json:"me_request"`
+	UnpairRequest *UnpairRequest `json:"unpair_request"`
 }
 
 func NewRequest() (request Request, err error) {
@@ -28,12 +29,13 @@ func NewRequest() (request Request, err error) {
 }
 
 type Response struct {
-	RequestID             string        `json:"request_id"`
-	SignResponse          *SignResponse `json:"sign_response"`
-	ListResponse          *ListResponse `json:"list_response"`
-	MeResponse            *MeResponse   `json:"me_response"`
-	SNSEndpointARN        *string       `json:"sns_endpoint_arn"`
-	RequireManualApproval bool          `json:"require_manual_approval"`
+	RequestID             string          `json:"request_id"`
+	SignResponse          *SignResponse   `json:"sign_response"`
+	ListResponse          *ListResponse   `json:"list_response"`
+	MeResponse            *MeResponse     `json:"me_response"`
+	UnpairResponse        *UnpairResponse `json:"unpair_response"`
+	SNSEndpointARN        *string         `json:"sns_endpoint_arn"`
+	RequireManualApproval bool            `json:"require_manual_approval"`
 }
 
 type SignRequest struct {
@@ -74,3 +76,7 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 	}
 	return
 }
+
+type UnpairRequest struct{}
+
+type UnpairResponse struct{}

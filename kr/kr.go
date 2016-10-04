@@ -95,8 +95,10 @@ func pairCommand(c *cli.Context) (err error) {
 	}
 	switch getResponse.StatusCode {
 	case http.StatusNotFound, http.StatusInternalServerError:
-		PrintFatal("Pairing failed %d, ensure your phone and workstation are connected to the internet and try again.", getResponse.StatusCode)
+		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
+	case http.StatusOK:
 	default:
+		PrintFatal("Pairing failed with error %d", getResponse.StatusCode)
 	}
 	defer getResponse.Body.Close()
 	var me kr.Profile
@@ -141,6 +143,8 @@ func meCommand(c *cli.Context) (err error) {
 	switch response.StatusCode {
 	case http.StatusNotFound:
 		PrintFatal("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
+	case http.StatusInternalServerError:
+		PrintFatal("Request timed out. Make sure your phone and workstation are paired and connected to the internet and try again.")
 	default:
 	}
 

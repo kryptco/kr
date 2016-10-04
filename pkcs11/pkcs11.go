@@ -388,7 +388,14 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
 	sigBytes, err := sign(pkFingerprint[:], message)
 	if err != nil {
-		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet or bluetooth.")
+		switch err {
+		case ErrNotPaired:
+			log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
+		case ErrTimedOut:
+			log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet or bluetooth.")
+		case ErrTimedOut:
+			log.Error("Error signing:", err.Error())
+		}
 		return C.CKR_GENERAL_ERROR
 	} else {
 		log.Info("received signature size", len(sigBytes), "bytes")

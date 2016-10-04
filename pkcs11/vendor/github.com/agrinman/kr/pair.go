@@ -1,6 +1,7 @@
 package kr
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -23,8 +24,12 @@ type PairingSecret struct {
 	workstationSecretKey  []byte
 	WorkstationName       string `json:"n"`
 	snsEndpointARN        *string
-	RequireManualApproval bool `json:"require_manual_approval"`
+	RequireManualApproval bool `json:"-"`
 	sync.Mutex
+}
+
+func (ps PairingSecret) Equals(other PairingSecret) bool {
+	return bytes.Equal(ps.WorkstationPublicKey, other.WorkstationPublicKey)
 }
 
 func (ps PairingSecret) DeriveUUID() (derivedUUID uuid.UUID, err error) {
