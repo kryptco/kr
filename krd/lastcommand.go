@@ -45,5 +45,7 @@ func getLastCommand() (lastCommand *string) {
 		return
 	}
 	command := strings.Join(psTokens[11:], " ")
+	command = strings.Replace(command, "git-receive-pack", "push", 1)
+	command = strings.Replace(command, "git-upload-pack", "pull", 1)
 	return &command
 }
