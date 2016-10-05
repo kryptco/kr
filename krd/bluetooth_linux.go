@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/op/go-logging"
 	"github.com/satori/go.uuid"
 )
 
@@ -25,4 +26,7 @@ func (bt *BluetoothDriver) ReadChan() (readChan chan []byte, err error) {
 }
 func (bt *BluetoothDriver) Write(data []byte) (err error) {
 	return
+}
+
+func SetBTLogger(logger *logging.Logger) {
 }

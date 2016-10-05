@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/agrinman/go.corebluetooth"
+	"github.com/op/go-logging"
 	"github.com/satori/go.uuid"
 )
 
@@ -33,4 +34,8 @@ func (bt *BluetoothDriver) ReadChan() (readChan chan []byte, err error) {
 func (bt *BluetoothDriver) Write(data []byte) (err error) {
 	err = bt.CoreBluetoothDriver.WriteData(data)
 	return
+}
+
+func SetBTLogger(logger *logging.Logger) {
+	corebluetooth.SetLogger(logger)
 }
