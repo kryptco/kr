@@ -227,7 +227,7 @@ func addCommand(c *cli.Context) (err error) {
 
 	PrintErr("Adding %d keys to %s", len(authorizedKeys), server)
 
-	authorizedKeysReader := bytes.NewReader(bytes.Join(authorizedKeys, []byte("\n")))
+	authorizedKeysReader := bytes.NewReader(bytes.Join(authorizedKeys, []byte("\r\n")))
 	sshCommand := exec.Command("ssh", server, "cat - >> ~/.ssh/authorized_keys")
 	sshCommand.Stdin = authorizedKeysReader
 	err = sshCommand.Run()
