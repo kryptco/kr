@@ -21,27 +21,27 @@ import (
 	"github.com/op/go-logging"
 )
 
-var log = kr.SetupLogging("", logging.WARNING, os.Getenv("KR_LOG_SYSLOG") != "")
+var log = kr.SetupLogging("", logging.ERROR, os.Getenv("KR_LOG_SYSLOG") != "")
 
 var mutex sync.Mutex
 
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
 
-	log.Info("GetFunctionList")
+	log.Notice("GetFunctionList")
 	*l = &functions
 	return C.CKR_OK
 }
 
 //export C_Initialize
 func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
-	log.Info("Initialize")
+	log.Notice("Initialize")
 	return C.CKR_OK
 }
 
 //export C_GetInfo
 func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
-	log.Info("GetInfo")
+	log.Notice("GetInfo")
 	*ck_info = C.CK_INFO{
 		cryptokiVersion: C.struct__CK_VERSION{
 			major: 2,
@@ -60,15 +60,15 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 
 //export C_GetSlotList
 func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulong) C.CK_RV {
-	log.Info("GetSlotList input count", *count)
+	log.Notice("GetSlotList input count", *count)
 	if slot_list == nil {
-		log.Info("slot_list nil")
+		log.Notice("slot_list nil")
 		//	just return count
 		*count = 1
 		return C.CKR_OK
 	}
 	if *count == 0 {
-		log.Info("buffer too small")
+		log.Notice("buffer too small")
 		return C.CKR_BUFFER_TOO_SMALL
 	}
 	*count = 1
@@ -78,7 +78,7 @@ func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulon
 
 //export C_GetSlotInfo
 func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
-	log.Info("GetSlotInfo")
+	log.Notice("GetSlotInfo")
 	*slotInfo = C.CK_SLOT_INFO{
 		manufacturerID:  bytesToChar32([]byte("KryptCo Inc.")),
 		slotDescription: bytesToChar64([]byte("kryptonite pkcs11 middleware")),
@@ -99,7 +99,7 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 
 //export C_GetTokenInfo
 func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
-	log.Info("GetTokenInfo")
+	log.Notice("GetTokenInfo")
 	*tokenInfo = C.CK_TOKEN_INFO{
 		label:               bytesToChar32([]byte("kryptonite iOS")),
 		manufacturerID:      bytesToChar32([]byte("KryptCo Inc.")),
@@ -119,15 +119,19 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 			major: 0,
 			minor: 1,
 		},
-		flags: C.CKF_PROTECTED_AUTHENTICATION_PATH | C.CKF_TOKEN_INITIALIZED,
+		flags: C.CKF_TOKEN_INITIALIZED,
 	}
 	return C.CKR_OK
 }
 
+var nextSessionIota = C.CK_SESSION_HANDLE(1)
+
 //export C_OpenSession
 func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID_PTR,
 	notify C.CK_NOTIFY, sessionHandle C.CK_SESSION_HANDLE_PTR) C.CK_RV {
-	log.Info("OpenSession")
+	mutex.Lock()
+	defer mutex.Unlock()
+	log.Notice("OpenSession")
 	if flags&C.CKF_SERIAL_SESSION == 0 {
 		log.Error("CKF_SERIAL_SESSION not set")
 		return C.CKR_SESSION_PARALLEL_NOT_SUPPORTED
@@ -135,12 +139,14 @@ func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID
 	if notify != nil {
 		log.Warning("notify callback passed in, but not supported")
 	}
+	*sessionHandle = nextSessionIota
+	nextSessionIota++
 	return C.CKR_OK
 }
 
 //export C_GetSessionInfo
 func C_GetSessionInfo(session C.CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK_RV {
-	log.Info("GetSessionInfo")
+	log.Notice("GetSessionInfo")
 	*info = C.CK_SESSION_INFO{
 		slotID: 0,
 		state:  C.CKS_RW_USER_FUNCTIONS,
@@ -156,7 +162,7 @@ var mechanismTypes []C.CK_MECHANISM_TYPE = []C.CK_MECHANISM_TYPE{
 
 //export C_GetMechanismList
 func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, count *C.CK_ULONG) C.CK_RV {
-	log.Info("GetMechanismList")
+	log.Notice("GetMechanismList")
 	if mechList == nil {
 		*count = C.CK_ULONG(len(mechanismTypes))
 		return C.CKR_OK
@@ -173,9 +179,9 @@ func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, coun
 
 //export C_GetMechanismInfo
 func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.CK_MECHANISM_INFO) C.CK_RV {
-	log.Info("GetMechanismInfo")
+	log.Notice("GetMechanismInfo")
 	if _type == C.CKM_RSA_PKCS {
-		log.Info("CKM_RSA_PKCS")
+		log.Notice("CKM_RSA_PKCS")
 		*info = C.CK_MECHANISM_INFO{
 			ulMinKeySize: 4096,
 			ulMaxKeySize: 4096,
@@ -187,7 +193,7 @@ func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.
 
 //export C_CloseSession
 func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
-	log.Info("CloseSession")
+	log.Notice("CloseSession")
 	mutex.Lock()
 	defer mutex.Unlock()
 	return C.CKR_OK
@@ -222,28 +228,30 @@ func found(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
 
 //export C_FindObjectsInit
 func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
-	log.Info("FindObjectsInit")
+	log.Notice("FindObjectsInit")
 	mutex.Lock()
 	defer mutex.Unlock()
 	if count == 0 {
-		log.Info("count == 0, find all objects")
+		log.Notice("count == 0, find all objects")
 		findOnce(session, PUBKEY_HANDLE)
 		findOnce(session, PRIVKEY_HANDLE)
 		return C.CKR_OK
 	}
 	for i := C.CK_ULONG(0); i < count; i++ {
-		log.Info("Template type:", templates._type)
+		log.Notice("Template type:", templates._type)
 		switch templates._type {
 		case C.CKA_CLASS:
 			switch *(*C.CK_OBJECT_CLASS)(templates.pValue) {
 			case C.CKO_PUBLIC_KEY:
-				log.Info("init search for CKO_PUBLIC_KEY")
+				log.Notice("init search for CKO_PUBLIC_KEY")
 				findOnce(session, PUBKEY_HANDLE)
 			case C.CKO_PRIVATE_KEY:
-				log.Info("init search for CKO_PRIVATE_KEY")
+				log.Notice("init search for CKO_PRIVATE_KEY")
 				findOnce(session, PRIVKEY_HANDLE)
 			case C.CKO_MECHANISM:
-				log.Info("init search for CKO_MECHANISM unsupported")
+				log.Notice("init search for CKO_MECHANISM unsupported")
+			case C.CKO_CERTIFICATE:
+				log.Notice("init search for CKO_CERTIFICATE unsupported")
 			}
 		}
 		templates = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templates)) + unsafe.Sizeof(*templates)))
@@ -253,12 +261,13 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 
 const PUBKEY_HANDLE C.CK_OBJECT_HANDLE = 1
 const PRIVKEY_HANDLE C.CK_OBJECT_HANDLE = 2
+const CERT_HANDLE C.CK_OBJECT_HANDLE = 3
 
 var PUBKEY_ID []byte = []byte{1}
 
 //export C_FindObjects
 func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
-	log.Info("FindObjects")
+	log.Notice("FindObjects")
 	mutex.Lock()
 	defer mutex.Unlock()
 	remainingCount := maxCount
@@ -294,7 +303,7 @@ var staticMe = kr.Profile{}
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
 	mutex.Lock()
 	defer mutex.Unlock()
-	log.Info("C_GetAttributeValue")
+	log.Notice("C_GetAttributeValue")
 	me, err := krdclient.RequestMe()
 	if err == krdclient.ErrNotPaired {
 		log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
@@ -332,25 +341,31 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(PUBKEY_ID))
 			(*templateIter).ulValueLen = C.ulong(len(PUBKEY_ID))
 		case C.CKA_MODULUS:
-			log.Info("CKA_MODULUS")
+			log.Notice("CKA_MODULUS")
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(modulus))
 			(*templateIter).ulValueLen = C.ulong(len(modulus))
 		case C.CKA_MODULUS_BITS:
-			log.Info("MODULUS_BITS")
+			log.Notice("MODULUS_BITS")
 			*(*C.CK_ULONG)((*templateIter).pValue) = C.CK_ULONG(pk.N.BitLen())
 		case C.CKA_PUBLIC_EXPONENT:
-			log.Info("CKA_PUBLIC_EXPONENT")
+			log.Notice("CKA_PUBLIC_EXPONENT")
 			(*templateIter).pValue = unsafe.Pointer(C.CBytes(e))
 			(*templateIter).ulValueLen = C.ulong(len(e))
 		case C.CKA_KEY_TYPE:
-			log.Info("CKA_KEY_TYPE")
+			log.Notice("CKA_KEY_TYPE")
 			rsaKeyType := (*C.CK_KEY_TYPE)(C.malloc(C.size_t(unsafe.Sizeof(C.CKK_RSA))))
 			*rsaKeyType = C.CKK_RSA
 			(*templateIter).pValue = unsafe.Pointer(rsaKeyType)
 			(*templateIter).ulValueLen = C.ulong(unsafe.Sizeof(*rsaKeyType))
 		case C.CKA_SIGN:
-			log.Info("CKA_SIGN")
+			log.Notice("CKA_SIGN")
 			*(*C.CK_BBOOL)((*templateIter).pValue) = C.CK_TRUE
+		case C.CKA_SUBJECT:
+			log.Notice("CKA_SUBJECT not supported")
+		case C.CKA_VALUE:
+			log.Notice("CKA_VALUE not supported")
+		default:
+			log.Notice("unknown template type", (*templateIter)._type)
 		}
 
 		templateIter = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templateIter)) + unsafe.Sizeof(*template)))
@@ -360,7 +375,7 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 
 //export C_SignInit
 func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C.CK_OBJECT_HANDLE) C.CK_RV {
-	log.Info("C_SignInit mechanism", mechanism.mechanism)
+	log.Notice("C_SignInit mechanism", mechanism.mechanism)
 	switch mechanism.mechanism {
 	case C.CKM_RSA_PKCS:
 		return C.CKR_OK
@@ -377,8 +392,8 @@ func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C
 func C_Sign(session C.CK_SESSION_HANDLE,
 	data C.CK_BYTE_PTR, dataLen C.ulong,
 	signature C.CK_BYTE_PTR, signatureLen *C.ulong) C.CK_RV {
-	log.Info("C_Sign")
-	log.Info("in sigLen", *signatureLen, "dataLen", dataLen)
+	log.Notice("C_Sign")
+	log.Notice("input signatureLen", *signatureLen, "dataLen", dataLen)
 	if signature == nil {
 		*signatureLen = 512
 		return C.CKR_OK
@@ -398,20 +413,20 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 		}
 		return C.CKR_GENERAL_ERROR
 	} else {
-		log.Info("received signature size", len(sigBytes), "bytes")
+		log.Notice("Received signature size", len(sigBytes), "bytes")
 		for _, b := range sigBytes {
 			*signature = C.CK_BYTE(b)
 			signature = C.CK_BYTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(signature)) + 1))
 		}
 		*signatureLen = C.ulong(len(sigBytes))
-		log.Info("set sig")
+		log.Notice("Returning signature")
 	}
 	return C.CKR_OK
 }
 
 //export C_Finalize
 func C_Finalize(reserved C.CK_VOID_PTR) C.CK_RV {
-	log.Info("Finalize")
+	log.Notice("Finalize")
 	return C.CKR_OK
 }
 func bytesToChar64(b []byte) [64]C.uchar {
