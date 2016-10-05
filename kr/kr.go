@@ -190,10 +190,10 @@ func copyCommand(c *cli.Context) (err error) {
 
 func addCommand(c *cli.Context) (err error) {
 	if len(c.Args()) < 2 {
-		PrintFatal("usage: kr add <server> <user email 1> <user email 2>...")
+		PrintFatal("kr add <first email> <second email>... <user@server or SSH alias>")
 		return
 	}
-	server := c.Args()[0]
+	server := c.Args()[len(c.Args())-1]
 
 	profiles := []kr.Profile{}
 	me, err := krdclient.RequestMe()
@@ -210,7 +210,10 @@ func addCommand(c *cli.Context) (err error) {
 	}
 
 	filter := map[string]bool{}
-	for _, email := range c.Args()[1:] {
+	for _, email := range c.Args()[:len(c.Args())] {
+		if email == "me" {
+			filter[me.Email] = true
+		}
 		filter[email] = true
 	}
 
@@ -239,7 +242,7 @@ func addCommand(c *cli.Context) (err error) {
 
 func listCommand(c *cli.Context) (err error) {
 	if len(c.Args()) == 0 {
-		PrintFatal("usage: kr list <server>")
+		PrintFatal("usage: kr list <user@server or SSH alias>")
 	}
 	server := c.Args()[0]
 
@@ -328,12 +331,12 @@ func main() {
 		},
 		cli.Command{
 			Name:   "list",
-			Usage:  "kr list [server] -- List public keys authorized on the specified server.",
+			Usage:  "kr list <user@server or SSH alias> -- List public keys authorized on the specified server.",
 			Action: listCommand,
 		},
 		cli.Command{
 			Name:   "add",
-			Usage:  "kr add <server> <first email> <second email>... -- add the public key of the specified user to the server.",
+			Usage:  "kr add <first email> <second email>... <user@server or SSH alias> -- add the public key of the specified users to the server.",
 			Action: addCommand,
 		},
 		cli.Command{
