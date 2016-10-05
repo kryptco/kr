@@ -202,6 +202,7 @@ func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
 var sessionFoundObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
 var sessionFindingObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
 
+//	only starts search for object if session has not found it yet
 func findOnce(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
 	if _, ok := sessionFindingObjects[session]; !ok {
 		sessionFindingObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
@@ -211,6 +212,14 @@ func findOnce(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
 	}
 	if found, ok := sessionFoundObjects[session][object]; ok && found {
 		return
+	}
+	sessionFindingObjects[session][object] = true
+}
+
+//	always starts search for object even if session has found it previously
+func findAlways(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
+	if _, ok := sessionFindingObjects[session]; !ok {
+		sessionFindingObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
 	}
 	sessionFindingObjects[session][object] = true
 }
@@ -247,7 +256,7 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 				findOnce(session, PUBKEY_HANDLE)
 			case C.CKO_PRIVATE_KEY:
 				log.Notice("init search for CKO_PRIVATE_KEY")
-				findOnce(session, PRIVKEY_HANDLE)
+				findAlways(session, PRIVKEY_HANDLE)
 			case C.CKO_MECHANISM:
 				log.Notice("init search for CKO_MECHANISM unsupported")
 			case C.CKO_CERTIFICATE:
