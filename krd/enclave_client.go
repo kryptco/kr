@@ -288,7 +288,10 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 	}
 	if response != nil {
 		signResponse = response.SignResponse
-		log.Notice("successful signature took", int(time.Since(start)/time.Millisecond), "ms")
+		log.Notice("Signature response took", int(time.Since(start)/time.Millisecond), "ms")
+		if signResponse.Error != nil {
+			log.Error("Signature error:", signResponse.Error)
+		}
 	}
 	return
 }

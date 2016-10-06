@@ -419,6 +419,8 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 			log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
 		case krdclient.ErrTimedOut:
 			log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet or bluetooth.")
+		case krdclient.ErrSigning:
+			log.Error(err)
 		}
 		return C.CKR_GENERAL_ERROR
 	} else {

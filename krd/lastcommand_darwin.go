@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+//	fallback using ps
 func getLastCommand() (lastCommand *string) {
 	psWithHeader, err := exec.Command("ps", "-o", "lstart", "-f").Output()
 	if err != nil {

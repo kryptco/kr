@@ -11,6 +11,7 @@ import (
 
 var ErrNotPaired = fmt.Errorf("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
 var ErrTimedOut = fmt.Errorf("Request timed out. Make sure your phone and workstation are paired and connected to the internet and try again.")
+var ErrSigning = fmt.Errorf("Kryptonite was unable to perform SSH login. Please restart the Kryptonite app on your phone.")
 
 func RequestMe() (me kr.Profile, err error) {
 	meRequest, err := kr.NewRequest()
@@ -107,6 +108,7 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	signRequest.SignRequest = &kr.SignRequest{
 		PublicKeyFingerprint: pkFingerprint,
 		Digest:               data,
+		Command:              currentCommand(),
 	}
 
 	httpRequest, err := signRequest.HTTPRequest()
@@ -144,6 +146,10 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	if signResponse := krResponse.SignResponse; signResponse != nil {
 		if signResponse.Signature != nil {
 			signature = *signResponse.Signature
+			return
+		}
+		if signResponse.Error != nil {
+			err = ErrSigning
 			return
 		}
 	}
