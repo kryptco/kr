@@ -175,6 +175,12 @@ func meCommand(c *cli.Context) (err error) {
 }
 
 func copyCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr("Public key copied to clipboard.")
+	return
+}
+
+func copyKey() (err error) {
 	me, err := krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(err.Error())
@@ -184,7 +190,6 @@ func copyCommand(c *cli.Context) (err error) {
 	if err != nil {
 		PrintFatal(err.Error())
 	}
-	PrintErr("Public key copied to clipboard.")
 	return
 }
 
@@ -323,6 +328,11 @@ func main() {
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard.",
 			Action: copyCommand,
+		},
+		cli.Command{
+			Name:   "github",
+			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Github so you can add it to your profile.",
+			Action: githubCommand,
 		},
 		cli.Command{
 			Name:   "peers",
