@@ -80,7 +80,7 @@ func C_GetSlotList(token_present C.uchar, slot_list *C.CK_SLOT_ID, count *C.ulon
 func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 	log.Notice("GetSlotInfo")
 	*slotInfo = C.CK_SLOT_INFO{
-		manufacturerID:  bytesToChar32([]byte("KryptCo Inc.")),
+		manufacturerID:  bytesToChar32([]byte("KryptCo, Inc.")),
 		slotDescription: bytesToChar64([]byte("kryptonite pkcs11 middleware")),
 		hardwareVersion: C.struct__CK_VERSION{
 			major: 0,
