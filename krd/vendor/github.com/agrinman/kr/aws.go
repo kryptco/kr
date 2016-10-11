@@ -82,7 +82,7 @@ func pushToSNS(endpointARN string, payload []byte) (err error) {
 		return
 	}
 	message := map[string]interface{}{
-		"APNS_SANDBOX": string(payload),
+		"APNS": string(payload),
 	}
 	messageJson, err := json.Marshal(message)
 	if err != nil {
