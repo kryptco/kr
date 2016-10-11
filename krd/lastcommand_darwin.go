@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 //	fallback using ps
@@ -14,39 +15,34 @@ func getLastCommand() (lastCommand *string) {
 	}
 	skipHeaderCmd := exec.Command("tail", "-n", "+2")
 	skipHeaderCmd.Stdin = bytes.NewReader(psWithHeader)
-	ps, err := skipHeaderCmd.Output()
+	unsortedPs, err := skipHeaderCmd.Output()
 	if err != nil {
 		log.Error("tailCmd error", err)
 		return
 	}
-	trimDayCmd := exec.Command("awk", "{$1=\"\";print}")
-	trimDayCmd.Stdin = bytes.NewReader(ps)
-	unsortedPs, err := trimDayCmd.Output()
-	if err != nil {
-		log.Error("awkCmd error", err)
-		return
-	}
-	sortCmd := exec.Command("sort")
-	sortCmd.Stdin = bytes.NewReader(unsortedPs)
-	sortedPs, err := sortCmd.Output()
-	if err != nil {
-		log.Error("sortCmd error", err)
-		return
-	}
-	tailCmd := exec.Command("tail", "-1")
-	tailCmd.Stdin = bytes.NewReader(sortedPs)
-	psLine, err := tailCmd.Output()
-	if err != nil {
-		log.Error("tailcmd error", err)
-		return
+	var latestTime *time.Time
+	var latestCommand *string
+	for _, line := range strings.Split(string(unsortedPs), "\n") {
+		toks := strings.Fields(line)
+		if len(toks) < 13 {
+			continue
+		}
+		t, err := time.Parse("Mon Jan 2 15:04:05 2006", strings.Join(toks[:5], " "))
+		if err != nil {
+			log.Warning("error parsing time:", err)
+			continue
+		}
+		if latestTime == nil || t.After(*latestTime) || t.Equal(*latestTime) {
+			latestTime = &t
+			command := strings.Join(toks[12:], " ")
+			latestCommand = &command
+		}
 	}
 
-	psTokens := strings.Fields(string(psLine))
-	if len(psTokens) <= 11 {
-		return
+	if latestCommand != nil {
+		command := strings.Replace(*latestCommand, "git-receive-pack", "push", 1)
+		command = strings.Replace(command, "git-upload-pack", "pull", 1)
+		latestCommand = &command
 	}
-	command := strings.Join(psTokens[11:], " ")
-	command = strings.Replace(command, "git-receive-pack", "push", 1)
-	command = strings.Replace(command, "git-upload-pack", "pull", 1)
-	return &command
+	return latestCommand
 }
