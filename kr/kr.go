@@ -284,7 +284,11 @@ func listCommand(c *cli.Context) (err error) {
 				color.Green(peer.Email)
 				nPeers++
 			} else {
-				color.Yellow("Unknown Key (" + comment + ")")
+				if comment == "" {
+					color.Yellow("Unknown Key")
+				} else {
+					color.Yellow("Unknown Key (" + comment + ")")
+				}
 				nUnknown++
 			}
 			fmt.Printf("%s %s\n\n", key.Type(), wireB64)
