@@ -249,7 +249,7 @@ func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) 
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
-	response, err := client.tryRequest(meRequest, 20*time.Second, 5*time.Second, "Incoming SSH request. Open Kryptonite to continue.")
+	response, err := client.tryRequest(meRequest, 45*time.Second, 10*time.Second, "Incoming SSH request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
