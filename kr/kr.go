@@ -171,6 +171,7 @@ func meCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 	fmt.Println(authorizedKey)
+	PrintErr("\r\nCopy this key to your clipboard using \"kr copy\" or add it to a service like Github using \"kr github\". Type \"kr\" to see all available commands.")
 	return
 }
 
