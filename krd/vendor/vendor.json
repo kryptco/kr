@@ -27,16 +27,16 @@
 			"revisionTime": "2016-10-05T23:46:50Z"
 		},
 		{
-			"checksumSHA1": "zdpL2sln+tp3/qFKW9lUun+kTAE=",
+			"checksumSHA1": "vmnQNSJlYpAZvzOsN9sHeVymFGQ=",
 			"path": "github.com/agrinman/kr",
-			"revision": "2763ca93dccafcb6ae99df620a34e68042ab7446",
-			"revisionTime": "2016-10-11T14:01:12Z"
+			"revision": "2369fd9939a6a508d9e31daab4ec8e4d102e3634",
+			"revisionTime": "2016-10-13T16:09:24Z"
 		},
 		{
 			"checksumSHA1": "PE5dC1O6lppnN/ap1xH7x37XlZ4=",
 			"path": "github.com/agrinman/kr/krdclient",
-			"revision": "2763ca93dccafcb6ae99df620a34e68042ab7446",
-			"revisionTime": "2016-10-11T14:01:12Z"
+			"revision": "2369fd9939a6a508d9e31daab4ec8e4d102e3634",
+			"revisionTime": "2016-10-13T16:09:24Z"
 		},
 		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",

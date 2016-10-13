@@ -3,6 +3,18 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "PVoRVClNcvUgvissfCeV9MxYJcc=",
+			"path": "github.com/agrinman/kr",
+			"revision": "2369fd9939a6a508d9e31daab4ec8e4d102e3634",
+			"revisionTime": "2016-10-13T16:09:24Z"
+		},
+		{
+			"checksumSHA1": "PE5dC1O6lppnN/ap1xH7x37XlZ4=",
+			"path": "github.com/agrinman/kr/krdclient",
+			"revision": "2369fd9939a6a508d9e31daab4ec8e4d102e3634",
+			"revisionTime": "2016-10-13T16:09:24Z"
+		},
+		{
 			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
 			"path": "github.com/op/go-logging",
 			"revision": "970db520ece77730c7e4724c61121037378659d9",

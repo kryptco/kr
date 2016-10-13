@@ -56,7 +56,7 @@ func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueN
 				"c":                 requestCiphertext,
 			},
 		})
-	pushToSNS(endpointARN, apnsPayload)
+	err = pushToSNS(endpointARN, apnsPayload)
 	return
 }
 
@@ -72,7 +72,7 @@ func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err
 				"c":                 requestCiphertext,
 			},
 		})
-	pushToSNS(endpointARN, apnsPayload)
+	err = pushToSNS(endpointARN, apnsPayload)
 	return
 }
 
