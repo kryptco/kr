@@ -303,8 +303,16 @@ func listCommand(c *cli.Context) (err error) {
 
 func peersCommand(c *cli.Context) (err error) {
 	profiles, err := krdclient.RequestList()
+	if err != nil {
+		PrintFatal(err.Error())
+	}
+	if len(profiles) == 0 {
+		PrintErr("You don't have any peers yet. Use the kryptonite app to request peers' public keys.")
+	}
 	for _, profile := range profiles {
+		color.Green(profile.Email)
 		fmt.Println(profile.AuthorizedKeyString())
+		fmt.Println()
 	}
 	return
 }
