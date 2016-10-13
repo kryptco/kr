@@ -325,11 +325,8 @@ func main() {
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{
-			Name:  "pair",
-			Usage: "Initiate pairing of this workstation with a phone running Kryptonite.",
-			Flags: []cli.Flag{
-				cli.BoolFlag{Name: "no-aws"},
-			},
+			Name:   "pair",
+			Usage:  "Initiate pairing of this workstation with a phone running Kryptonite.",
 			Action: pairCommand,
 		},
 		cli.Command{
