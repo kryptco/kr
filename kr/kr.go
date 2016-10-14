@@ -392,27 +392,27 @@ func main() {
 		},
 		cli.Command{
 			Name:   "github",
-			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Github so you can add it to your profile.",
+			Usage:  "Upload your public key to GitHub. Copies your public key to the clipboard and opens GitHub settings.",
 			Action: githubCommand,
 		},
 		cli.Command{
 			Name:   "digital-ocean",
-			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to DigitalOcean.",
+			Usage:  "Upload your public key to Digital Ocean. Copies your public key to the clipboard and opens Digital Ocean settings.",
 			Action: digitaloceanCommand,
 		},
 		cli.Command{
 			Name:   "heroku",
-			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Heroku.",
+			Usage:  "Upload your public key to Heroku. Copies your public key to the clipboard and opens Heroku settings.",
 			Action: herokuCommand,
 		},
 		cli.Command{
 			Name:   "aws",
-			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Amazon Web Services.",
+			Usage:  "Upload your public key to Amazon Web Services. Copies your public key to the clipboard and opens the AWS Console.",
 			Action: awsCommand,
 		},
 		cli.Command{
 			Name:   "gcloud",
-			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Google Cloud.",
+			Usage:  "Upload your public key to Google Cloud. Copies your public key to the clipboard and opens the Google Cloud Console.",
 			Action: gcloudCommand,
 		},
 		cli.Command{
