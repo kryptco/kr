@@ -338,6 +338,16 @@ func digitaloceanCommand(c *cli.Context) (err error) {
 	return
 }
 
+func herokuCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr("Public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr("Opening Heroku...")
+	<-time.After(500 * time.Millisecond)
+	openBrowser("https://dashboard.heroku.com/account")
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -367,8 +377,13 @@ func main() {
 		},
 		cli.Command{
 			Name:   "digital-ocean",
-			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to DigitalOcean so you can add it to your profile.",
+			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to DigitalOcean.",
 			Action: digitaloceanCommand,
+		},
+		cli.Command{
+			Name:   "heroku",
+			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Heroku.",
+			Action: herokuCommand,
 		},
 		cli.Command{
 			Name:   "peers",
