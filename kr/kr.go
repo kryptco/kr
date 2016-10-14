@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/agrinman/kr"
 	"github.com/agrinman/kr/krdclient"
@@ -317,6 +318,26 @@ func peersCommand(c *cli.Context) (err error) {
 	return
 }
 
+func githubCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr("Public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr("Opening GitHub...")
+	<-time.After(500 * time.Millisecond)
+	openBrowser("https://github.com/settings/keys")
+	return
+}
+
+func digitaloceanCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr("Public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr("Opening DigitalOcean...")
+	<-time.After(500 * time.Millisecond)
+	openBrowser("https://cloud.digitalocean.com/settings/security")
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -343,6 +364,11 @@ func main() {
 			Name:   "github",
 			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Github so you can add it to your profile.",
 			Action: githubCommand,
+		},
+		cli.Command{
+			Name:   "digital-ocean",
+			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to DigitalOcean so you can add it to your profile.",
+			Action: digitaloceanCommand,
 		},
 		cli.Command{
 			Name:   "peers",

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"time"
 
 	"github.com/urfave/cli"
 )
@@ -20,12 +19,6 @@ func restartCommand(c *cli.Context) (err error) {
 	return
 }
 
-func githubCommand(c *cli.Context) (err error) {
-	copyKey()
-	PrintErr("Public key copied to clipboard.")
-	<-time.After(500 * time.Millisecond)
-	PrintErr("Opening GitHub...")
-	<-time.After(500 * time.Millisecond)
-	exec.Command("open", "https://github.com/settings/keys").Run()
-	return
+func openBrowser(url string) {
+	exec.Command("open", url).Run()
 }
