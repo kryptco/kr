@@ -348,6 +348,16 @@ func herokuCommand(c *cli.Context) (err error) {
 	return
 }
 
+func gcloudCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr("Public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr("Opening Google Cloud...")
+	<-time.After(500 * time.Millisecond)
+	openBrowser("https://console.cloud.google.com/compute/metadata/sshKeys")
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -384,6 +394,11 @@ func main() {
 			Name:   "heroku",
 			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Heroku.",
 			Action: herokuCommand,
+		},
+		cli.Command{
+			Name:   "gcloud",
+			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Google Cloud.",
+			Action: gcloudCommand,
 		},
 		cli.Command{
 			Name:   "peers",
