@@ -10,6 +10,9 @@ import (
 	"fmt"
 	"github.com/agrinman/kr"
 	"github.com/golang/groupcache/lru"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -261,6 +264,7 @@ func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) 
 			client.cachedMe = &meResponse.Me
 			client.Unlock()
 		}
+		ioutil.WriteFile(filepath.Join(os.Getenv("HOME"), ".ssh", "id_kryptonite.pub"), []byte("This is your Kryptonite public key. You can view it by running \"kr me\". Check out all available commands by typing \"kr\".\r\n\r\n"+meResponse.Me.AuthorizedKeyString()), 0700)
 	}
 	return
 }
