@@ -358,6 +358,16 @@ func gcloudCommand(c *cli.Context) (err error) {
 	return
 }
 
+func awsCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr("Public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr("Opening AWS Console. Click 'Import Key Pair' to add your key.")
+	<-time.After(1500 * time.Millisecond)
+	openBrowser("https://console.aws.amazon.com/ec2/v2/home?#KeyPairs:sort=keyName")
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -394,6 +404,11 @@ func main() {
 			Name:   "heroku",
 			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Heroku.",
 			Action: herokuCommand,
+		},
+		cli.Command{
+			Name:   "aws",
+			Usage:  "Copy your SSH public key to the clipboard and open your default web browser to Amazon Web Services.",
+			Action: awsCommand,
 		},
 		cli.Command{
 			Name:   "gcloud",
