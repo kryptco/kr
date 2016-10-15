@@ -57,7 +57,7 @@ func (err *ProtoError) Error() string {
 }
 
 type EnclaveClientI interface {
-	Pair() (pairing kr.PairingSecret, err error)
+	Pair() (pairing *kr.PairingSecret, err error)
 	IsPaired() bool
 	Unpair()
 	Start() (err error)
@@ -78,14 +78,14 @@ type EnclaveClient struct {
 	bt                          BluetoothDriverI
 }
 
-func (ec *EnclaveClient) Pair() (pairingSecret kr.PairingSecret, err error) {
+func (ec *EnclaveClient) Pair() (pairingSecret *kr.PairingSecret, err error) {
 	ec.Lock()
 	defer ec.Unlock()
 
 	ec.generatePairing()
 	ec.activatePairing()
 
-	pairingSecret = *ec.pairingSecret
+	pairingSecret = ec.pairingSecret
 
 	return
 }
@@ -94,7 +94,7 @@ func (ec *EnclaveClient) Unpair() {
 	ec.Lock()
 	defer ec.Unlock()
 	if ec.pairingSecret != nil {
-		ec.unpair(*ec.pairingSecret, true)
+		ec.unpair(ec.pairingSecret, true)
 	}
 	return
 }
@@ -109,7 +109,7 @@ func (ec *EnclaveClient) IsPaired() bool {
 
 func (ec *EnclaveClient) generatePairing() (err error) {
 	if ec.pairingSecret != nil {
-		ec.unpair(*ec.pairingSecret, true)
+		ec.unpair(ec.pairingSecret, true)
 	}
 	kr.DeletePairing()
 
@@ -119,7 +119,7 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 		return
 	}
 	//	erase any existing pairing
-	ec.pairingSecret = &pairingSecret
+	ec.pairingSecret = pairingSecret
 	ec.outgoingQueue = [][]byte{}
 
 	savePairingErr := kr.SavePairing(pairingSecret)
@@ -129,7 +129,7 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 	return
 }
 
-func (ec *EnclaveClient) unpair(pairingSecret kr.PairingSecret, sendUnpairRequest bool) (err error) {
+func (ec *EnclaveClient) unpair(pairingSecret *kr.PairingSecret, sendUnpairRequest bool) (err error) {
 	if ec.pairingSecret == nil || !ec.pairingSecret.Equals(pairingSecret) {
 		return
 	}
@@ -156,7 +156,7 @@ func (ec *EnclaveClient) unpair(pairingSecret kr.PairingSecret, sendUnpairReques
 	return
 }
 
-func (ec *EnclaveClient) deactivatePairing(pairingSecret kr.PairingSecret) (err error) {
+func (ec *EnclaveClient) deactivatePairing(pairingSecret *kr.PairingSecret) (err error) {
 	if ec.bt != nil {
 		oldBtUUID, uuidErr := pairingSecret.DeriveUUID()
 		if uuidErr == nil {
@@ -376,7 +376,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
 	client.Unlock()
 
-	err = client.sendMessage(*pairingSecret, requestJson, true)
+	err = client.sendMessage(pairingSecret, requestJson, true)
 
 	if err != nil {
 		switch err.(type) {
@@ -447,13 +447,13 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 		client.outgoingQueue = [][]byte{}
 		client.Unlock()
 
-		savePairingErr := kr.SavePairing(*pairingSecret)
+		savePairingErr := kr.SavePairing(pairingSecret)
 		if savePairingErr != nil {
 			log.Error("error saving pairing:", savePairingErr.Error())
 		}
 
 		for _, queuedMessage := range queue {
-			err = client.sendMessage(*pairingSecret, queuedMessage, true)
+			err = client.sendMessage(pairingSecret, queuedMessage, true)
 			if err != nil {
 				log.Error("error sending queued message:", err.Error())
 			}
@@ -471,7 +471,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 		return
 	}
 	responseJson := *message
-	err = client.handleMessage(*pairingSecret, responseJson)
+	err = client.handleMessage(pairingSecret, responseJson)
 	if err != nil {
 		log.Error("handleMessage error:", err)
 		return
@@ -479,7 +479,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 	return
 }
 
-func (client *EnclaveClient) sendMessage(pairingSecret kr.PairingSecret, message []byte, queue bool) (err error) {
+func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, message []byte, queue bool) (err error) {
 	ciphertext, err := pairingSecret.EncryptMessage(message)
 	if err != nil {
 		if err == kr.ErrWaitingForKey {
@@ -509,7 +509,7 @@ func (client *EnclaveClient) sendMessage(pairingSecret kr.PairingSecret, message
 	return
 }
 
-func (client *EnclaveClient) handleMessage(fromPairing kr.PairingSecret, message []byte) (err error) {
+func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, message []byte) (err error) {
 	var response kr.Response
 	err = json.Unmarshal(message, &response)
 	if err != nil {
@@ -536,11 +536,11 @@ func (client *EnclaveClient) handleMessage(fromPairing kr.PairingSecret, message
 		client.Lock()
 		if client.pairingSecret != nil {
 			client.pairingSecret.SetSNSEndpointARN(response.SNSEndpointARN)
-			kr.SavePairing(*client.pairingSecret)
+			kr.SavePairing(client.pairingSecret)
 		}
 		if response.RequireManualApproval != client.pairingSecret.RequireManualApproval {
 			client.pairingSecret.RequireManualApproval = response.RequireManualApproval
-			kr.SavePairing(*client.pairingSecret)
+			kr.SavePairing(client.pairingSecret)
 		}
 		client.Unlock()
 	}

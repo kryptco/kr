@@ -17,7 +17,7 @@ type persistedPairing struct {
 	RequireManualApproval bool
 }
 
-func pairingToPersisted(ps PairingSecret) persistedPairing {
+func pairingToPersisted(ps *PairingSecret) persistedPairing {
 	return persistedPairing{
 		SymmetricSecretKey:    ps.SymmetricSecretKey,
 		WorkstationPublicKey:  ps.WorkstationPublicKey,
@@ -28,8 +28,8 @@ func pairingToPersisted(ps PairingSecret) persistedPairing {
 	}
 }
 
-func pairingFromPersisted(pp persistedPairing) PairingSecret {
-	return PairingSecret{
+func pairingFromPersisted(pp *persistedPairing) *PairingSecret {
+	return &PairingSecret{
 		SymmetricSecretKey:    pp.SymmetricSecretKey,
 		WorkstationPublicKey:  pp.WorkstationPublicKey,
 		workstationSecretKey:  pp.WorkstationSecretKey,
@@ -53,12 +53,12 @@ func LoadPairing() (pairingSecret *PairingSecret, err error) {
 	if err != nil {
 		return
 	}
-	ps := pairingFromPersisted(pp)
-	pairingSecret = &ps
+	ps := pairingFromPersisted(&pp)
+	pairingSecret = ps
 	return
 }
 
-func SavePairing(pairingSecret PairingSecret) (err error) {
+func SavePairing(pairingSecret *PairingSecret) (err error) {
 	path, err := KrDirFile(PAIRING_FILENAME)
 	if err != nil {
 		return

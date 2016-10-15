@@ -28,29 +28,29 @@ type PairingSecret struct {
 	sync.Mutex
 }
 
-func (ps PairingSecret) Equals(other PairingSecret) bool {
+func (ps *PairingSecret) Equals(other *PairingSecret) bool {
 	return bytes.Equal(ps.WorkstationPublicKey, other.WorkstationPublicKey)
 }
 
-func (ps PairingSecret) DeriveUUID() (derivedUUID uuid.UUID, err error) {
+func (ps *PairingSecret) DeriveUUID() (derivedUUID uuid.UUID, err error) {
 	keyDigest := sha256.Sum256(ps.WorkstationPublicKey)
 	return uuid.FromBytes(keyDigest[0:16])
 }
 
-func (ps PairingSecret) SQSSendQueueURL() string {
+func (ps *PairingSecret) SQSSendQueueURL() string {
 	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName()
 }
-func (ps PairingSecret) SQSRecvQueueURL() string {
+func (ps *PairingSecret) SQSRecvQueueURL() string {
 	return SQS_BASE_QUEUE_URL + ps.SQSRecvQueueName()
 }
-func (ps PairingSecret) SQSSendQueueName() string {
+func (ps *PairingSecret) SQSSendQueueName() string {
 	return ps.SQSBaseQueueName()
 }
-func (ps PairingSecret) SQSRecvQueueName() string {
+func (ps *PairingSecret) SQSRecvQueueName() string {
 	return ps.SQSBaseQueueName() + "-responder"
 }
 
-func (ps PairingSecret) SQSBaseQueueName() string {
+func (ps *PairingSecret) SQSBaseQueueName() string {
 	derivedUUID, err := ps.DeriveUUID()
 	if err != nil {
 		log.Error("error deriving UUID in PairingSecret:", err.Error())
@@ -59,7 +59,7 @@ func (ps PairingSecret) SQSBaseQueueName() string {
 	return strings.ToUpper(derivedUUID.String())
 }
 
-func GeneratePairingSecret() (ps PairingSecret, err error) {
+func GeneratePairingSecret() (ps *PairingSecret, err error) {
 	ret := 0
 	ps.workstationSecretKey, ps.WorkstationPublicKey, ret = cryptobox.CryptoBoxKeyPair()
 	if ret != 0 {
@@ -71,7 +71,7 @@ func GeneratePairingSecret() (ps PairingSecret, err error) {
 	return
 }
 
-func (ps PairingSecret) CreateQueues() (err error) {
+func (ps *PairingSecret) CreateQueues() (err error) {
 	_, err = CreateQueue(ps.SQSSendQueueName())
 	if err != nil {
 		return
@@ -83,7 +83,7 @@ func (ps PairingSecret) CreateQueues() (err error) {
 	return
 }
 
-func GeneratePairingSecretAndCreateQueues() (ps PairingSecret, err error) {
+func GeneratePairingSecretAndCreateQueues() (ps *PairingSecret, err error) {
 	ps, err = GeneratePairingSecret()
 	if err != nil {
 		return
@@ -169,7 +169,7 @@ func (ps *PairingSecret) SetSNSEndpointARN(arn *string) {
 	ps.snsEndpointARN = arn
 }
 
-func (ps PairingSecret) PushAlert(alertText string, message []byte) (err error) {
+func (ps *PairingSecret) PushAlert(alertText string, message []byte) (err error) {
 	ctxt, err := ps.EncryptMessage(message)
 	if err != nil {
 		return
@@ -189,7 +189,7 @@ func (ps PairingSecret) PushAlert(alertText string, message []byte) (err error) 
 	return
 }
 
-func (ps PairingSecret) SendMessage(message []byte) (err error) {
+func (ps *PairingSecret) SendMessage(message []byte) (err error) {
 	ctxt, err := ps.EncryptMessage(message)
 	if err != nil {
 		return
@@ -214,7 +214,7 @@ func (ps PairingSecret) SendMessage(message []byte) (err error) {
 	return
 }
 
-func (ps PairingSecret) ReadQueue() (ciphertexts [][]byte, err error) {
+func (ps *PairingSecret) ReadQueue() (ciphertexts [][]byte, err error) {
 	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
 	if err != nil {
 		return
@@ -231,7 +231,7 @@ func (ps PairingSecret) ReadQueue() (ciphertexts [][]byte, err error) {
 	return
 }
 
-func (ps PairingSecret) IsPaired() bool {
+func (ps *PairingSecret) IsPaired() bool {
 	ps.Lock()
 	defer ps.Unlock()
 	return ps.SymmetricSecretKey != nil
