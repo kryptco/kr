@@ -310,10 +310,17 @@ func peersCommand(c *cli.Context) (err error) {
 	if len(profiles) == 0 {
 		PrintErr("You don't have any peers yet. Use the kryptonite app to request peers' public keys.")
 	}
+	filterEmails := map[string]bool{}
+	for _, arg := range c.Args() {
+		filterEmails[arg] = true
+	}
+
 	for _, profile := range profiles {
-		color.Green(profile.Email)
-		fmt.Println(profile.AuthorizedKeyString())
-		fmt.Println()
+		if _, ok := filterEmails[profile.Email]; len(filterEmails) == 0 || ok {
+			color.Green(profile.Email)
+			fmt.Println(profile.AuthorizedKeyString())
+			fmt.Println()
+		}
 	}
 	return
 }
@@ -417,7 +424,7 @@ func main() {
 		},
 		cli.Command{
 			Name:   "peers",
-			Usage:  "List your peers' public keys.",
+			Usage:  "peers <optional email> -- list your peers' public keys, filtering by email if present.",
 			Action: peersCommand,
 		},
 		cli.Command{
