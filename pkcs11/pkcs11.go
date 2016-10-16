@@ -21,7 +21,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-var log = kr.SetupLogging("", logging.ERROR, os.Getenv("KR_LOG_SYSLOG") != "")
+var log = kr.SetupLogging("", logging.WARNING, os.Getenv("KR_LOG_SYSLOG") != "")
 
 var mutex sync.Mutex
 
