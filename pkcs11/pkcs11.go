@@ -18,12 +18,23 @@ import (
 
 	"github.com/agrinman/kr"
 	"github.com/agrinman/kr/krdclient"
+	"github.com/fatih/color"
 	"github.com/op/go-logging"
 )
 
 var log = kr.SetupLogging("", logging.WARNING, os.Getenv("KR_LOG_SYSLOG") != "")
 
 var mutex sync.Mutex
+
+func stderrCyan(s string) {
+	if os.Getenv("KR_NO_STDERR") != "" {
+		return
+	}
+	cyan := color.New(color.FgHiCyan)
+	cyan.EnableColor()
+	os.Stderr.WriteString(cyan.SprintFunc()(s))
+
+}
 
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
@@ -413,6 +424,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	}
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
 	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
+	stderrCyan("kryptonite ▶ Requesting SSH authentication from phone.\n")
 	sigBytes, err := krdclient.Sign(pkFingerprint[:], message)
 	if err != nil {
 		switch err {
