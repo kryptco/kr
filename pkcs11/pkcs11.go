@@ -321,6 +321,7 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 	}
 	if err == krdclient.ErrTimedOut {
 		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.")
+		log.Warning("Falling back to local keys.")
 		//	return OK to silence SSH error output
 		return C.CKR_OK
 	}
@@ -422,6 +423,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 		case krdclient.ErrSigning:
 			log.Error(err)
 		}
+		log.Warning("Falling back to local keys.")
 		return C.CKR_GENERAL_ERROR
 	} else {
 		log.Notice("Received signature size", len(sigBytes), "bytes")
