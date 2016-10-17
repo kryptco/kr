@@ -61,6 +61,7 @@ func (ps *PairingSecret) SQSBaseQueueName() string {
 
 func GeneratePairingSecret() (ps *PairingSecret, err error) {
 	ret := 0
+	ps = new(PairingSecret)
 	ps.workstationSecretKey, ps.WorkstationPublicKey, ret = cryptobox.CryptoBoxKeyPair()
 	if ret != 0 {
 		err = fmt.Errorf("nonzero CryptoBoxKeyPair exit status: %d", ret)

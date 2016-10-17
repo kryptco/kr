@@ -132,6 +132,10 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 		err = ErrNotPaired
 		return
 	}
+	if httpResponse.StatusCode == http.StatusInternalServerError {
+		err = ErrTimedOut
+		return
+	}
 	if httpResponse.StatusCode != http.StatusOK {
 		err = fmt.Errorf("Non-200 status code %d", httpResponse.StatusCode)
 		return
