@@ -9,6 +9,7 @@ import (
 
 //	fallback using ps
 func getLastCommand() (lastCommand *string) {
+	log.Notice("falling back to ps for command parsing")
 	psWithHeader, err := exec.Command("ps", "-o", "lstart", "-f").Output()
 	if err != nil {
 		return
