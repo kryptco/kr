@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/GoKillers/libsodium-go/cryptobox"
 	"github.com/satori/go.uuid"
@@ -19,12 +20,12 @@ var ErrWaitingForKey = fmt.Errorf("Pairing in progress, waiting for symmetric ke
 
 //	TODO: Indicate whether bluetooth support enabled
 type PairingSecret struct {
-	SymmetricSecretKey    *[]byte `json:"-"`
-	WorkstationPublicKey  []byte  `json:"pk"`
-	workstationSecretKey  []byte
-	WorkstationName       string `json:"n"`
-	snsEndpointARN        *string
-	RequireManualApproval bool `json:"-"`
+	SymmetricSecretKey   *[]byte `json:"-"`
+	WorkstationPublicKey []byte  `json:"pk"`
+	workstationSecretKey []byte
+	WorkstationName      string `json:"n"`
+	snsEndpointARN       *string
+	ApprovedUntil        *int64 `json:"-"`
 	sync.Mutex
 }
 
@@ -236,4 +237,11 @@ func (ps *PairingSecret) IsPaired() bool {
 	ps.Lock()
 	defer ps.Unlock()
 	return ps.SymmetricSecretKey != nil
+}
+
+func (ps *PairingSecret) RequiresApproval() bool {
+	if ps.ApprovedUntil == nil {
+		return true
+	}
+	return *ps.ApprovedUntil < time.Now().Unix()
 }

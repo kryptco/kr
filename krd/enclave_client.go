@@ -280,7 +280,7 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 	alertTimeout := 5 * time.Second
 	alertText := "Incoming SSH request. Open Kryptonite to continue."
 	ps := client.getPairingSecret()
-	if ps != nil && ps.RequireManualApproval {
+	if ps != nil && ps.RequiresApproval() {
 		requestTimeout = 20 * time.Second
 		alertTimeout = 19 * time.Second
 		alertText = "Manual approval enabled but app not running. Open Kryptonite to approve requests."
@@ -538,8 +538,8 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 			client.pairingSecret.SetSNSEndpointARN(response.SNSEndpointARN)
 			kr.SavePairing(client.pairingSecret)
 		}
-		if response.RequireManualApproval != client.pairingSecret.RequireManualApproval {
-			client.pairingSecret.RequireManualApproval = response.RequireManualApproval
+		if response.ApprovedUntil != client.pairingSecret.ApprovedUntil {
+			client.pairingSecret.ApprovedUntil = response.ApprovedUntil
 			kr.SavePairing(client.pairingSecret)
 		}
 		client.Unlock()
