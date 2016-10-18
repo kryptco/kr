@@ -434,6 +434,8 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 			log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet or bluetooth.")
 		case krdclient.ErrSigning:
 			log.Error(err)
+		case krdclient.ErrRejected:
+			log.Error(err)
 		}
 		log.Warning("Falling back to local keys.")
 		return C.CKR_GENERAL_ERROR
