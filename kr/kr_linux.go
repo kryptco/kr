@@ -7,9 +7,14 @@ import (
 )
 
 func restartCommand(c *cli.Context) (err error) {
-	PrintFatal("Not yet implemented on Linux.")
+	exec.Command("systemctl", "--user", "disable", "kr").Run()
+	exec.Command("systemctl", "--user", "stop", "kr").Run()
+	exec.Command("systemctl", "--user", "enable", "kr").Run()
+	exec.Command("systemctl", "--user", "start", "kr").Run()
+	PrintErr("Restarted Kryptonite daemon.")
 	return
 }
+
 func openBrowser(url string) {
 	exec.Command("sensible-browser", url).Run()
 }
