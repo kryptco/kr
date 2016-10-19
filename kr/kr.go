@@ -325,9 +325,11 @@ func peersCommand(c *cli.Context) (err error) {
 
 	for _, profile := range profiles {
 		if _, ok := filterEmails[profile.Email]; len(filterEmails) == 0 || ok {
-			color.Green(profile.Email)
+			green := color.New(color.FgGreen)
+			green.EnableColor()
+			PrintErr(green.SprintFunc()(profile.Email))
 			fmt.Println(profile.AuthorizedKeyString())
-			fmt.Println()
+			PrintErr("")
 		}
 	}
 	return
