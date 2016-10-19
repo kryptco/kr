@@ -24,6 +24,10 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so"
+var cleanSSHConfigString = fmt.Sprintf("s/\\s*%s//g", sshConfigString)
+var cleanSSHConfigCommand = []string{"perl", "-0777", "-pi", "-e", cleanSSHConfigString, os.Getenv("HOME") + "/.ssh/config"}
+
 func PrintFatal(msg string, args ...interface{}) {
 	PrintErr(msg, args...)
 	os.Exit(1)
@@ -33,15 +37,19 @@ func PrintErr(msg string, args ...interface{}) {
 	os.Stderr.WriteString(fmt.Sprintf(msg, args...) + "\n")
 }
 
+func confirmOrFatal(message string) {
+	PrintErr(message + " [y/N] ")
+	var c string
+	fmt.Scan(&c)
+	if len(c) == 0 || c[0] != 'y' {
+		PrintFatal("Aborting.")
+	}
+}
+
 func pairCommand(c *cli.Context) (err error) {
 	_, err = krdclient.RequestMe()
 	if err == nil {
-		PrintErr("Already paired, unpair current session? [y/N] ")
-		var c string
-		fmt.Scan(&c)
-		if len(c) == 0 || c[0] != 'y' {
-			PrintFatal("Aborting.")
-		}
+		confirmOrFatal("Already paired, unpair current session?")
 	}
 	putConn, err := kr.DaemonDial()
 	if err != nil {
@@ -446,6 +454,11 @@ func main() {
 			Name:   "unpair",
 			Usage:  "Unpair this workstation from a phone running Kryptonite.",
 			Action: unpairCommand,
+		},
+		cli.Command{
+			Name:   "uninstall",
+			Usage:  "Uninstall Kryptonite from this workstation.",
+			Action: uninstallCommand,
 		},
 	}
 	app.Run(os.Args)
