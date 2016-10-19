@@ -195,10 +195,10 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
     if (self.isHardwarePoweredOn) {
       [self.peripheral removeService:service];
     }
-    self.services[uuid] = nil;
-    self.serviceCharacteristics[uuid] = nil;
+	[self.services removeObjectForKey:uuid];
+	[self.serviceCharacteristics removeObjectForKey:uuid];
     [self.advertisedServices removeObject:uuid];
-    self.addServiceHandlers[uuid] = nil;
+	[self.addServiceHandlers removeObjectForKey:uuid];
     // Undo the service from our current ads
     [self stopAdvertising];
     // startAdvertising will check the current count before enabling
@@ -346,7 +346,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
                     error:(nullable NSError *)error {
   [self threadSafetyCheck];
   CBAddServiceHandler handler = self.addServiceHandlers[service.UUID];
-  self.addServiceHandlers[service.UUID] = nil;
+  [self.addServiceHandlers removeObjectForKey:service.UUID];
   if (!handler) {
     CBDebugLog(@"Missing handler for adding service %@ with error %@", service, error);
     return;

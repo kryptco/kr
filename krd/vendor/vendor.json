@@ -21,10 +21,10 @@
 			"revisionTime": "2016-07-13T06:31:29Z"
 		},
 		{
-			"checksumSHA1": "vgotpTpEHXNxllTtJFOESXwJumo=",
+			"checksumSHA1": "8+jchDOIGfmEoEzXzM8XyV7ol2Y=",
 			"path": "github.com/agrinman/go.corebluetooth",
-			"revision": "865d51d88dcc9b14ec01377e6387c7d2accc518f",
-			"revisionTime": "2016-10-05T23:46:50Z"
+			"revision": "f80778a74fc5323b0c8072e19a1b5b70370fd723",
+			"revisionTime": "2016-10-19T21:45:30Z"
 		},
 		{
 			"checksumSHA1": "a5OD7v4OD6PC4EWvU2rvw+Rkryk=",
@@ -35,8 +35,8 @@
 		{
 			"checksumSHA1": "oJKfdsDVrzDW+wJrCvLW3SKo6iM=",
 			"path": "github.com/agrinman/kr/krdclient",
-			"revision": "85c2becdc3be407bcd038a0a79743db313bfdebe",
-			"revisionTime": "2016-10-19T01:25:40Z"
+			"revision": "cde5a45f8fe3463d2df4b71dcfda010eef8858ca",
+			"revisionTime": "2016-10-19T19:20:57Z"
 		},
 		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
