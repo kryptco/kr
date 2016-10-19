@@ -442,7 +442,7 @@ func main() {
 		},
 		cli.Command{
 			Name:   "add",
-			Usage:  "kr add <first email> <second email>... <user@server or SSH alias> -- add the public key of the specified users to the server.",
+			Usage:  "kr add <first email> <second email>... <user@server or SSH alias> -- add the public keys of the specified users to the server.",
 			Action: addCommand,
 		},
 		cli.Command{
