@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/agrinman/kr"
@@ -246,11 +247,11 @@ func addCommand(c *cli.Context) (err error) {
 	PrintErr("Adding %d keys to %s", len(authorizedKeys), server)
 
 	authorizedKeysReader := bytes.NewReader(append(bytes.Join(authorizedKeys, []byte("\n")), []byte("\n")...))
-	sshCommand := exec.Command("ssh", server, "cat - >> ~/.ssh/authorized_keys")
+	sshCommand := exec.Command("ssh", server, "read keys; mkdir -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys")
 	sshCommand.Stdin = authorizedKeysReader
-	err = sshCommand.Run()
+	output, err := sshCommand.CombinedOutput()
 	if err != nil {
-		PrintFatal(err.Error())
+		PrintFatal(strings.TrimSpace(string(output)))
 	}
 	return
 }
