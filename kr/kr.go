@@ -30,7 +30,11 @@ var cleanSSHConfigString = fmt.Sprintf("s/\\s*%s//g", sshConfigString)
 var cleanSSHConfigCommand = []string{"perl", "-0777", "-pi", "-e", cleanSSHConfigString, os.Getenv("HOME") + "/.ssh/config"}
 
 func PrintFatal(msg string, args ...interface{}) {
-	PrintErr(msg, args...)
+	if len(args) == 0 {
+		PrintErr(msg)
+	} else {
+		PrintErr(msg, args...)
+	}
 	os.Exit(1)
 }
 

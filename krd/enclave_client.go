@@ -319,7 +319,7 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 }
 
 func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string) (response *kr.Response, err error) {
-	if timeout == alertTime {
+	if timeout == alertTimeout {
 		log.Warning("timeout == alertTimeout, alert may not fire")
 	}
 	cb := make(chan *kr.Response, 1)
