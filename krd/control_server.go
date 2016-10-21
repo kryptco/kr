@@ -49,7 +49,7 @@ func (cs *ControlServer) handleDeletePair(w http.ResponseWriter, r *http.Request
 
 //	check if pairing completed
 func (cs *ControlServer) handleGetPair(w http.ResponseWriter, r *http.Request) {
-	meResponse, err := cs.enclaveClient.RequestMe()
+	meResponse, err := cs.enclaveClient.RequestMe(true)
 	if err == nil && meResponse != nil {
 		err = json.NewEncoder(w).Encode(meResponse.Me)
 		if err != nil {
@@ -120,7 +120,7 @@ func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest k
 	if cachedMe != nil {
 		me = *cachedMe
 	} else {
-		meResponse, err := cs.enclaveClient.RequestMe()
+		meResponse, err := cs.enclaveClient.RequestMe(false)
 		if err != nil {
 			log.Error("me request error:", err)
 			switch err {

@@ -62,7 +62,7 @@ type EnclaveClientI interface {
 	Unpair()
 	Start() (err error)
 	Stop() (err error)
-	RequestMe() (*kr.MeResponse, error)
+	RequestMe(longTimeout bool) (*kr.MeResponse, error)
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
 	RequestList(kr.ListRequest) (*kr.ListResponse, error)
@@ -193,6 +193,7 @@ func (ec *EnclaveClient) Stop() (err error) {
 
 func (ec *EnclaveClient) Start() (err error) {
 	ec.Lock()
+	defer ec.Unlock()
 	loadedPairing, loadErr := kr.LoadPairing()
 	if loadErr == nil && loadedPairing != nil {
 		ec.pairingSecret = loadedPairing
@@ -218,10 +219,6 @@ func (ec *EnclaveClient) Start() (err error) {
 	}
 
 	ec.activatePairing()
-	ec.Unlock()
-	if ec.getPairingSecret() != nil {
-		go ec.RequestMe()
-	}
 	return
 }
 
@@ -245,14 +242,18 @@ func UnpairedEnclaveClient() EnclaveClientI {
 	}
 }
 
-func (client *EnclaveClient) RequestMe() (meResponse *kr.MeResponse, err error) {
+func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeResponse, err error) {
 	meRequest, err := kr.NewRequest()
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
-	response, err := client.tryRequest(meRequest, 45*time.Second, 10*time.Second, "Incoming SSH request. Open Kryptonite to continue.")
+	timeout := 5 * time.Second
+	if longTimeout {
+		timeout = 45 * time.Second
+	}
+	response, err := client.tryRequest(meRequest, timeout, 4*time.Second, "Incoming kr me request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
@@ -283,7 +284,7 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 	if ps != nil && ps.RequiresApproval() {
 		requestTimeout = 20 * time.Second
 		alertTimeout = 19 * time.Second
-		alertText = "Manual approval enabled but app not running. Open Kryptonite to approve requests."
+		alertText = "Manual approval required but app not running. Open Kryptonite to approve requests."
 	}
 	response, err := client.tryRequest(request, requestTimeout, alertTimeout, alertText)
 	if err != nil {
@@ -306,7 +307,7 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 		return
 	}
 	request.ListRequest = &listRequest
-	response, err := client.tryRequest(request, 10*time.Second, 5*time.Second, "Incoming SSH request. Open Kryptonite to continue.")
+	response, err := client.tryRequest(request, 10*time.Second, 5*time.Second, "Incoming kr peers request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
@@ -318,6 +319,9 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 }
 
 func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string) (response *kr.Response, err error) {
+	if timeout == alertTime {
+		log.Warning("timeout == alertTimeout, alert may not fire")
+	}
 	cb := make(chan *kr.Response, 1)
 	go func() {
 		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
