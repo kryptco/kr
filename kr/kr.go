@@ -88,7 +88,7 @@ func pairCommand(c *cli.Context) (err error) {
 
 	fmt.Println()
 	fmt.Println(qr.Terminal)
-	fmt.Println("Scan this QR Code with the Kryptonite mobile app to connect it with this workstation. Try lowering your terminal font size if the QR code does not fit on the screen.")
+	fmt.Println("Scan this QR Code with the Kryptonite mobile app to connect it with this workstation. Maximize the window and/or lower your font size if the QR code does not fit.")
 	fmt.Println()
 
 	getConn, err := kr.DaemonDial()
