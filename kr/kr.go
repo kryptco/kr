@@ -340,8 +340,8 @@ func githubCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr("Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
-	PrintErr("Opening GitHub...")
-	<-time.After(500 * time.Millisecond)
+	PrintErr("Press ENTER to open your web browser to GitHub. Then click \"New SSH Key\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
 	openBrowser("https://github.com/settings/keys")
 	return
 }
@@ -350,8 +350,8 @@ func digitaloceanCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr("Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
-	PrintErr("Opening DigitalOcean...")
-	<-time.After(500 * time.Millisecond)
+	PrintErr("Press ENTER to open your web browser to Digital Ocean. Then click \"Add SSH Key\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
 	openBrowser("https://cloud.digitalocean.com/settings/security")
 	return
 }
@@ -360,8 +360,8 @@ func herokuCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr("Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
-	PrintErr("Opening Heroku...")
-	<-time.After(500 * time.Millisecond)
+	PrintErr("Press ENTER to open your web browser to Heroku. Then scroll down to \"SSH Keys\", click \"Add\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
 	openBrowser("https://dashboard.heroku.com/account")
 	return
 }
@@ -370,8 +370,8 @@ func gcloudCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr("Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
-	PrintErr("Opening Google Cloud...")
-	<-time.After(500 * time.Millisecond)
+	PrintErr("Press ENTER to open your web browser to Google Cloud. Then click \"Edit\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
 	openBrowser("https://console.cloud.google.com/compute/metadata/sshKeys")
 	return
 }
@@ -380,8 +380,8 @@ func awsCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr("Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
-	PrintErr("Opening AWS Console. Click 'Import Key Pair' to add your key.")
-	<-time.After(1500 * time.Millisecond)
+	PrintErr("Press ENTER to open your web browser to Amazon Web Services. Then click \"Import Key Pair\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
 	openBrowser("https://console.aws.amazon.com/ec2/v2/home?#KeyPairs:sort=keyName")
 	return
 }
