@@ -3,6 +3,7 @@ package kr
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -96,8 +97,32 @@ func pushToSNS(endpointARN string, payload []byte) (err error) {
 	}
 	_, err = snsService.Publish(publishInput)
 	if err != nil {
+		if strings.Contains(err.Error(), "EndpointDisabled") {
+			enableErr := enableSNSEndpoint(endpointARN)
+			if enableErr != nil {
+				log.Error("EnableSNSEndpoint error:", enableErr)
+				return
+			}
+			//	try again
+			_, err = snsService.Publish(publishInput)
+		}
 		return
 	}
+	return
+}
+
+func enableSNSEndpoint(arn string) (err error) {
+	snsService, err := getSNSService()
+	if err != nil {
+		return
+	}
+	input := &sns.SetEndpointAttributesInput{
+		Attributes: map[string]*string{
+			"Enabled": aws.String("true"),
+		},
+		EndpointArn: aws.String(arn),
+	}
+	_, err = snsService.SetEndpointAttributes(input)
 	return
 }
 

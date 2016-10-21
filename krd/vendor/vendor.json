@@ -27,10 +27,10 @@
 			"revisionTime": "2016-10-19T21:45:30Z"
 		},
 		{
-			"checksumSHA1": "y8sQ/rQeCAzmk9Sfn2FpBGXY+y0=",
+			"checksumSHA1": "mkKMXdTwXVzjeJyXUzZ+/w32OaU=",
 			"path": "github.com/agrinman/kr",
-			"revision": "90c57205ed2ae25de3c86e4232f4a3987eafa838",
-			"revisionTime": "2016-10-20T14:39:49Z"
+			"revision": "c9c696ff50933342e4a940b55e78899aaeafe1dd",
+			"revisionTime": "2016-10-21T20:45:53Z"
 		},
 		{
 			"checksumSHA1": "oJKfdsDVrzDW+wJrCvLW3SKo6iM=",
@@ -165,10 +165,10 @@
 			"revisionTime": "2016-08-30T22:35:58Z"
 		},
 		{
-			"checksumSHA1": "+ic7vevBfganFLENR29pJaEf4Tw=",
+			"checksumSHA1": "nzzjBb+KNOXxvx9racGlHA6w/SU=",
 			"path": "github.com/aws/aws-sdk-go/service/sns",
-			"revision": "d6b4bfeba6997082629986cac2a932a233ba745e",
-			"revisionTime": "2016-08-30T22:35:58Z"
+			"revision": "32cdc88aa5cd2ba4afa049da884aaf9a3d103ef4",
+			"revisionTime": "2016-10-21T00:22:39Z"
 		},
 		{
 			"checksumSHA1": "oLAlquYlQzgYFS9ochS/iQ9+uXY=",
