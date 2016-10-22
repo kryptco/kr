@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -310,12 +311,16 @@ func digitaloceanCommand(c *cli.Context) (err error) {
 }
 
 func herokuCommand(c *cli.Context) (err error) {
-	copyKey()
-	PrintErr("Public key copied to clipboard.")
-	<-time.After(500 * time.Millisecond)
-	PrintErr("Press ENTER to open your web browser to Heroku. Then scroll down to \"SSH Keys\", click \"Add\" and paste your public key.")
-	os.Stdin.Read([]byte{0})
-	openBrowser("https://dashboard.heroku.com/account")
+	_, err = krdclient.RequestMe()
+	if err != nil {
+		PrintFatal("Failed to retrieve your public key:", err)
+	}
+	PrintErr("Adding your SSH public key using heroku toolbelt.")
+	addKeyCmd := exec.Command("heroku", "keys:add", filepath.Join(os.Getenv("HOME"), ".ssh", "id_kryptonite.pub"))
+	addKeyCmd.Stdin = os.Stdin
+	addKeyCmd.Stdout = os.Stdout
+	addKeyCmd.Stderr = os.Stderr
+	addKeyCmd.Run()
 	return
 }
 

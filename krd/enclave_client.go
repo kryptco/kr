@@ -276,7 +276,7 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 			}
 			client.Unlock()
 		}
-		ioutil.WriteFile(filepath.Join(os.Getenv("HOME"), ".ssh", "id_kryptonite.pub"), []byte(meResponse.Me.AuthorizedKeyString()+"\r\n\r\nThis is your Kryptonite public key. You can view it by running \"kr me\". Check out all available commands by typing \"kr\"."), 0700)
+		ioutil.WriteFile(filepath.Join(os.Getenv("HOME"), ".ssh", "id_kryptonite.pub"), []byte(meResponse.Me.AuthorizedKeyString()), 0700)
 	}
 	return
 }
