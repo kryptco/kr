@@ -209,50 +209,24 @@ func copyKey() (err error) {
 }
 
 func addCommand(c *cli.Context) (err error) {
-	if len(c.Args()) < 2 {
-		PrintFatal("kr add <first email> <second email>... <user@server or SSH alias>")
+	if len(c.Args()) < 1 {
+		PrintFatal("kr add <user@server or SSH alias>")
 		return
 	}
-	server := c.Args()[len(c.Args())-1]
+	server := c.Args()[0]
 
-	profiles := []kr.Profile{}
 	me, err := krdclient.RequestMe()
-	if err == nil {
-		profiles = append(profiles, me)
-	} else {
-		PrintErr("error retrieving your key: ", err.Error())
-	}
-	peers, err := krdclient.RequestList()
-	if err == nil {
-		profiles = append(profiles, peers...)
-	} else {
-		PrintErr("error retrieving peer keys: ", err.Error())
+	if err != nil {
+		PrintFatal("error retrieving your public key: ", err.Error())
 	}
 
-	filter := map[string]bool{}
-	for _, email := range c.Args()[:len(c.Args())] {
-		if email == "me" {
-			filter[me.Email] = true
-		}
-		filter[email] = true
-	}
+	authorizedKey := append([]byte(me.AuthorizedKeyString()), []byte("\n")...)
 
-	authorizedKeys := [][]byte{}
-	for _, profile := range profiles {
-		if _, ok := filter[profile.Email]; ok {
-			authorizedKeys = append(authorizedKeys, []byte(profile.AuthorizedKeyString()))
-		}
-	}
+	PrintErr("Adding your SSH public key to %s", server)
 
-	if len(authorizedKeys) == 0 {
-		PrintFatal("No keys match specified emails")
-	}
-
-	PrintErr("Adding %d keys to %s", len(authorizedKeys), server)
-
-	authorizedKeysReader := bytes.NewReader(append(bytes.Join(authorizedKeys, []byte("\n")), []byte("\n")...))
+	authorizedKeyReader := bytes.NewReader(authorizedKey)
 	sshCommand := exec.Command("ssh", server, "read keys; mkdir -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys")
-	sshCommand.Stdin = authorizedKeysReader
+	sshCommand.Stdin = authorizedKeyReader
 	output, err := sshCommand.CombinedOutput()
 	if err != nil {
 		PrintFatal(strings.TrimSpace(string(output)))
@@ -312,31 +286,6 @@ func listCommand(c *cli.Context) (err error) {
 		}
 	}
 	fmt.Printf("Found %s and %s\n", color.GreenString("%d Peer Keys", nPeers), color.YellowString("%d Unknown Keys", nUnknown))
-	return
-}
-
-func peersCommand(c *cli.Context) (err error) {
-	profiles, err := krdclient.RequestList()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	if len(profiles) == 0 {
-		PrintErr("You don't have any peers yet. Use the kryptonite app to request peers' public keys.")
-	}
-	filterEmails := map[string]bool{}
-	for _, arg := range c.Args() {
-		filterEmails[arg] = true
-	}
-
-	for _, profile := range profiles {
-		if _, ok := filterEmails[profile.Email]; len(filterEmails) == 0 || ok {
-			green := color.New(color.FgGreen)
-			green.EnableColor()
-			PrintErr(green.SprintFunc()(profile.Email))
-			fmt.Println(profile.AuthorizedKeyString())
-			PrintErr("")
-		}
-	}
 	return
 }
 
@@ -438,18 +387,8 @@ func main() {
 			Action: gcloudCommand,
 		},
 		cli.Command{
-			Name:   "peers",
-			Usage:  "peers <optional email> -- list your peers' public keys, filtering by email if present.",
-			Action: peersCommand,
-		},
-		cli.Command{
-			Name:   "list",
-			Usage:  "kr list <user@server or SSH alias> -- List public keys authorized on the specified server.",
-			Action: listCommand,
-		},
-		cli.Command{
 			Name:   "add",
-			Usage:  "kr add <first email> <second email>... <user@server or SSH alias> -- add the public keys of the specified users to the server.",
+			Usage:  "kr add <user@server or SSH alias> -- add your Kryptonite SSH public key to the server.",
 			Action: addCommand,
 		},
 		cli.Command{
