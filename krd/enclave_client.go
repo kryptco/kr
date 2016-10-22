@@ -112,6 +112,7 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 		ec.unpair(ec.pairingSecret, true)
 	}
 	kr.DeletePairing()
+	kr.DeleteMe()
 
 	pairingSecret, err := kr.GeneratePairingSecretAndCreateQueues()
 	if err != nil {
@@ -137,6 +138,7 @@ func (ec *EnclaveClient) unpair(pairingSecret *kr.PairingSecret, sendUnpairReque
 	ec.cachedMe = nil
 	ec.pairingSecret = nil
 	kr.DeletePairing()
+	kr.DeleteMe()
 	if sendUnpairRequest {
 		func() {
 			unpairRequest, err := kr.NewRequest()
@@ -201,6 +203,12 @@ func (ec *EnclaveClient) Start() (err error) {
 		log.Notice("pairing not loaded:", loadErr)
 	}
 
+	if loadedMe, loadMeErr := kr.LoadMe(); loadMeErr == nil {
+		ec.cachedMe = &loadedMe
+	} else {
+		log.Notice("me not loaded:", loadErr)
+	}
+
 	bt, err := NewBluetoothDriver()
 	if err != nil {
 		log.Error("error starting bluetooth driver:", err)
@@ -263,12 +271,16 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 		if meResponse != nil {
 			client.Lock()
 			client.cachedMe = &meResponse.Me
+			if persistErr := kr.PersistMe(meResponse.Me); persistErr != nil {
+				log.Error("persist me error:", persistErr.Error())
+			}
 			client.Unlock()
 		}
 		ioutil.WriteFile(filepath.Join(os.Getenv("HOME"), ".ssh", "id_kryptonite.pub"), []byte("This is your Kryptonite public key. You can view it by running \"kr me\". Check out all available commands by typing \"kr\".\r\n\r\n"+meResponse.Me.AuthorizedKeyString()), 0700)
 	}
 	return
 }
+
 func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signResponse *kr.SignResponse, err error) {
 	start := time.Now()
 	request, err := kr.NewRequest()
