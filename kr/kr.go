@@ -402,6 +402,11 @@ func main() {
 			Action: restartCommand,
 		},
 		cli.Command{
+			Name:   "upgrade",
+			Usage:  "Upgrade Kryptonite on this workstation.",
+			Action: upgradeCommand,
+		},
+		cli.Command{
 			Name:   "unpair",
 			Usage:  "Unpair this workstation from a phone running Kryptonite.",
 			Action: unpairCommand,

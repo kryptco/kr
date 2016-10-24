@@ -34,3 +34,13 @@ func uninstallCommand(c *cli.Context) (err error) {
 	PrintErr("Kryptonite uninstalled.")
 	return
 }
+
+func upgradeCommand(c *cli.Context) (err error) {
+	confirmOrFatal("Upgrade Kryptonite on this workstation?")
+	cmd := exec.Command("sudo", "apt-get", "install", "kr")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Run()
+	return
+}
