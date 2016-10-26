@@ -296,7 +296,6 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 	if ps != nil && ps.RequiresApproval() {
 		requestTimeout = 20 * time.Second
 		alertTimeout = 19 * time.Second
-		alertText = "Manual approval required but app not running. Open Kryptonite to approve requests."
 	}
 	response, err := client.tryRequest(request, requestTimeout, alertTimeout, alertText)
 	if err != nil {
