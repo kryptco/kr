@@ -318,12 +318,19 @@ func C_FindObjectsFinal(session C.CK_SESSION_HANDLE) C.CK_RV {
 }
 
 var staticMe = kr.Profile{}
+var checkedForUpdate = false
 
 //export C_GetAttributeValue
 func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
 	mutex.Lock()
 	defer mutex.Unlock()
 	log.Notice("C_GetAttributeValue")
+
+	if !checkedForUpdate {
+		CheckForUpdate()
+		checkedForUpdate = true
+	}
+
 	me, err := krdclient.RequestMe()
 	if err == krdclient.ErrNotPaired {
 		log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
