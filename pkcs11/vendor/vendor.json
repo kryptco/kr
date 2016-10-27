@@ -177,6 +177,12 @@
 			"revisionTime": "2016-08-30T22:35:58Z"
 		},
 		{
+			"checksumSHA1": "Oae/AzW8+W/lPdL6smTcgyhncrc=",
+			"path": "github.com/blang/semver",
+			"revision": "60ec3488bfea7cca02b021d106d9911120d25fe9",
+			"revisionTime": "2016-07-01T05:46:53Z"
+		},
+		{
 			"checksumSHA1": "0LxZKE4y1Vzff32xdqhN8C0ouUg=",
 			"path": "github.com/deckarep/gosx-notifier",
 			"revision": "9daaf8a4715ebe4daf300036644762fe27d3aded",
@@ -231,6 +237,12 @@
 			"path": "github.com/satori/go.uuid",
 			"revision": "0aa62d5ddceb50dbcb909d790b5345affd3669b6",
 			"revisionTime": "2016-07-13T18:03:06Z"
+		},
+		{
+			"checksumSHA1": "shXkK7zCsmzBXzxPPtZgAb0Rs1k=",
+			"path": "github.com/youtube/vitess/go/ioutil2",
+			"revision": "caa3bbb9a9347d251fd8a6cba90d46a0d28201e6",
+			"revisionTime": "2016-10-26T21:37:19Z"
 		},
 		{
 			"checksumSHA1": "h+pFYiRHBogczS8/F1NoN3Ata44=",
