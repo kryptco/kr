@@ -27,9 +27,11 @@ func openBrowser(url string) {
 func uninstallCommand(c *cli.Context) (err error) {
 	confirmOrFatal("Uninstall Kryptonite from this workstation?")
 	exec.Command("brew", "uninstall", "kr").Run()
+	exec.Command("npm", "uninstall", "kryptco-kr").Run()
 	os.Remove("/usr/local/bin/kr")
 	os.Remove("/usr/local/bin/krd")
 	os.Remove("/usr/local/lib/kr-pkcs11.so")
+	os.Remove("/usr/local/share/kr")
 	exec.Command("launchctl", "unload", plist).Run()
 	os.Remove(plist)
 	exec.Command(cleanSSHConfigCommand[0], cleanSSHConfigCommand[1:]...).Run()
