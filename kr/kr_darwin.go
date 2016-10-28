@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/urfave/cli"
 )
@@ -27,7 +28,7 @@ func openBrowser(url string) {
 func uninstallCommand(c *cli.Context) (err error) {
 	confirmOrFatal("Uninstall Kryptonite from this workstation?")
 	exec.Command("brew", "uninstall", "kr").Run()
-	exec.Command("npm", "uninstall", "kryptco-kr").Run()
+	exec.Command("npm", "uninstall", "-g", "krd").Run()
 	os.Remove("/usr/local/bin/kr")
 	os.Remove("/usr/local/bin/krd")
 	os.Remove("/usr/local/lib/kr-pkcs11.so")
@@ -39,9 +40,26 @@ func uninstallCommand(c *cli.Context) (err error) {
 	return
 }
 
+func installedWithBrew() bool {
+	krLinkBytes, _ := exec.Command("sh", "-c", "ls -l `command -v kr`").CombinedOutput()
+	krLink := string(krLinkBytes)
+	return strings.Contains(krLink, "Cellar")
+}
+
+func installedWithNPM() bool {
+	return exec.Command("npm", "list", "-g", "krd").Run() == nil
+}
+
 func upgradeCommand(c *cli.Context) (err error) {
 	confirmOrFatal("Upgrade Kryptonite on this workstation?")
-	cmd := exec.Command("brew", "upgrade", "kr")
+	var cmd *exec.Cmd
+	if installedWithBrew() {
+		cmd = exec.Command("brew", "upgrade", "kr")
+	} else if installedWithNPM() {
+		cmd = exec.Command("npm", "upgrade", "-g", "krd")
+	} else {
+		cmd = exec.Command("sh", "-c", "curl https://krypt.co/kr | sh")
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
