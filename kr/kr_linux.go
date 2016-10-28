@@ -37,6 +37,11 @@ func uninstallCommand(c *cli.Context) (err error) {
 
 func upgradeCommand(c *cli.Context) (err error) {
 	confirmOrFatal("Upgrade Kryptonite on this workstation?")
+	update := exec.Command("sudo", "apt-get", "update")
+	update.Stdout = os.Stdout
+	update.Stderr = os.Stderr
+	update.Stdin = os.Stdin
+	update.Run()
 	cmd := exec.Command("sudo", "apt-get", "install", "kr")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
