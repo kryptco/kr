@@ -26,6 +26,7 @@ type PairingSecret struct {
 	WorkstationName      string `json:"n"`
 	snsEndpointARN       *string
 	ApprovedUntil        *int64 `json:"-"`
+	trackingID           *string
 	sync.Mutex
 }
 
@@ -169,6 +170,18 @@ func (ps *PairingSecret) SetSNSEndpointARN(arn *string) {
 	ps.Lock()
 	defer ps.Unlock()
 	ps.snsEndpointARN = arn
+}
+
+func (ps *PairingSecret) SetTrackingID(trackingID *string) {
+	ps.Lock()
+	defer ps.Unlock()
+	ps.trackingID = trackingID
+}
+
+func (ps *PairingSecret) GetTrackingID() *string {
+	ps.Lock()
+	defer ps.Unlock()
+	return ps.trackingID
 }
 
 func (ps *PairingSecret) PushAlert(alertText string, message []byte) (err error) {

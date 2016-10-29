@@ -15,6 +15,7 @@ type persistedPairing struct {
 	WorkstationName      string
 	SNSEndpointARN       *string
 	ApprovedUntil        *int64 `json:"approved_until"`
+	TrackingID           *string
 }
 
 func pairingToPersisted(ps *PairingSecret) persistedPairing {
@@ -25,6 +26,7 @@ func pairingToPersisted(ps *PairingSecret) persistedPairing {
 		WorkstationName:      ps.WorkstationName,
 		SNSEndpointARN:       ps.snsEndpointARN,
 		ApprovedUntil:        ps.ApprovedUntil,
+		TrackingID:           ps.trackingID,
 	}
 }
 
@@ -36,6 +38,7 @@ func pairingFromPersisted(pp *persistedPairing) *PairingSecret {
 		WorkstationName:      pp.WorkstationName,
 		snsEndpointARN:       pp.SNSEndpointARN,
 		ApprovedUntil:        pp.ApprovedUntil,
+		trackingID:           pp.TrackingID,
 	}
 }
 

@@ -36,6 +36,7 @@ type Response struct {
 	UnpairResponse *UnpairResponse `json:"unpair_response"`
 	SNSEndpointARN *string         `json:"sns_endpoint_arn"`
 	ApprovedUntil  *int64          `json:"approved_until"`
+	TrackingID     *string         `json:"tracking_id"`
 }
 
 type SignRequest struct {

@@ -221,7 +221,7 @@ func (ec *EnclaveClient) Start() (err error) {
 				return
 			}
 			for ciphertext := range readChan {
-				err = ec.handleCiphertext(ciphertext)
+				err = ec.handleCiphertext(ciphertext, "bluetooth")
 			}
 		}()
 	}
@@ -244,6 +244,16 @@ func (ec *EnclaveClient) GetCachedMe() (me *kr.Profile) {
 	return
 }
 
+func (ec *EnclaveClient) postEvent(category string, action string, label *string, value *uint64) {
+	ps := ec.getPairingSecret()
+	if ps != nil {
+		tID := ps.GetTrackingID()
+		if tID != nil {
+			go kr.Analytics{}.PostEvent(*tID, category, action, label, value)
+		}
+	}
+}
+
 func UnpairedEnclaveClient() EnclaveClientI {
 	return &EnclaveClient{
 		requestCallbacksByRequestID: lru.New(128),
@@ -261,12 +271,13 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 	if longTimeout {
 		timeout = 45 * time.Second
 	}
-	response, err := client.tryRequest(meRequest, timeout, 4*time.Second, "Incoming kr me request. Open Kryptonite to continue.")
+	callback, err := client.tryRequest(meRequest, timeout, 4*time.Second, "Incoming kr me request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	if response != nil {
+	if callback != nil {
+		response := callback.response
 		meResponse = response.MeResponse
 		if meResponse != nil {
 			client.Lock()
@@ -297,14 +308,23 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 		requestTimeout = 20 * time.Second
 		alertTimeout = 19 * time.Second
 	}
-	response, err := client.tryRequest(request, requestTimeout, alertTimeout, alertText)
+	callback, err := client.tryRequest(request, requestTimeout, alertTimeout, alertText)
 	if err != nil {
+		if err == ErrTimeout {
+			client.postEvent("signature", "timeout", nil, nil)
+		} else {
+			errStr := err.Error()
+			client.postEvent("signature", "error", &errStr, nil)
+		}
 		log.Error(err)
 		return
 	}
-	if response != nil {
+	if callback != nil {
+		response := callback.response
 		signResponse = response.SignResponse
-		log.Notice("Signature response took", int(time.Since(start)/time.Millisecond), "ms")
+		millis := uint64(time.Since(start) / time.Millisecond)
+		log.Notice("Signature response took", millis, "ms")
+		client.postEvent("signature", "success", &callback.medium, &millis)
 		if signResponse.Error != nil {
 			log.Error("Signature error:", signResponse.Error)
 		}
@@ -318,22 +338,27 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 		return
 	}
 	request.ListRequest = &listRequest
-	response, err := client.tryRequest(request, 10*time.Second, 5*time.Second, "Incoming kr peers request. Open Kryptonite to continue.")
+	callback, err := client.tryRequest(request, 10*time.Second, 5*time.Second, "Incoming kr peers request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	if response != nil {
-		listResponse = response.ListResponse
+	if callback != nil {
+		listResponse = callback.response.ListResponse
 	}
 	return
 }
 
-func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string) (response *kr.Response, err error) {
+type callbackT struct {
+	response kr.Response
+	medium   string
+}
+
+func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string) (callback *callbackT, err error) {
 	if timeout == alertTimeout {
 		log.Warning("timeout == alertTimeout, alert may not fire")
 	}
-	cb := make(chan *kr.Response, 1)
+	cb := make(chan *callbackT, 1)
 	go func() {
 		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
 		if err != nil {
@@ -345,7 +370,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 	func() {
 		for {
 			select {
-			case response = <-cb:
+			case callback = <-cb:
 				return
 			case <-timeoutChan:
 				err = ErrTimeout
@@ -365,7 +390,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 			}
 		}
 	}()
-	if response == nil && !client.IsPaired() {
+	if callback == nil && !client.IsPaired() {
 		err = ErrNotPaired
 	}
 	return
@@ -373,7 +398,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 
 //	Send one request and receive pending responses, not necessarily associated
 //	with this request
-func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, cb chan *kr.Response, timeout time.Duration) (err error) {
+func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, cb chan *callbackT, timeout time.Duration) (err error) {
 	pairingSecret := client.getPairingSecret()
 	if pairingSecret == nil {
 		err = errors.New("EnclaveClient pairing never initiated")
@@ -411,7 +436,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 		}
 
 		for _, ctxt := range ciphertexts {
-			ctxtErr := client.handleCiphertext(ctxt)
+			ctxtErr := client.handleCiphertext(ctxt, "sqs")
 			switch ctxtErr {
 			case kr.ErrWaitingForKey:
 			default:
@@ -436,7 +461,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 	client.Lock()
 	if cb, ok := client.requestCallbacksByRequestID.Get(request.RequestID); ok {
 		//	request still not processed, give up on it
-		cb.(chan *kr.Response) <- nil
+		cb.(chan *callbackT) <- nil
 		client.requestCallbacksByRequestID.Remove(request.RequestID)
 		log.Error("evicting request", request.RequestID)
 	}
@@ -445,7 +470,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 	return
 }
 
-func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
+func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) (err error) {
 	pairingSecret := client.getPairingSecret()
 	unwrappedCiphertext, didUnwrapKey, err := pairingSecret.UnwrapKeyIfPresent(ciphertext)
 	if pairingSecret == nil {
@@ -486,7 +511,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte) (err error) {
 		return
 	}
 	responseJson := *message
-	err = client.handleMessage(pairingSecret, responseJson)
+	err = client.handleMessage(pairingSecret, responseJson, medium)
 	if err != nil {
 		log.Error("handleMessage error:", err)
 		return
@@ -524,32 +549,31 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 	return
 }
 
-func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, message []byte) (err error) {
+func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, message []byte, medium string) (err error) {
 	var response kr.Response
 	err = json.Unmarshal(message, &response)
 	if err != nil {
 		return
 	}
+	client.Lock()
+	defer client.Unlock()
 
 	if response.UnpairResponse != nil {
 		log.Notice("Received unpair command from phone.")
-		client.Lock()
 		client.unpair(fromPairing, false)
 		//	cancel all pending callbacks
 		client.requestCallbacksByRequestID.OnEvicted = func(key lru.Key, callback interface{}) {
-			callback.(chan *kr.Response) <- nil
+			callback.(chan *callbackT) <- nil
 		}
 		for client.requestCallbacksByRequestID.Len() > 0 {
 			client.requestCallbacksByRequestID.RemoveOldest()
 		}
 		client.requestCallbacksByRequestID.OnEvicted = nil
-		client.Unlock()
 		return
 	}
 
-	if response.SNSEndpointARN != nil {
-		client.Lock()
-		if client.pairingSecret != nil {
+	if client.pairingSecret != nil && client.pairingSecret.Equals(fromPairing) {
+		if response.SNSEndpointARN != nil {
 			client.pairingSecret.SetSNSEndpointARN(response.SNSEndpointARN)
 			kr.SavePairing(client.pairingSecret)
 		}
@@ -557,17 +581,23 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 			client.pairingSecret.ApprovedUntil = response.ApprovedUntil
 			kr.SavePairing(client.pairingSecret)
 		}
-		client.Unlock()
+
+		oldTID := client.pairingSecret.GetTrackingID()
+		if response.TrackingID != nil && (oldTID == nil || *response.TrackingID != *oldTID) {
+			client.pairingSecret.SetTrackingID(response.TrackingID)
+			kr.SavePairing(client.pairingSecret)
+		}
 	}
 
-	client.Lock()
 	if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
 		log.Info("found callback for request", response.RequestID)
-		requestCb.(chan *kr.Response) <- &response
+		requestCb.(chan *callbackT) <- &callbackT{
+			response: response,
+			medium:   medium,
+		}
 	} else {
 		log.Info("callback not found for request", response.RequestID)
 	}
 	client.requestCallbacksByRequestID.Remove(response.RequestID)
-	client.Unlock()
 	return
 }
