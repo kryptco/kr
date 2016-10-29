@@ -9,7 +9,7 @@ import (
 
 var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
 
-var analytics_os = "OS X"
+const analytics_os = "OS X"
 
 var cachedAnalyticsOSVersion *string
 var osVersionMutex sync.Mutex
@@ -23,6 +23,7 @@ func getAnalyticsOSVersion() *string {
 
 	analytics_os_version_bytes, err := exec.Command("sw_vers", "-productVersion").Output()
 	if err != nil {
+		log.Error("error retrieving OS version:", err.Error())
 		return nil
 	}
 	stripped := strings.TrimSpace(string(analytics_os_version_bytes))

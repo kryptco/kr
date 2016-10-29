@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const TRACKING_ID = "UA-86173430-1"
+const TRACKING_ID = "UA-86173430-2"
 
 type Analytics struct{}
 

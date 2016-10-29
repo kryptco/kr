@@ -6,7 +6,7 @@ import (
 
 var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (Macintosh; Linux) (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
 
-var analytics_os = "Linux"
+const analytics_os = "Linux"
 
 var cachedAnalyticsOSVersion *string
 var osVersionMutex sync.Mutex

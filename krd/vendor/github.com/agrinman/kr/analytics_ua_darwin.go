@@ -9,7 +9,7 @@ import (
 
 var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
 
-var analytics_os = "OS X"
+const analytics_os = "OS X"
 
 var cachedAnalyticsOSVersion *string
 var osVersionMutex sync.Mutex
