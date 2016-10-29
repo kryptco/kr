@@ -300,6 +300,16 @@ func githubCommand(c *cli.Context) (err error) {
 	return
 }
 
+func bitbucketCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr("Public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr("Press ENTER to open your web browser to BitBucket. Then click \"Add key\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
+	openBrowser("https://bitbucket.org/account/ssh-keys/")
+	return
+}
+
 func digitaloceanCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr("Public key copied to clipboard.")
@@ -370,6 +380,11 @@ func main() {
 			Name:   "github",
 			Usage:  "Upload your public key to GitHub. Copies your public key to the clipboard and opens GitHub settings.",
 			Action: githubCommand,
+		},
+		cli.Command{
+			Name:   "bitbucket",
+			Usage:  "Upload your public key to BitBucket. Copies your public key to the clipboard and opens BitBucket settings.",
+			Action: bitbucketCommand,
 		},
 		cli.Command{
 			Name:   "digital-ocean",
