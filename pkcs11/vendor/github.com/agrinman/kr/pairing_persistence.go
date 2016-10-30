@@ -14,7 +14,7 @@ type persistedPairing struct {
 	WorkstationSecretKey []byte
 	WorkstationName      string
 	SNSEndpointARN       *string
-	ApprovedUntil        *int64 `json:"approved_until"`
+	ApprovedUntil        *int64
 	TrackingID           *string
 }
 

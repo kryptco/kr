@@ -35,6 +35,20 @@ func sodiumBoxSealOpen(c, pk, sk []byte) (m []byte, err error) {
 	return
 }
 
+func sodiumBoxSeal(m, pk []byte) (c []byte, err error) {
+	//	protect against bindings panicking
+	if len(m) == 0 || len(pk) == 0 {
+		err = fmt.Errorf("empty argument passed to sodium")
+		return
+	}
+	c, ret := cryptobox.CryptoBoxSeal(m, pk)
+	if ret != 0 {
+		err = fmt.Errorf("nonzero sodium return status: %d", ret)
+		return
+	}
+	return
+}
+
 func UnwrapKey(c, pk, sk []byte) (key []byte, err error) {
 	key, err = sodiumBoxSealOpen(c, pk, sk)
 	if err != nil {
