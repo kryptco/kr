@@ -358,7 +358,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
 	app.Usage = "communicate with Kryptonite and krd - the Kryptonite daemon"
-	app.Version = "1.0.8"
+	app.Version = kr.CURRENT_VERSION.String()
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{

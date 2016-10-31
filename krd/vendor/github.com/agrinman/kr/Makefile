@@ -9,3 +9,4 @@ check:
 	cd kr; go test
 	cd krd; go test
 	cd pkcs11; go test
+	cd krdclient; go test
