@@ -33,7 +33,15 @@ func stderrCyan(s string) {
 	cyan := color.New(color.FgHiCyan)
 	cyan.EnableColor()
 	os.Stderr.WriteString(cyan.SprintFunc()(s))
+}
 
+func stderrGreen(s string) {
+	if os.Getenv("KR_NO_STDERR") != "" {
+		return
+	}
+	green := color.New(color.FgHiGreen)
+	green.EnableColor()
+	os.Stderr.WriteString(green.SprintFunc()(s))
 }
 
 //export C_GetFunctionList
@@ -60,7 +68,7 @@ func C_GetInfo(ck_info *C.CK_INFO) C.CK_RV {
 		},
 		flags:              0,
 		manufacturerID:     bytesToChar32([]byte("KryptCo Inc.")),
-		libraryDescription: bytesToChar32([]byte("kryptonite pkcs11 middleware")),
+		libraryDescription: bytesToChar32([]byte("Kryptonite pkcs11 middleware")),
 		libraryVersion: C.struct__CK_VERSION{
 			major: 0,
 			minor: 1,
@@ -92,7 +100,7 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 	log.Notice("GetSlotInfo")
 	*slotInfo = C.CK_SLOT_INFO{
 		manufacturerID:  bytesToChar32([]byte("KryptCo, Inc.")),
-		slotDescription: bytesToChar64([]byte("kryptonite pkcs11 middleware")),
+		slotDescription: bytesToChar64([]byte("Kryptonite pkcs11 middleware")),
 		hardwareVersion: C.struct__CK_VERSION{
 			major: 0,
 			minor: 1,
@@ -112,9 +120,9 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 	log.Notice("GetTokenInfo")
 	*tokenInfo = C.CK_TOKEN_INFO{
-		label:               bytesToChar32([]byte("kryptonite iOS")),
+		label:               bytesToChar32([]byte("Kryptonite iOS")),
 		manufacturerID:      bytesToChar32([]byte("KryptCo Inc.")),
-		model:               bytesToChar16([]byte("kryptonite iOS")),
+		model:               bytesToChar16([]byte("Kryptonite iOS")),
 		serialNumber:        bytesToChar16([]byte("1")),
 		ulMaxSessionCount:   16,
 		ulSessionCount:      0,
@@ -431,7 +439,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 	}
 	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
 	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
-	stderrCyan("kryptonite ▶ Requesting SSH authentication from phone.\n")
+	stderrCyan("Kryptonite ▶ Requesting SSH authentication from phone\n")
 	sigBytes, err := krdclient.Sign(pkFingerprint[:], message)
 	if err != nil {
 		switch err {
@@ -447,6 +455,7 @@ func C_Sign(session C.CK_SESSION_HANDLE,
 		log.Warning("Falling back to local keys.")
 		return C.CKR_GENERAL_ERROR
 	} else {
+		stderrGreen("Kryptonite ▶ Success. Request Allowed ✔\n")
 		log.Notice("Received signature size", len(sigBytes), "bytes")
 		for _, b := range sigBytes {
 			*signature = C.CK_BYTE(b)
