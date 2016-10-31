@@ -2,6 +2,9 @@ package kr
 
 import (
 	"fmt"
+	"os/exec"
+	"strings"
+	"sync"
 )
 
 var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (Macintosh; Linux) (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
