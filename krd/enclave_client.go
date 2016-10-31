@@ -269,7 +269,7 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 	meRequest.MeRequest = &kr.MeRequest{}
 	timeout := 5 * time.Second
 	if longTimeout {
-		timeout = 45 * time.Second
+		timeout = 90 * time.Second
 	}
 	callback, err := client.tryRequest(meRequest, timeout, 4*time.Second, "Incoming kr me request. Open Kryptonite to continue.")
 	if err != nil {
