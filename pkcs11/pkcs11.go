@@ -272,6 +272,7 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 			switch *(*C.CK_OBJECT_CLASS)(templates.pValue) {
 			case C.CKO_PUBLIC_KEY:
 				log.Notice("init search for CKO_PUBLIC_KEY")
+				go krdclient.RequestNoOp()
 				findOnce(session, PUBKEY_HANDLE)
 			case C.CKO_PRIVATE_KEY:
 				log.Notice("init search for CKO_PRIVATE_KEY")

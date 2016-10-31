@@ -111,7 +111,9 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusBadRequest)
+	cs.enclaveClient.RequestNoOp()
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest kr.Request) {

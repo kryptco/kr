@@ -66,6 +66,7 @@ type EnclaveClientI interface {
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
 	RequestList(kr.ListRequest) (*kr.ListResponse, error)
+	RequestNoOp() error
 }
 
 type EnclaveClient struct {
@@ -345,6 +346,24 @@ func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listRespon
 	}
 	if callback != nil {
 		listResponse = callback.response.ListResponse
+	}
+	return
+}
+
+func (client *EnclaveClient) RequestNoOp() (err error) {
+	request, err := kr.NewRequest()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	requestJson, err := json.Marshal(request)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	ps := client.getPairingSecret()
+	if ps != nil {
+		client.sendMessage(ps, requestJson, false)
 	}
 	return
 }

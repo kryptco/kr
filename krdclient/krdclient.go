@@ -165,3 +165,27 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	err = fmt.Errorf("response missing signature")
 	return
 }
+
+func RequestNoOp() (err error) {
+	daemonConn, err := kr.DaemonDial()
+	if err != nil {
+		err = fmt.Errorf("DaemonDial error: %s", err.Error())
+		return
+	}
+
+	noOpRequest, err := kr.NewRequest()
+	if err != nil {
+		return
+	}
+
+	httpRequest, err := noOpRequest.HTTPRequest()
+	if err != nil {
+		return
+	}
+	err = httpRequest.Write(daemonConn)
+	if err != nil {
+		err = fmt.Errorf("Daemon Write error: %s", err.Error())
+		return
+	}
+	return
+}
