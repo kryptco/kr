@@ -5,11 +5,15 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/blang/semver"
 )
 
 type Request struct {
 	RequestID     string         `json:"request_id"`
 	UnixSeconds   int64          `json:"unix_seconds"`
+	Version       semver.Version `json:"v"`
+	SendACK       bool           `json:"a"`
 	SignRequest   *SignRequest   `json:"sign_request"`
 	ListRequest   *ListRequest   `json:"list_request"`
 	MeRequest     *MeRequest     `json:"me_request"`
@@ -24,12 +28,15 @@ func NewRequest() (request Request, err error) {
 	request = Request{
 		RequestID:   id,
 		UnixSeconds: time.Now().Unix(),
+		Version:     CURRENT_VERSION,
+		SendACK:     true,
 	}
 	return
 }
 
 type Response struct {
 	RequestID      string          `json:"request_id"`
+	Version        semver.Version  `json:"v"`
 	SignResponse   *SignResponse   `json:"sign_response"`
 	ListResponse   *ListResponse   `json:"list_response"`
 	MeResponse     *MeResponse     `json:"me_response"`
