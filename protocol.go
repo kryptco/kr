@@ -34,6 +34,7 @@ type Response struct {
 	ListResponse   *ListResponse   `json:"list_response"`
 	MeResponse     *MeResponse     `json:"me_response"`
 	UnpairResponse *UnpairResponse `json:"unpair_response"`
+	AckResponse    *AckResponse    `json:"ack_response"`
 	SNSEndpointARN *string         `json:"sns_endpoint_arn"`
 	ApprovedUntil  *int64          `json:"approved_until"`
 	TrackingID     *string         `json:"tracking_id"`
@@ -81,3 +82,5 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 type UnpairRequest struct{}
 
 type UnpairResponse struct{}
+
+type AckResponse struct{}

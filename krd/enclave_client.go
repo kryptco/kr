@@ -73,6 +73,7 @@ type EnclaveClient struct {
 	sync.Mutex
 	pairingSecret               *kr.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
+	ackedRequestIDs             *lru.Cache
 	outgoingQueue               [][]byte
 	snsEndpointARN              *string
 	cachedMe                    *kr.Profile
@@ -258,6 +259,7 @@ func (ec *EnclaveClient) postEvent(category string, action string, label *string
 func UnpairedEnclaveClient() EnclaveClientI {
 	return &EnclaveClient{
 		requestCallbacksByRequestID: lru.New(128),
+		ackedRequestIDs:             lru.New(128),
 	}
 }
 
@@ -387,14 +389,24 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 	timeoutChan := time.After(timeout)
 	sendAlertChan := time.After(alertTimeout)
 	func() {
+		var ack bool
 		for {
 			select {
 			case callback = <-cb:
+				if callback != nil && callback.response.AckResponse != nil {
+					ack = true
+					log.Notice("request", callback.response.RequestID, "ACKed")
+					timeoutChan = time.After(time.Second * 60)
+					break
+				}
 				return
 			case <-timeoutChan:
 				err = ErrTimeout
 				return
 			case <-sendAlertChan:
+				if ack {
+					break
+				}
 				client.Lock()
 				ps := client.pairingSecret
 				client.Unlock()
@@ -469,8 +481,13 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 		n, err := receive()
 		client.Lock()
 		_, requestPending := client.requestCallbacksByRequestID.Get(request.RequestID)
+		_, requestAcked := client.ackedRequestIDs.Get(request.RequestID)
 		client.Unlock()
-		if err != nil || (n == 0 && time.Now().After(timeoutAt)) || !requestPending {
+		timeout := timeoutAt
+		if requestAcked {
+			timeout = timeout.Add(time.Second * 60)
+		}
+		if err != nil || (n == 0 && time.Now().After(timeout)) || !requestPending {
 			if err != nil {
 				log.Error("queue err:", err)
 			}
@@ -617,6 +634,10 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 	} else {
 		log.Info("callback not found for request", response.RequestID)
 	}
-	client.requestCallbacksByRequestID.Remove(response.RequestID)
+	if response.AckResponse != nil {
+		client.ackedRequestIDs.Add(response.RequestID, nil)
+	} else {
+		client.requestCallbacksByRequestID.Remove(response.RequestID)
+	}
 	return
 }
