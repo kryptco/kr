@@ -11,4 +11,5 @@ type BluetoothDriverI interface {
 	RemoveService(uuid.UUID) (err error)
 	Write([]byte) (err error)
 	ReadChan() (readChan chan []byte, err error)
+	Stop()
 }

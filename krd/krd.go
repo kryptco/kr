@@ -12,7 +12,7 @@ import (
 var log *logging.Logger
 
 func main() {
-	log = kr.SetupLogging("krd", logging.NOTICE, true)
+	log = kr.SetupLogging("krd", logging.INFO, true)
 	SetBTLogger(log)
 	daemonSocket, err := kr.DaemonListen()
 	if err != nil {

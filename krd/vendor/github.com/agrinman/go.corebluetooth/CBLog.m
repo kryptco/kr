@@ -8,6 +8,7 @@
 // Exists in GO
 extern void v23_corebluetooth_go_log(char *msg);
 extern void v23_corebluetooth_go_log_error(char *msg);
+extern void v23_corebluetooth_go_log_debug(char *msg);
 
 void _CBLog(CBLogLevel level, const char *_Nonnull file, int line, NSString *_Nonnull format, ...) {
   va_list args;
@@ -20,6 +21,8 @@ void _CBLog(CBLogLevel level, const char *_Nonnull file, int line, NSString *_No
   if (cString) {
     switch (level) {
       case CBLogLevelDebug:
+        v23_corebluetooth_go_log_debug((char *)cString);
+		break;
       case CBLogLevelInfo:
         v23_corebluetooth_go_log((char *)cString);
         break;

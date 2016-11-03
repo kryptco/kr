@@ -28,5 +28,7 @@ func (bt *BluetoothDriver) Write(data []byte) (err error) {
 	return
 }
 
+func (bt *BluetoothDriver) Stop() {}
+
 func SetBTLogger(logger *logging.Logger) {
 }

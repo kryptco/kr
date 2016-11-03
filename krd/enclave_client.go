@@ -192,6 +192,14 @@ func (ec *EnclaveClient) activatePairing() (err error) {
 	return
 }
 func (ec *EnclaveClient) Stop() (err error) {
+	ec.Lock()
+	defer ec.Unlock()
+	if ec.pairingSecret != nil {
+		ec.deactivatePairing(ec.pairingSecret)
+	}
+	if ec.bt != nil {
+		ec.bt.Stop()
+	}
 	return
 }
 
@@ -224,6 +232,9 @@ func (ec *EnclaveClient) Start() (err error) {
 			}
 			for ciphertext := range readChan {
 				err = ec.handleCiphertext(ciphertext, "bluetooth")
+				if err != nil {
+					log.Error("error reading bluetooth channel:", err)
+				}
 			}
 		}()
 	}
@@ -570,9 +581,12 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		return
 	}
 	go func() {
+		if client.bt == nil {
+			return
+		}
 		err := client.bt.Write(ciphertext)
 		if err != nil {
-			log.Error("error writing BT", err)
+			log.Error("error writing to Bluetooth", err)
 		}
 	}()
 

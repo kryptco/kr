@@ -21,6 +21,7 @@ package corebluetooth
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"unsafe"
@@ -31,7 +32,7 @@ import (
 )
 
 /*
-#cgo CFLAGS: -x objective-c -fobjc-arc -DCBLOG_LEVEL=CBLOG_LEVEL_ERROR
+#cgo CFLAGS: -x objective-c -fobjc-arc -DCBLOG_LEVEL=CBLOG_LEVEL_INFO
 #cgo LDFLAGS: -framework Foundation -framework CoreBluetooth
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "CBDriver.h"
@@ -50,34 +51,39 @@ func SetLogger(logger *logging.Logger) {
 	log = logger
 }
 
-func logPrintln(args ...interface{}) {
+func logError(format string, args ...interface{}) {
 	driverMu.Lock()
 	defer driverMu.Unlock()
 	if log != nil {
-		log.Info([]interface{}{"CoreBluetooth:", args}...)
-	}
-}
-func logError(args ...interface{}) {
-	driverMu.Lock()
-	defer driverMu.Unlock()
-	if log != nil {
-		log.Error([]interface{}{"CoreBluetooth:", args}...)
+		msg := fmt.Sprintf("CoreBluetooth: "+format, args...)
+		log.Error(msg)
 	}
 }
 
-func logNotice(args ...interface{}) {
+func logNotice(format string, args ...interface{}) {
 	driverMu.Lock()
 	defer driverMu.Unlock()
 	if log != nil {
-		log.Notice([]interface{}{"CoreBluetooth:", args}...)
+		msg := fmt.Sprintf("CoreBluetooth: "+format, args...)
+		log.Notice(msg)
 	}
 }
 
-func logInfo(args ...interface{}) {
+func logInfo(format string, args ...interface{}) {
 	driverMu.Lock()
 	defer driverMu.Unlock()
 	if log != nil {
-		log.Info([]interface{}{"CoreBluetooth:", args}...)
+		msg := fmt.Sprintf("CoreBluetooth: "+format, args...)
+		log.Info(msg)
+	}
+}
+
+func logDebug(format string, args ...interface{}) {
+	driverMu.Lock()
+	defer driverMu.Unlock()
+	if log != nil {
+		msg := fmt.Sprintf("CoreBluetooth: "+format, args...)
+		log.Debug(msg)
 	}
 }
 
@@ -92,6 +98,7 @@ type (
 		mu           sync.Mutex
 		Read         chan []byte
 		splitMessage []byte
+		lastSplitN   *byte
 	}
 
 	OnDiscovered struct {
@@ -176,7 +183,7 @@ func (d *CoreBluetoothDriver) AddService(uuid string, characteristics map[string
 		return err
 	}
 	// Success
-	logNotice("added service ", uuid)
+	logNotice("added service %s", uuid)
 	return nil
 }
 
@@ -193,7 +200,7 @@ func (d *CoreBluetoothDriver) WriteData(data []byte) error {
 		return err
 	}
 	// Success
-	logInfo("wrote", len(data), "bytes")
+	logInfo("wrote %d bytes", len(data))
 	return nil
 }
 
@@ -203,7 +210,7 @@ func (d *CoreBluetoothDriver) RemoveService(uuid string) {
 	// This is thread-safe in obj-c
 	C.v23_cbdriver_removeService(cUuid)
 	C.free(unsafe.Pointer(cUuid))
-	logNotice("removed service ", uuid)
+	logNotice("removed service %s", uuid)
 }
 
 // StartScan implements v.io/x/lib/discovery/plugins/ble.Driver.StartService
@@ -300,7 +307,18 @@ func v23_corebluetooth_go_log(message *C.char) {
 	// Run asynchronously to prevent deadlocks where us calling functions like stopScan log
 	// while already retaining this lock.
 	go func() {
-		logInfo(msg)
+		logNotice(msg)
+	}()
+}
+
+// Callback from Obj-C
+//export v23_corebluetooth_go_log_debug
+func v23_corebluetooth_go_log_debug(message *C.char) {
+	msg := C.GoString(message)
+	// Run asynchronously to prevent deadlocks where us calling functions like stopScan log
+	// while already retaining this lock.
+	go func() {
+		logDebug(msg)
 	}()
 }
 
@@ -324,19 +342,23 @@ func v23_corebluetooth_go_data_received(data unsafe.Pointer, dataLength C.int) {
 	}
 	copy(copiedBytes, borrowedBytes)
 	n := copiedBytes[0]
+	if driver.lastSplitN != nil && n != *driver.lastSplitN-1 {
+		driver.splitMessage = []byte{}
+	}
+	driver.lastSplitN = &n
 	msg := copiedBytes[1:]
 	if n == 0 {
 		message := append(driver.splitMessage, msg...)
 		driver.splitMessage = []byte{}
 		select {
 		case driver.Read <- message:
-			logPrintln("received", len(message), "byte message over BT")
+			logNotice("received %d byte message over Bluetooth", len(message))
 		default:
-			logPrintln("receive queue unavailable")
+			logError("receive queue unavailable")
 		}
 	} else {
 		driver.splitMessage = append(driver.splitMessage, msg...)
-		logPrintln(" Received", len(copiedBytes), "byte message split over BT")
+		logNotice(" Received split %d with %d bytes over Bluetooth", n, len(copiedBytes)-1)
 	}
 }
 

@@ -39,9 +39,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
         [[CBPeripheralManager alloc] initWithDelegate:self
                                                 queue:self.queue
                                               options:@{
-#if TARGET_OS_IPHONE
-                                                CBPeripheralManagerOptionShowPowerAlertKey : @NO
-#endif
+                                                CBPeripheralManagerOptionShowPowerAlertKey : @YES
                                               }];
     self.services = [NSMutableDictionary new];
     self.serviceCharacteristics = [NSMutableDictionary new];
@@ -78,7 +76,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
       return;
     }
     if (this.services[uuid]) {
-    CBDebugLog(@"addService already added");
+    CBInfoLog(@"addService already added");
       handler(uuid, [NSError errorWithDomain:kCBDriverErrorDomain
                                         code:CBDriverErrorServiceAlreadyAdded
                                     userInfo:@{
@@ -141,7 +139,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 	int offset = 0;
 	int msgBlockSize = self.centralMTU - 1;
 	if (message.length / msgBlockSize > 255) {
-		CBDebugLog(@"message of length %d too long", message.length);
+		CBErrorLog(@"message of length %d too long", message.length);
 		return split;
 	}
 	for (char n = message.length / msgBlockSize; n >= 0; n--) {
@@ -188,6 +186,10 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 - (void)removeService:(CBUUID *_Nonnull)uuid {
   CBInfoLog(@"removeService: %@", uuid.UUIDString);
   CBDispatchSync(self.queue, ^{
+    char offByte = 0;
+	NSMutableData* offMsg = [NSMutableData new];
+	[offMsg appendBytes:&offByte length: 1];
+	[self writeDataRaw:offMsg];
     CBMutableService *service = self.services[uuid];
     if (!service) {
       return;
@@ -220,10 +222,10 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 
 - (void)startAdvertising {
   [self threadSafetyCheck];
-  if (self.advertisingState != AdvertisingStateNotAdvertising) {
-    CBErrorLog(@"Not starting advertising when in state %d", self.advertisingState);
-    return;
-  }
+  //if (self.advertisingState != AdvertisingStateNotAdvertising) {
+    //CBInfoLog(@"Not starting advertising when in state %d", self.advertisingState);
+    //return;
+  //}
   if (!self.advertisedServices.count) {
     CBDebugLog(@"Nothing to advertise");
     return;
@@ -234,7 +236,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
   }
   NSDictionary *ad = @{CBAdvertisementDataServiceUUIDsKey : self.advertisedServices, CBAdvertisementDataLocalNameKey: @"krsshagent"};
   self.advertisingState = AdvertisingStateStarting;
-  CBDebugLog(@"startAdvertising %@", self.advertisedServices);
+  CBInfoLog(@"startAdvertising %@", self.advertisedServices);
   [self invalidateRotateAdTimer];
   // When we get the callback advertising started then we reschedule rotation.
   self.requestedAdvertisingStart = [NSDate date];
@@ -243,7 +245,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 
 - (void)stopAdvertising {
   [self threadSafetyCheck];
-  CBDebugLog(@"stopAdvertising");
+  CBInfoLog(@"stopAdvertising");
   self.advertisingState = AdvertisingStateNotAdvertising;
   if (self.isHardwarePoweredOn) {
     [self.peripheral stopAdvertising];
@@ -295,9 +297,9 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
   switch (peripheral.state) {
     case CBPeripheralManagerStatePoweredOn:
       CBInfoLog(@"CBPeripheralManagerStatePoweredOn");
-      if (self.services.count > 0) {
-        [self addAllServices];
-        [self startAdvertising];
+      if (self.services.count > 0 && self.advertisingState == AdvertisingStateNotAdvertising) {
+		  [self addAllServices];
+		  [self startAdvertising];
       }
       break;
     case CBPeripheralManagerStatePoweredOff:
@@ -360,7 +362,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
   __weak typeof(self) this = self;
   dispatch_async(self.queue, ^{
     if (!this) {
-    CBDebugLog(@"didSubscribe !this");
+	  CBErrorLog(@"didSubscribe !this");
       return;
     }
 	//	Apple example code always uses notify MTU of 20
@@ -380,7 +382,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral
     didReceiveReadRequest:(CBATTRequest *)request {
-  CBDebugLog(@"didReceiveReadRequest %@", request);
+  CBErrorLog(@"didReceiveReadRequest %@", request);
   CBCharacteristic *characteristic = self.serviceCharacteristics[request.characteristic.service.UUID];
   if (!characteristic) {
     [peripheral respondToRequest:request withResult:CBATTErrorAttributeNotFound];
