@@ -258,3 +258,7 @@ func (ps *PairingSecret) RequiresApproval() bool {
 	}
 	return *ps.ApprovedUntil < time.Now().Unix()
 }
+
+func (ps *PairingSecret) DisplayName() string {
+	return strings.TrimSuffix(ps.WorkstationName, ".local")
+}

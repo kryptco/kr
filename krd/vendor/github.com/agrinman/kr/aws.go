@@ -55,6 +55,8 @@ func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueN
 				"content-available": 1,
 				"queue":             sqsQueueName,
 				"c":                 requestCiphertext,
+				"session_uuid":      sqsQueueName,
+				"category":          "authorize_identifier",
 			},
 		})
 	err = pushToSNS(endpointARN, apnsPayload)

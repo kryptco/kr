@@ -303,13 +303,12 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 		return
 	}
 	request.SignRequest = &signRequest
-	requestTimeout := 15 * time.Second
-	alertTimeout := 5 * time.Second
+	requestTimeout := 20 * time.Second
+	alertTimeout := 8 * time.Second
 	alertText := "Incoming SSH request. Open Kryptonite to continue."
 	ps := client.getPairingSecret()
-	if ps != nil && ps.RequiresApproval() {
-		requestTimeout = 20 * time.Second
-		alertTimeout = 19 * time.Second
+	if ps != nil {
+		alertText = "Request from " + ps.DisplayName()
 	}
 	callback, err := client.tryRequest(request, requestTimeout, alertTimeout, alertText)
 	if err != nil {
