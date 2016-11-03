@@ -378,7 +378,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 	if timeout == alertTimeout {
 		log.Warning("timeout == alertTimeout, alert may not fire")
 	}
-	cb := make(chan *callbackT, 1)
+	cb := make(chan *callbackT, 5)
 	go func() {
 		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
 		if err != nil {
@@ -507,11 +507,11 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 
 func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) (err error) {
 	pairingSecret := client.getPairingSecret()
-	unwrappedCiphertext, didUnwrapKey, err := pairingSecret.UnwrapKeyIfPresent(ciphertext)
 	if pairingSecret == nil {
 		err = errors.New("EnclaveClient pairing never initiated")
 		return
 	}
+	unwrappedCiphertext, didUnwrapKey, err := pairingSecret.UnwrapKeyIfPresent(ciphertext)
 	if err != nil {
 		err = &ProtoError{err}
 		return
