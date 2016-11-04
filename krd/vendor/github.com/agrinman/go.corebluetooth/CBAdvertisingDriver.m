@@ -307,7 +307,8 @@ static const char pingByte = 1;
       break;
     case CBPeripheralManagerStatePoweredOff:
       CBInfoLog(@"CBPeripheralManagerStatePoweredOff");
-      [self stopAdvertising];
+	  //	stopping advertising here seems to leave around zombie bluetooth advertisements
+      //[self stopAdvertising];
       break;
     case CBPeripheralManagerStateResetting:
       CBInfoLog(@"CBPeripheralManagerStateResetting");
