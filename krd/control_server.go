@@ -21,6 +21,7 @@ func (cs *ControlServer) HandleControlHTTP(listener net.Listener) (err error) {
 	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("/pair", cs.handlePair)
 	httpMux.HandleFunc("/enclave", cs.handleEnclave)
+	httpMux.HandleFunc("/ping", cs.handlePing)
 	err = http.Serve(listener, httpMux)
 	return
 }
@@ -208,4 +209,8 @@ func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest
 		w.WriteHeader(http.StatusNotFound)
 	}
 
+}
+
+func (cs *ControlServer) handlePing(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }

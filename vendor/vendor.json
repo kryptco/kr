@@ -3,12 +3,6 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "ymg5KDmpqPVFrVn9JHwnRABvJlg=",
-			"path": "github.com/agrinman/kr",
-			"revision": "bc8843c413322d16418ad338679be0f23fdbd5f2",
-			"revisionTime": "2016-10-15T17:32:38Z"
-		},
-		{
 			"checksumSHA1": "PE5dC1O6lppnN/ap1xH7x37XlZ4=",
 			"path": "github.com/agrinman/kr/krdclient",
 			"revision": "bc8843c413322d16418ad338679be0f23fdbd5f2",

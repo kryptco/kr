@@ -55,7 +55,7 @@ func RequestList() (profiles []kr.Profile, err error) {
 }
 
 func makeRequestWithJsonResponse(request kr.Request) (response kr.Response, err error) {
-	daemonConn, err := kr.DaemonDial()
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		return
 	}
@@ -96,9 +96,9 @@ func makeRequestWithJsonResponse(request kr.Request) (response kr.Response, err 
 }
 
 func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
-	daemonConn, err := kr.DaemonDial()
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
-		err = fmt.Errorf("DaemonDial error: %s", err.Error())
+		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return
 	}
 
@@ -167,9 +167,9 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 }
 
 func RequestNoOp() (err error) {
-	daemonConn, err := kr.DaemonDial()
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
-		err = fmt.Errorf("DaemonDial error: %s", err.Error())
+		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return
 	}
 

@@ -57,7 +57,7 @@ func pairCommand(c *cli.Context) (err error) {
 	if err == nil {
 		confirmOrFatal("Already paired, unpair current session?")
 	}
-	putConn, err := kr.DaemonDial()
+	putConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -96,7 +96,7 @@ func pairCommand(c *cli.Context) (err error) {
 	fmt.Println("Scan this QR Code with the Kryptonite mobile app to connect it with this workstation. Maximize the window and/or lower your font size if the QR code does not fit.")
 	fmt.Println()
 
-	getConn, err := kr.DaemonDial()
+	getConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -144,7 +144,7 @@ func pairCommand(c *cli.Context) (err error) {
 }
 
 func unpairCommand(c *cli.Context) (err error) {
-	conn, err := kr.DaemonDial()
+	conn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		PrintFatal(err.Error())
 	}

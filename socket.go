@@ -1,10 +1,14 @@
 package kr
 
 import (
+	"bufio"
+	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
+	"time"
 )
 
 //	Find home directory of logged-in user even when run as sudo
@@ -39,5 +43,53 @@ func DaemonListen() (listener net.Listener, err error) {
 	//	delete UNIX socket in case daemon was not killed cleanly
 	_ = os.Remove(socketPath)
 	listener, err = net.Listen("unix", socketPath)
+	return
+}
+
+func pingDaemon() (err error) {
+	conn, err := DaemonDial()
+	if err != nil {
+		return
+	}
+
+	pingRequest, err := http.NewRequest("GET", "/ping", nil)
+	if err != nil {
+		return
+	}
+	err = pingRequest.Write(conn)
+	if err != nil {
+		return
+	}
+	responseReader := bufio.NewReader(conn)
+	httpResponse, err := http.ReadResponse(responseReader, pingRequest)
+	if err != nil {
+		err = fmt.Errorf("Daemon Read error: %s", err.Error())
+		return
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		err = fmt.Errorf("ping error: non-200 status code from daemon")
+		return
+	}
+	return
+}
+
+func DaemonDialWithTimeout() (conn net.Conn, err error) {
+	done := make(chan error, 1)
+	go func() {
+		done <- pingDaemon()
+	}()
+
+	select {
+	case <-time.After(time.Second):
+		err = fmt.Errorf("ping timed out")
+		return
+	case err = <-done:
+	}
+	if err != nil {
+		return
+	}
+
+	conn, err = DaemonDial()
 	return
 }
