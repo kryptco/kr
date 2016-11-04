@@ -12,6 +12,9 @@ static const void *kRotateAdDelay = &kRotateAdDelay;
 // This is exported from go
 extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int dataLength);
 
+static const char offByte = 0;
+static const char pingByte = 1;
+
 @interface CBAdvertisingDriver ()
 @property(nonatomic, assign) AdvertisingState advertisingState;
 @property(nonatomic, assign) BOOL rotateAd;
@@ -31,6 +34,7 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 @end
 
 @implementation CBAdvertisingDriver
+
 
 - (id _Nullable)initWithQueue:(dispatch_queue_t _Nonnull)queue {
   if (self = [super init]) {
@@ -186,7 +190,6 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
 - (void)removeService:(CBUUID *_Nonnull)uuid {
   CBInfoLog(@"removeService: %@", uuid.UUIDString);
   CBDispatchSync(self.queue, ^{
-    char offByte = 0;
 	NSMutableData* offMsg = [NSMutableData new];
 	[offMsg appendBytes:&offByte length: 1];
 	[self writeDataRaw:offMsg];
@@ -406,10 +409,24 @@ extern void v23_corebluetooth_go_data_received(const char *_Nonnull data, int da
   CBDebugLog(@"didReceiveWriteRequests %@", requests);
   for (CBATTRequest *request in requests) {
 	  if (request.value != nil ) {
-		  v23_corebluetooth_go_data_received(request.value.bytes, request.value.length);
+		  if (request.value.length == 1) {
+			  [self processControlMessage:*(const char*)request.value.bytes];
+		  } else {
+			  v23_corebluetooth_go_data_received(request.value.bytes, request.value.length);
+		  }
 	  }
     [peripheral respondToRequest:request withResult:CBATTErrorSuccess];
   }
+}
+
+- (void)processControlMessage:(const char)byte {
+	NSMutableData* pingMsg = [NSMutableData new];
+	switch (byte) {
+		case pingByte:
+			[pingMsg appendBytes:&pingByte length: 1];
+			[self writeDataRaw:pingMsg];
+			break;
+	}
 }
 
 - (void)threadSafetyCheck {
