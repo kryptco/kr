@@ -69,8 +69,7 @@ func GeneratePairingSecret() (ps *PairingSecret, err error) {
 		err = fmt.Errorf("nonzero CryptoBoxKeyPair exit status: %d", ret)
 		return
 	}
-	hostname, _ := os.Hostname()
-	ps.WorkstationName = os.Getenv("USER") + "@" + hostname
+	ps.WorkstationName = os.Getenv("USER") + "@" + MachineName()
 	return
 }
 
