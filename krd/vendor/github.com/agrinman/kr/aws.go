@@ -201,7 +201,8 @@ func CreateQueue(queue string) (queueURL string, err error) {
 	createQueueInput := &sqs.CreateQueueInput{
 		QueueName: aws.String(queue), // Required
 		Attributes: map[string]*string{
-			sqs.QueueAttributeNameMessageRetentionPeriod: aws.String("1209600"),
+			//	longer to store Unpair messages
+			sqs.QueueAttributeNameMessageRetentionPeriod: aws.String("172800"),
 			sqs.QueueAttributeNameVisibilityTimeout:      aws.String("1"),
 		},
 	}
