@@ -195,6 +195,7 @@ func SendToQueue(queueUrl string, message string) (err error) {
 func CreateQueue(queue string) (queueURL string, err error) {
 	sqsService, err := getSQSService()
 	if err != nil {
+		log.Error(err)
 		return
 	}
 	createQueueInput := &sqs.CreateQueueInput{
