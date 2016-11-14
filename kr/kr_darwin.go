@@ -54,7 +54,7 @@ func upgradeCommand(c *cli.Context) (err error) {
 	confirmOrFatal("Upgrade Kryptonite on this workstation?")
 	var cmd *exec.Cmd
 	if installedWithBrew() {
-		cmd = exec.Command("brew", "upgrade", "kr")
+		cmd = exec.Command("brew", "upgrade", "kryptco/tap/kr")
 	} else if installedWithNPM() {
 		cmd = exec.Command("npm", "upgrade", "-g", "krd")
 	} else {
