@@ -314,7 +314,7 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 		return
 	}
 	request.SignRequest = &signRequest
-	requestTimeout := 20 * time.Second
+	requestTimeout := 30 * time.Second
 	alertTimeout := 8 * time.Second
 	alertText := "Incoming SSH request. Open Kryptonite to continue."
 	ps := client.getPairingSecret()
