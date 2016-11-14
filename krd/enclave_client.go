@@ -84,8 +84,14 @@ func (ec *EnclaveClient) Pair() (pairingSecret *kr.PairingSecret, err error) {
 	ec.Lock()
 	defer ec.Unlock()
 
-	ec.generatePairing()
-	ec.activatePairing()
+	err = ec.generatePairing()
+	if err != nil {
+		return
+	}
+	err = ec.activatePairing()
+	if err != nil {
+		return
+	}
 
 	pairingSecret = ec.pairingSecret
 
