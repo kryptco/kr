@@ -61,14 +61,9 @@ func pingDaemon() (err error) {
 		return
 	}
 	responseReader := bufio.NewReader(conn)
-	httpResponse, err := http.ReadResponse(responseReader, pingRequest)
+	_, err = http.ReadResponse(responseReader, pingRequest)
 	if err != nil {
 		err = fmt.Errorf("Daemon Read error: %s", err.Error())
-		return
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		err = fmt.Errorf("ping error: non-200 status code from daemon")
 		return
 	}
 	return

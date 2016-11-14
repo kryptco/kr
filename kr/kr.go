@@ -83,7 +83,7 @@ func pairCommand(c *cli.Context) (err error) {
 		PrintFatal(err.Error())
 	}
 	if putPairResponse.StatusCode != http.StatusOK {
-		PrintFatal(string(responseBytes))
+		PrintFatal("Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
 	}
 
 	qr, err := QREncode(responseBytes)
