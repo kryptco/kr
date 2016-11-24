@@ -1,6 +1,7 @@
 package kr
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
@@ -32,6 +33,10 @@ func (p Profile) RSAPublicKey() (pk *rsa.PublicKey, err error) {
 func (p Profile) PublicKeyFingerprint() []byte {
 	digest := sha256.Sum256(p.SSHWirePublicKey)
 	return digest[:]
+}
+
+func (p Profile) Equal(other Profile) bool {
+	return bytes.Equal(p.SSHWirePublicKey, other.SSHWirePublicKey) && p.Email == other.Email
 }
 
 func PersistMe(me Profile) (err error) {

@@ -9,10 +9,9 @@ import (
 	"github.com/op/go-logging"
 )
 
-var log *logging.Logger
+var log *logging.Logger = kr.SetupLogging("krd", logging.INFO, true)
 
 func main() {
-	log = kr.SetupLogging("krd", logging.INFO, true)
 	SetBTLogger(log)
 	daemonSocket, err := kr.DaemonListen()
 	if err != nil {
