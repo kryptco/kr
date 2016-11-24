@@ -1,3 +1,5 @@
+// +build !nobluetooth
+
 package main
 
 import (
