@@ -1,6 +1,8 @@
 package kr
 
 import (
+	"bytes"
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
@@ -46,23 +48,38 @@ type ResponseTransport struct {
 func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error) {
 	t.Lock()
 	defer t.Unlock()
+	me, sk, _ := TestMe(t.T)
 	var request Request
-	json.Unmarshal(m, &request)
+	err = json.Unmarshal(m, &request)
+	if err != nil {
+		t.T.Fatal(err)
+	}
+	response := Response{
+		RequestID: request.RequestID,
+	}
 	if request.MeRequest != nil {
-		testMe, _, _ := TestMe(t.T)
-		resp, err := json.Marshal(Response{
-			RequestID: request.RequestID,
-			MeResponse: &MeResponse{
-				Me: testMe,
-			},
-		})
-		if err != nil {
-			log.Fatal(err)
+		response.MeResponse = &MeResponse{
+			Me: me,
 		}
-		t.responses = append(t.responses, resp)
 	}
 	if request.SignRequest != nil {
+		fp := me.PublicKeyFingerprint()
+		if !bytes.Equal(request.SignRequest.PublicKeyFingerprint, fp[:]) {
+			t.Fatal("wrong public key")
+		}
+		sig, err := sk.Sign(rand.Reader, request.SignRequest.Digest, crypto.SHA256)
+		if err != nil {
+			t.T.Fatal(err)
+		}
+		response.SignResponse = &SignResponse{
+			Signature: &sig,
+		}
 	}
+	respJson, err := json.Marshal(response)
+	if err != nil {
+		t.T.Fatal(err)
+	}
+	t.responses = append(t.responses, respJson)
 	return
 }
 
@@ -74,7 +91,7 @@ func (t *ResponseTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err e
 	for _, responseBytes := range t.responses {
 		ctxt, err := ps.EncryptMessage(responseBytes)
 		if err != nil {
-			log.Fatal(err)
+			t.T.Fatal(err)
 		}
 		ciphertexts = append(ciphertexts, ctxt)
 	}
