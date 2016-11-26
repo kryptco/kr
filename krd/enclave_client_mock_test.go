@@ -13,6 +13,8 @@ var testMe kr.Profile = kr.Profile{
 }
 
 type mockedEnclaveClient struct {
+	kr.Transport
+	kr.Persister
 	pairingSecret  *kr.PairingSecret
 	timeout        bool
 	pairedOverride bool
