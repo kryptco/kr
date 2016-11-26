@@ -48,14 +48,6 @@ func (ec *mockedEnclaveClient) RequestSignature(kr.SignRequest) (response *kr.Si
 	}
 	return
 }
-func (ec *mockedEnclaveClient) RequestList(kr.ListRequest) (response *kr.ListResponse, err error) {
-	if ec.timeout {
-		err = ErrTimeout
-		return
-	}
-	response = &kr.ListResponse{}
-	return
-}
 func (ec *mockedEnclaveClient) RequestNoOp() (err error) {
 	if ec.timeout {
 		err = ErrTimeout

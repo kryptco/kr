@@ -61,6 +61,16 @@ func UnwrapKey(c, pk, sk []byte) (key []byte, err error) {
 	return
 }
 
+func WrapKey(symmetricKey, pk []byte) (c []byte, err error) {
+	encryptedKey, err := sodiumBoxSeal(symmetricKey, pk)
+	if err != nil {
+		return
+	}
+
+	c = append([]byte{HEADER_WRAPPED_KEY}, encryptedKey...)
+	return
+}
+
 func GenSymmetricSecretKey() (key SymmetricSecretKey, err error) {
 	keyBytes, err := RandNBytes(AES_KEY_NUM_BYTES)
 	if err != nil {

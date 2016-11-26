@@ -235,61 +235,6 @@ func addCommand(c *cli.Context) (err error) {
 	return
 }
 
-func listCommand(c *cli.Context) (err error) {
-	if len(c.Args()) == 0 {
-		PrintFatal("usage: kr list <user@server or SSH alias>")
-	}
-	server := c.Args()[0]
-
-	peers, err := krdclient.RequestList()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-	me, err := krdclient.RequestMe()
-	if err != nil {
-		PrintFatal(err.Error())
-	}
-
-	profilesByWireB64 := map[string]kr.Profile{}
-	for _, peer := range append(peers, me) {
-		profilesByWireB64[base64.StdEncoding.EncodeToString(peer.SSHWirePublicKey)] = peer
-	}
-
-	authorizedKeysBuffer := bytes.Buffer{}
-	sshCommand := exec.Command("ssh", server, "cat ~/.ssh/authorized_keys")
-	sshCommand.Stdout = &authorizedKeysBuffer
-	sshCommand.Stderr = os.Stderr
-	err = sshCommand.Run()
-
-	authorizedKeysBytes := authorizedKeysBuffer.Bytes()
-	var key ssh.PublicKey
-	var comment string
-	nPeers := 0
-	nUnknown := 0
-	for {
-		key, comment, _, authorizedKeysBytes, err = ssh.ParseAuthorizedKey(authorizedKeysBytes)
-		if err == nil {
-			wireB64 := base64.StdEncoding.EncodeToString(key.Marshal())
-			if peer, ok := profilesByWireB64[wireB64]; ok {
-				color.Green(peer.Email)
-				nPeers++
-			} else {
-				if comment == "" {
-					color.Yellow("Unknown Key")
-				} else {
-					color.Yellow("Unknown Key (" + comment + ")")
-				}
-				nUnknown++
-			}
-			fmt.Printf("%s %s\n\n", key.Type(), wireB64)
-		} else if err != nil || len(authorizedKeysBytes) == 0 {
-			break
-		}
-	}
-	fmt.Printf("Found %s and %s\n", color.GreenString("%d Peer Keys", nPeers), color.YellowString("%d Unknown Keys", nUnknown))
-	return
-}
-
 func githubCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr("Public key copied to clipboard.")

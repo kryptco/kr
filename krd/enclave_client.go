@@ -66,7 +66,6 @@ type EnclaveClientI interface {
 	RequestMe(longTimeout bool) (*kr.MeResponse, error)
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
-	RequestList(kr.ListRequest) (*kr.ListResponse, error)
 	RequestNoOp() error
 }
 
@@ -359,23 +358,6 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 		if signResponse.Error != nil {
 			log.Error("Signature error:", signResponse.Error)
 		}
-	}
-	return
-}
-func (client *EnclaveClient) RequestList(listRequest kr.ListRequest) (listResponse *kr.ListResponse, err error) {
-	request, err := kr.NewRequest()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	request.ListRequest = &listRequest
-	callback, err := client.tryRequest(request, 10*time.Second, 5*time.Second, "Incoming kr peers request. Open Kryptonite to continue.")
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	if callback != nil {
-		listResponse = callback.response.ListResponse
 	}
 	return
 }

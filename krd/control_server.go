@@ -118,11 +118,6 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if enclaveRequest.ListRequest != nil {
-		cs.handleEnclaveList(w, enclaveRequest)
-		return
-	}
-
 	cs.enclaveClient.RequestNoOp()
 
 	w.WriteHeader(http.StatusOK)
@@ -161,33 +156,6 @@ func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest k
 	if err != nil {
 		log.Error(err)
 		return
-	}
-}
-
-func (cs *ControlServer) handleEnclaveList(w http.ResponseWriter, enclaveRequest kr.Request) {
-	listResponse, err := cs.enclaveClient.RequestList(*enclaveRequest.ListRequest)
-	if err != nil {
-		log.Error("list request error:", err)
-		switch err {
-		case ErrNotPaired:
-			w.WriteHeader(http.StatusNotFound)
-		default:
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-		return
-	}
-	if listResponse != nil {
-		response := kr.Response{
-			RequestID:    enclaveRequest.RequestID,
-			ListResponse: listResponse,
-		}
-		err = json.NewEncoder(w).Encode(response)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-	} else {
-		w.WriteHeader(http.StatusNotFound)
 	}
 }
 

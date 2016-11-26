@@ -34,26 +34,6 @@ func RequestMe() (me kr.Profile, err error) {
 	return
 }
 
-func RequestList() (profiles []kr.Profile, err error) {
-	meRequest, err := kr.NewRequest()
-	if err != nil {
-		return
-	}
-	meRequest.ListRequest = &kr.ListRequest{}
-
-	response, err := makeRequestWithJsonResponse(meRequest)
-	if err != nil {
-		return
-	}
-
-	if response.ListResponse != nil {
-		profiles = response.ListResponse.Profiles
-		return
-	}
-	err = fmt.Errorf("Response missing profile")
-	return
-}
-
 func makeRequestWithJsonResponse(request kr.Request) (response kr.Response, err error) {
 	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {

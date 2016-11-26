@@ -12,7 +12,7 @@ import (
 var ErrNotPaired = fmt.Errorf("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
 var ErrTimedOut = fmt.Errorf("Request timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.")
 var ErrSigning = fmt.Errorf("Kryptonite was unable to perform SSH login. Please restart the Kryptonite app on your phone.")
-var ErrRejected = fmt.Errorf("Rejected by Kryptonite.")
+var ErrRejected = fmt.Errorf("Request Rejected ✘")
 
 func RequestMe() (me kr.Profile, err error) {
 	meRequest, err := kr.NewRequest()
@@ -28,26 +28,6 @@ func RequestMe() (me kr.Profile, err error) {
 
 	if response.MeResponse != nil {
 		me = response.MeResponse.Me
-		return
-	}
-	err = fmt.Errorf("Response missing profile")
-	return
-}
-
-func RequestList() (profiles []kr.Profile, err error) {
-	meRequest, err := kr.NewRequest()
-	if err != nil {
-		return
-	}
-	meRequest.ListRequest = &kr.ListRequest{}
-
-	response, err := makeRequestWithJsonResponse(meRequest)
-	if err != nil {
-		return
-	}
-
-	if response.ListResponse != nil {
-		profiles = response.ListResponse.Profiles
 		return
 	}
 	err = fmt.Errorf("Response missing profile")

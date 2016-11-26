@@ -15,7 +15,6 @@ type Request struct {
 	Version       semver.Version `json:"v"`
 	SendACK       bool           `json:"a"`
 	SignRequest   *SignRequest   `json:"sign_request"`
-	ListRequest   *ListRequest   `json:"list_request"`
 	MeRequest     *MeRequest     `json:"me_request"`
 	UnpairRequest *UnpairRequest `json:"unpair_request"`
 }
@@ -38,7 +37,6 @@ type Response struct {
 	RequestID      string          `json:"request_id"`
 	Version        semver.Version  `json:"v"`
 	SignResponse   *SignResponse   `json:"sign_response"`
-	ListResponse   *ListResponse   `json:"list_response"`
 	MeResponse     *MeResponse     `json:"me_response"`
 	UnpairResponse *UnpairResponse `json:"unpair_response"`
 	AckResponse    *AckResponse    `json:"ack_response"`
@@ -60,14 +58,6 @@ type SignResponse struct {
 	Error     *string `json:"error"`
 }
 
-type ListRequest struct {
-	EmailFilter *string `json:"email_filter"`
-}
-
-type ListResponse struct {
-	Profiles []Profile `json:"profiles"`
-}
-
 type MeRequest struct{}
 
 type MeResponse struct {
@@ -87,7 +77,7 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 }
 
 func (request Request) IsNoOp() bool {
-	return request.SignRequest == nil && request.MeRequest == nil && request.UnpairRequest == nil && request.ListRequest == nil
+	return request.SignRequest == nil && request.MeRequest == nil && request.UnpairRequest == nil
 }
 
 type UnpairRequest struct{}
