@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"path/filepath"
 
 	"github.com/agrinman/kr"
 )
@@ -12,9 +13,19 @@ type ControlServer struct {
 	enclaveClient EnclaveClientI
 }
 
-func NewControlServer() *ControlServer {
-	cs := &ControlServer{UnpairedEnclaveClient(kr.AWSTransport{})}
-	return cs
+func NewControlServer() (cs *ControlServer, err error) {
+	krdir, err := kr.KrDir()
+	if err != nil {
+		return
+	}
+	cs = &ControlServer{UnpairedEnclaveClient(
+		kr.AWSTransport{},
+		kr.FilePersister{
+			PairingDir: krdir,
+			SSHDir:     filepath.Join(kr.UnsudoedHomeDir(), ".ssh"),
+		},
+	)}
+	return
 }
 
 func (cs *ControlServer) HandleControlHTTP(listener net.Listener) (err error) {

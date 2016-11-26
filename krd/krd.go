@@ -19,7 +19,10 @@ func main() {
 	}
 	defer daemonSocket.Close()
 
-	controlServer := NewControlServer()
+	controlServer, err := NewControlServer()
+	if err != nil {
+		log.Fatal(err)
+	}
 	go func() {
 		controlServer.enclaveClient.Start()
 		err := controlServer.HandleControlHTTP(daemonSocket)

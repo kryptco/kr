@@ -73,6 +73,7 @@ type EnclaveClientI interface {
 type EnclaveClient struct {
 	sync.Mutex
 	kr.Transport
+	kr.Persister
 	pairingSecret               *kr.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
 	ackedRequestIDs             *lru.Cache
@@ -121,8 +122,8 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 	if ec.pairingSecret != nil {
 		ec.unpair(ec.pairingSecret, true)
 	}
-	kr.DeletePairing()
-	kr.DeleteMe()
+	ec.Persister.DeleteMe()
+	ec.Persister.DeletePairing()
 
 	pairingSecret, err := kr.GeneratePairingSecret()
 	if err != nil {
@@ -140,7 +141,7 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 	ec.pairingSecret = pairingSecret
 	ec.outgoingQueue = [][]byte{}
 
-	savePairingErr := kr.SavePairing(pairingSecret)
+	savePairingErr := ec.Persister.SavePairing(pairingSecret)
 	if savePairingErr != nil {
 		log.Error("error saving pairing:", savePairingErr.Error())
 	}
@@ -154,8 +155,8 @@ func (ec *EnclaveClient) unpair(pairingSecret *kr.PairingSecret, sendUnpairReque
 	ec.deactivatePairing(pairingSecret)
 	ec.cachedMe = nil
 	ec.pairingSecret = nil
-	kr.DeletePairing()
-	kr.DeleteMe()
+	ec.Persister.DeleteMe()
+	ec.Persister.DeletePairing()
 	if sendUnpairRequest {
 		func() {
 			unpairRequest, err := kr.NewRequest()
@@ -221,14 +222,14 @@ func (ec *EnclaveClient) Stop() (err error) {
 func (ec *EnclaveClient) Start() (err error) {
 	ec.Lock()
 	defer ec.Unlock()
-	loadedPairing, loadErr := kr.LoadPairing()
+	loadedPairing, loadErr := ec.Persister.LoadPairing()
 	if loadErr == nil && loadedPairing != nil {
 		ec.pairingSecret = loadedPairing
 	} else {
 		log.Notice("pairing not loaded:", loadErr)
 	}
 
-	if loadedMe, loadMeErr := kr.LoadMe(); loadMeErr == nil {
+	if loadedMe, loadMeErr := ec.Persister.LoadMe(); loadMeErr == nil {
 		ec.cachedMe = &loadedMe
 	} else {
 		log.Notice("me not loaded:", loadErr)
@@ -282,9 +283,10 @@ func (ec *EnclaveClient) postEvent(category string, action string, label *string
 	}
 }
 
-func UnpairedEnclaveClient(transport kr.Transport) EnclaveClientI {
+func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister) EnclaveClientI {
 	return &EnclaveClient{
 		Transport:                   transport,
+		Persister:                   persister,
 		requestCallbacksByRequestID: lru.New(128),
 		ackedRequestIDs:             lru.New(128),
 	}
@@ -312,7 +314,7 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 		if meResponse != nil {
 			client.Lock()
 			client.cachedMe = &meResponse.Me
-			if persistErr := kr.PersistMe(meResponse.Me); persistErr != nil {
+			if persistErr := client.Persister.SaveMe(meResponse.Me); persistErr != nil {
 				log.Error("persist me error:", persistErr.Error())
 			}
 			client.Unlock()
@@ -549,7 +551,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 		client.outgoingQueue = [][]byte{}
 		client.Unlock()
 
-		savePairingErr := kr.SavePairing(pairingSecret)
+		savePairingErr := client.Persister.SavePairing(pairingSecret)
 		if savePairingErr != nil {
 			log.Error("error saving pairing:", savePairingErr.Error())
 		}
@@ -640,17 +642,17 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 	if client.pairingSecret != nil && client.pairingSecret.Equals(fromPairing) {
 		if response.SNSEndpointARN != nil {
 			client.pairingSecret.SetSNSEndpointARN(response.SNSEndpointARN)
-			kr.SavePairing(client.pairingSecret)
+			client.Persister.SavePairing(client.pairingSecret)
 		}
 		if response.ApprovedUntil != client.pairingSecret.ApprovedUntil {
 			client.pairingSecret.ApprovedUntil = response.ApprovedUntil
-			kr.SavePairing(client.pairingSecret)
+			client.Persister.SavePairing(client.pairingSecret)
 		}
 
 		oldTID := client.pairingSecret.GetTrackingID()
 		if response.TrackingID != nil && (oldTID == nil || *response.TrackingID != *oldTID) {
 			client.pairingSecret.SetTrackingID(response.TrackingID)
-			kr.SavePairing(client.pairingSecret)
+			client.Persister.SavePairing(client.pairingSecret)
 		}
 	}
 
