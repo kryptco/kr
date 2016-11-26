@@ -72,6 +72,7 @@ type EnclaveClientI interface {
 type EnclaveClient struct {
 	sync.Mutex
 	kr.Transport
+	Timeouts
 	kr.Persister
 	pairingSecret               *kr.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
@@ -286,6 +287,7 @@ func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister) Encla
 	return &EnclaveClient{
 		Transport:                   transport,
 		Persister:                   persister,
+		Timeouts:                    DefaultTimeouts(),
 		requestCallbacksByRequestID: lru.New(128),
 		ackedRequestIDs:             lru.New(128),
 	}
@@ -298,11 +300,11 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
-	timeout := 5 * time.Second
+	timeout := client.Timeouts.Me.Fail
 	if longTimeout {
-		timeout = 90 * time.Second
+		timeout = client.Timeouts.Pair.Fail
 	}
-	callback, err := client.tryRequest(meRequest, timeout, 4*time.Second, "Incoming kr me request. Open Kryptonite to continue.")
+	callback, err := client.tryRequest(meRequest, timeout, client.Timeouts.Me.Alert, "Incoming kr me request. Open Kryptonite to continue.")
 	if err != nil {
 		log.Error(err)
 		return
@@ -331,14 +333,12 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 		return
 	}
 	request.SignRequest = &signRequest
-	requestTimeout := 30 * time.Second
-	alertTimeout := 8 * time.Second
 	alertText := "Incoming SSH request. Open Kryptonite to continue."
 	ps := client.getPairingSecret()
 	if ps != nil {
 		alertText = "Request from " + ps.DisplayName()
 	}
-	callback, err := client.tryRequest(request, requestTimeout, alertTimeout, alertText)
+	callback, err := client.tryRequest(request, client.Timeouts.Sign.Fail, client.Timeouts.Sign.Alert, alertText)
 	if err != nil {
 		if err == ErrTimeout {
 			client.postEvent("signature", "timeout", nil, nil)
@@ -406,7 +406,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 				if callback != nil && callback.response.AckResponse != nil {
 					ack = true
 					log.Notice("request", callback.response.RequestID, "ACKed")
-					timeoutChan = time.After(time.Second * 60)
+					timeoutChan = time.After(client.Timeouts.ACKDelay)
 					break
 				}
 				return
@@ -495,7 +495,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 		client.Unlock()
 		timeout := timeoutAt
 		if requestAcked {
-			timeout = timeout.Add(time.Second * 60)
+			timeout = timeout.Add(client.Timeouts.ACKDelay)
 		}
 		if err != nil || (n == 0 && time.Now().After(timeout)) || !requestPending {
 			if err != nil {
