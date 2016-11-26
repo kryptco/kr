@@ -57,6 +57,7 @@ func (err *ProtoError) Error() string {
 }
 
 type EnclaveClientI interface {
+	kr.Transport
 	Pair() (pairing *kr.PairingSecret, err error)
 	IsPaired() bool
 	Unpair()
@@ -71,6 +72,7 @@ type EnclaveClientI interface {
 
 type EnclaveClient struct {
 	sync.Mutex
+	kr.Transport
 	pairingSecret               *kr.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
 	ackedRequestIDs             *lru.Cache
@@ -122,11 +124,18 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 	kr.DeletePairing()
 	kr.DeleteMe()
 
-	pairingSecret, err := kr.GeneratePairingSecretAndCreateQueues()
+	pairingSecret, err := kr.GeneratePairingSecret()
 	if err != nil {
 		log.Error(err)
 		return
 	}
+
+	err = ec.Transport.Setup(pairingSecret)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
 	//	erase any existing pairing
 	ec.pairingSecret = pairingSecret
 	ec.outgoingQueue = [][]byte{}
@@ -273,8 +282,9 @@ func (ec *EnclaveClient) postEvent(category string, action string, label *string
 	}
 }
 
-func UnpairedEnclaveClient() EnclaveClientI {
+func UnpairedEnclaveClient(transport kr.Transport) EnclaveClientI {
 	return &EnclaveClient{
+		Transport:                   transport,
 		requestCallbacksByRequestID: lru.New(128),
 		ackedRequestIDs:             lru.New(128),
 	}
@@ -432,7 +442,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 					continue
 				}
 				if ps != nil {
-					ps.PushAlert(alertText, requestJson)
+					client.Transport.PushAlert(ps, alertText, requestJson)
 				}
 			}
 		}
@@ -476,7 +486,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, 
 	}
 
 	receive := func() (numReceived int, err error) {
-		ciphertexts, err := pairingSecret.ReadQueue()
+		ciphertexts, err := client.Transport.Read(pairingSecret)
 		if err != nil {
 			err = &RecvError{err}
 			return
@@ -596,7 +606,7 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		}
 	}()
 
-	err = pairingSecret.SendMessage(message)
+	err = client.Transport.SendMessage(pairingSecret, message)
 	if err != nil {
 		err = &SendError{err}
 		return

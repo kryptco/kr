@@ -13,7 +13,7 @@ type ControlServer struct {
 }
 
 func NewControlServer() *ControlServer {
-	cs := &ControlServer{UnpairedEnclaveClient()}
+	cs := &ControlServer{UnpairedEnclaveClient(kr.AWSTransport{})}
 	return cs
 }
 
