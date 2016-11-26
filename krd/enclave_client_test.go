@@ -15,7 +15,33 @@ func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {
 	return UnpairedEnclaveClient(
 		transport,
 		&kr.MemoryPersister{},
+		nil,
 	)
+}
+
+func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
+	shortTimeouts := Timeouts{
+		Me: TimeoutPhases{
+			Alert: 100 * time.Millisecond,
+			Fail:  200 * time.Millisecond,
+		},
+		Pair: TimeoutPhases{
+			Alert: 100 * time.Millisecond,
+			Fail:  200 * time.Millisecond,
+		},
+		Sign: TimeoutPhases{
+			Alert: 100 * time.Millisecond,
+			Fail:  200 * time.Millisecond,
+		},
+		ACKDelay: 100 * time.Millisecond,
+	}
+
+	ec := UnpairedEnclaveClient(
+		transport,
+		&kr.MemoryPersister{},
+		&shortTimeouts,
+	)
+	return ec
 }
 
 func TestPair(t *testing.T) {
@@ -43,6 +69,16 @@ func TestMultiPair(t *testing.T) {
 func TestMe(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
+	testMe(t, ec)
+}
+
+func TestMeAlert(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, RespondToAlertOnly: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	testMe(t, ec)
+}
+
+func testMe(t *testing.T, ec EnclaveClientI) {
 	pairClient(t, ec)
 	defer ec.Stop()
 
@@ -63,6 +99,16 @@ func TestMe(t *testing.T) {
 func TestSignature(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
+	testSignature(t, ec)
+}
+
+func TestSignatureAlert(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, RespondToAlertOnly: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	testSignature(t, ec)
+}
+
+func testSignature(t *testing.T, ec EnclaveClientI) {
 	pairClient(t, ec)
 	defer ec.Stop()
 

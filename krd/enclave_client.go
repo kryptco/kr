@@ -283,11 +283,15 @@ func (ec *EnclaveClient) postEvent(category string, action string, label *string
 	}
 }
 
-func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister) EnclaveClientI {
+func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeoutsOverride *Timeouts) EnclaveClientI {
+	var timeouts = DefaultTimeouts()
+	if timeoutsOverride != nil {
+		timeouts = *timeoutsOverride
+	}
 	return &EnclaveClient{
 		Transport:                   transport,
 		Persister:                   persister,
-		Timeouts:                    DefaultTimeouts(),
+		Timeouts:                    timeouts,
 		requestCallbacksByRequestID: lru.New(128),
 		ackedRequestIDs:             lru.New(128),
 	}

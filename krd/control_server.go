@@ -24,6 +24,7 @@ func NewControlServer() (cs *ControlServer, err error) {
 			PairingDir: krdir,
 			SSHDir:     filepath.Join(kr.UnsudoedHomeDir(), ".ssh"),
 		},
+		nil,
 	)}
 	return
 }

@@ -42,13 +42,12 @@ type ResponseTransport struct {
 	ImmediatePairTransport
 	*testing.T
 	sync.Mutex
-	responses [][]byte
-	sentNoOps int
+	responses          [][]byte
+	sentNoOps          int
+	RespondToAlertOnly bool
 }
 
-func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error) {
-	t.Lock()
-	defer t.Unlock()
+func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte) (err error) {
 	me, sk, _ := TestMe(t.T)
 	var request Request
 	err = json.Unmarshal(m, &request)
@@ -85,6 +84,23 @@ func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error)
 		t.T.Fatal(err)
 	}
 	t.responses = append(t.responses, respJson)
+	return
+}
+
+func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error) {
+	t.Lock()
+	defer t.Unlock()
+	if t.RespondToAlertOnly {
+		return
+	}
+	err = t.respondToMessage(ps, m)
+	return
+}
+
+func (t *ResponseTransport) PushAlert(ps *PairingSecret, alertText string, message []byte) (err error) {
+	t.Lock()
+	defer t.Unlock()
+	err = t.respondToMessage(ps, message)
 	return
 }
 
