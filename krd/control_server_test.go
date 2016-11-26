@@ -10,7 +10,7 @@ import (
 )
 
 func TestControlServerPair(t *testing.T) {
-	cs := ControlServer{&mockedEnclaveClient{}}
+	cs := ControlServer{&mockedEnclaveClient{T: t}}
 	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -29,7 +29,7 @@ func TestControlServerPair(t *testing.T) {
 }
 
 func TestControlServerMe(t *testing.T) {
-	ec := &mockedEnclaveClient{}
+	ec := &mockedEnclaveClient{T: t}
 	cs := ControlServer{ec}
 	request, err := kr.NewRequest()
 	if err != nil {
@@ -61,13 +61,14 @@ func TestControlServerMe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !meResponse.MeResponse.Me.Equal(testMe) {
+	me, _, _ := kr.TestMe(t)
+	if !meResponse.MeResponse.Me.Equal(me) {
 		t.Fatal("profiles unequal")
 	}
 }
 
 func TestControlServerSign(t *testing.T) {
-	ec := &mockedEnclaveClient{}
+	ec := &mockedEnclaveClient{T: t}
 	cs := ControlServer{ec}
 	request, err := kr.NewRequest()
 	if err != nil {
@@ -105,7 +106,7 @@ func TestControlServerSign(t *testing.T) {
 }
 
 func TestControlServerPing(t *testing.T) {
-	cs := ControlServer{&mockedEnclaveClient{}}
+	cs := ControlServer{&mockedEnclaveClient{T: t}}
 	pingRequest, err := http.NewRequest("GET", "/ping", nil)
 	if err != nil {
 		t.Fatal(err)

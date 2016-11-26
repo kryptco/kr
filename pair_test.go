@@ -15,13 +15,12 @@ func TestGenWrapEncDec(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	encryptedKey, err := sodiumBoxSeal(sessionKey, ps.WorkstationPublicKey)
+	encryptedKey, err := WrapKey(sessionKey, ps.WorkstationPublicKey)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	wrappedKeyMessage := append([]byte{HEADER_WRAPPED_KEY}, encryptedKey...)
-	remaining, didUnwrap, err := ps.UnwrapKeyIfPresent(wrappedKeyMessage)
+	remaining, didUnwrap, err := ps.UnwrapKeyIfPresent(encryptedKey)
 	if err != nil {
 		t.Fatal(err)
 	}
