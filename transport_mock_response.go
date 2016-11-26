@@ -43,6 +43,7 @@ type ResponseTransport struct {
 	*testing.T
 	sync.Mutex
 	responses [][]byte
+	sentNoOps int
 }
 
 func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error) {
@@ -53,6 +54,10 @@ func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error)
 	err = json.Unmarshal(m, &request)
 	if err != nil {
 		t.T.Fatal(err)
+	}
+	if request.IsNoOp() {
+		t.sentNoOps += 1
+		return
 	}
 	response := Response{
 		RequestID: request.RequestID,
@@ -96,6 +101,11 @@ func (t *ResponseTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err e
 		ciphertexts = append(ciphertexts, ctxt)
 	}
 	t.responses = [][]byte{}
-
 	return
+}
+
+func (t *ResponseTransport) GetSentNoOps() int {
+	t.Lock()
+	defer t.Unlock()
+	return t.sentNoOps
 }

@@ -54,6 +54,10 @@ func TestMe(t *testing.T) {
 	if !me.Me.Equal(testMe) {
 		t.Fatal("unexpected profile")
 	}
+	cachedMe := ec.GetCachedMe()
+	if cachedMe == nil || !cachedMe.Equal(testMe) {
+		t.Fatal("bad cached profile")
+	}
 }
 
 func TestSignature(t *testing.T) {
@@ -70,7 +74,6 @@ func TestSignature(t *testing.T) {
 
 	me, sk, _ := kr.TestMe(t)
 	fp := me.PublicKeyFingerprint()
-
 	signResponse, err := ec.RequestSignature(kr.SignRequest{
 		PublicKeyFingerprint: fp[:],
 		Digest:               digest[:],
@@ -81,6 +84,19 @@ func TestSignature(t *testing.T) {
 	if signResponse == nil || signResponse.Signature == nil || rsa.VerifyPKCS1v15(&sk.PublicKey, crypto.SHA256, digest[:], *signResponse.Signature) != nil {
 		t.Fatal("invalid sign response")
 	}
+}
+
+func TestNoOp(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
+	pairClient(t, ec)
+	defer ec.Stop()
+
+	go ec.RequestNoOp()
+
+	kr.TrueBefore(t, func() bool {
+		return transport.GetSentNoOps() > 0
+	}, time.Now().Add(time.Second))
 }
 
 func pairClient(t *testing.T, client EnclaveClientI) (ps *kr.PairingSecret) {

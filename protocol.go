@@ -86,6 +86,10 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 	return
 }
 
+func (request Request) IsNoOp() bool {
+	return request.SignRequest == nil && request.MeRequest == nil && request.UnpairRequest == nil && request.ListRequest == nil
+}
+
 type UnpairRequest struct{}
 
 type UnpairResponse struct{}
