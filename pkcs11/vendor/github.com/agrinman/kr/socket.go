@@ -12,23 +12,37 @@ import (
 )
 
 //	Find home directory of logged-in user even when run as sudo
-func KrDirFile(file string) (fullPath string, err error) {
+func UnsudoedHomeDir() (home string) {
 	userName := os.Getenv("SUDO_USER")
 	if userName == "" {
 		userName = os.Getenv("USER")
 	}
 	user, err := user.Lookup(userName)
-	var userHome string
 	if err == nil && user != nil {
-		userHome = user.HomeDir
+		home = user.HomeDir
 	} else {
 		log.Notice("falling back to $HOME")
-		userHome = os.Getenv("HOME")
+		home = os.Getenv("HOME")
 		err = nil
 	}
+	return
+}
 
-	krPath := filepath.Join(userHome, ".kr")
+func KrDir() (krPath string, err error) {
+	home := UnsudoedHomeDir()
+	if err != nil {
+		return
+	}
+	krPath = filepath.Join(home, ".kr")
 	err = os.MkdirAll(krPath, os.FileMode(0700))
+	return
+}
+
+func KrDirFile(file string) (fullPath string, err error) {
+	krPath, err := KrDir()
+	if err != nil {
+		return
+	}
 	fullPath = filepath.Join(krPath, file)
 	return
 }

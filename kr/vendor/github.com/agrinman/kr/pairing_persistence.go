@@ -1,11 +1,5 @@
 package kr
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-)
-
 const PAIRING_FILENAME = "pairing.json"
 
 type persistedPairing struct {
@@ -40,45 +34,4 @@ func pairingFromPersisted(pp *persistedPairing) *PairingSecret {
 		ApprovedUntil:        pp.ApprovedUntil,
 		trackingID:           pp.TrackingID,
 	}
-}
-
-func LoadPairing() (pairingSecret *PairingSecret, err error) {
-	path, err := KrDirFile(PAIRING_FILENAME)
-	if err != nil {
-		return
-	}
-	pairingJson, err := ioutil.ReadFile(path)
-	if err != nil {
-		return
-	}
-	var pp persistedPairing
-	err = json.Unmarshal(pairingJson, &pp)
-	if err != nil {
-		return
-	}
-	ps := pairingFromPersisted(&pp)
-	pairingSecret = ps
-	return
-}
-
-func SavePairing(pairingSecret *PairingSecret) (err error) {
-	path, err := KrDirFile(PAIRING_FILENAME)
-	if err != nil {
-		return
-	}
-	pairingJson, err := json.Marshal(pairingToPersisted(pairingSecret))
-	if err != nil {
-		return
-	}
-	err = ioutil.WriteFile(path, pairingJson, os.FileMode(0700))
-	return
-}
-
-func DeletePairing() (pairingSecret *PairingSecret, err error) {
-	path, err := KrDirFile(PAIRING_FILENAME)
-	if err != nil {
-		return
-	}
-	err = os.Remove(path)
-	return
 }
