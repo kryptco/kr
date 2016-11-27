@@ -86,11 +86,8 @@ func TestMeTimeout(t *testing.T) {
 	defer ec.Stop()
 
 	me, err := ec.RequestMe(true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if me != nil {
-		t.Fatal("expected nil response")
+	if me != nil && err != ErrTimeout {
+		t.Fatal("expected nil response or timeout")
 	}
 }
 

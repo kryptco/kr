@@ -10,7 +10,30 @@ import (
 )
 
 func TestControlServerPair(t *testing.T) {
-	cs := ControlServer{&mockedEnclaveClient{T: t}}
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
+	cs := ControlServer{ec}
+	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recorder := httptest.NewRecorder()
+	cs.handlePair(recorder, pairRequest)
+	resp := recorder.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("non-200 status")
+	}
+	var pairingSecret kr.PairingSecret
+	err = json.NewDecoder(resp.Body).Decode(&pairingSecret)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestControlServerUnpair(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
+	cs := ControlServer{ec}
 	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -29,7 +52,8 @@ func TestControlServerPair(t *testing.T) {
 }
 
 func TestControlServerMe(t *testing.T) {
-	ec := &mockedEnclaveClient{T: t}
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
 	cs := ControlServer{ec}
 	request, err := kr.NewRequest()
 	if err != nil {
@@ -48,7 +72,9 @@ func TestControlServerMe(t *testing.T) {
 		t.Fatal("expected 404, not paired")
 	}
 
-	ec.pairedOverride = true
+	pairClient(t, ec)
+	defer ec.Stop()
+
 	recorder = httptest.NewRecorder()
 	cs.handleEnclave(recorder, meRequest)
 	resp = recorder.Result()
@@ -68,13 +94,20 @@ func TestControlServerMe(t *testing.T) {
 }
 
 func TestControlServerSign(t *testing.T) {
-	ec := &mockedEnclaveClient{T: t}
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
 	cs := ControlServer{ec}
 	request, err := kr.NewRequest()
 	if err != nil {
 		t.Fatal(err)
 	}
-	request.SignRequest = &kr.SignRequest{}
+
+	me, _, _ := kr.TestMe(t)
+	digest, err := kr.RandNBytes(32)
+	request.SignRequest = &kr.SignRequest{
+		PublicKeyFingerprint: me.PublicKeyFingerprint(),
+		Digest:               digest,
+	}
 
 	signRequest, err := request.HTTPRequest()
 	if err != nil {
@@ -87,7 +120,9 @@ func TestControlServerSign(t *testing.T) {
 		t.Fatal("expected 404, not paired")
 	}
 
-	ec.pairedOverride = true
+	pairClient(t, ec)
+	defer ec.Stop()
+
 	recorder = httptest.NewRecorder()
 	cs.handleEnclave(recorder, signRequest)
 	resp = recorder.Result()
@@ -100,19 +135,18 @@ func TestControlServerSign(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *signResponse.SignResponse.Error != "unimplemented" {
-		t.Fatal("unexpected mocked response")
-	}
 }
 
 func TestControlServerPing(t *testing.T) {
-	cs := ControlServer{&mockedEnclaveClient{T: t}}
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
+	cs := ControlServer{ec}
 	pingRequest, err := http.NewRequest("GET", "/ping", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	recorder := httptest.NewRecorder()
-	cs.handlePair(recorder, pingRequest)
+	cs.handlePing(recorder, pingRequest)
 	resp := recorder.Result()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatal("non-200 status")
