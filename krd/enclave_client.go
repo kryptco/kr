@@ -394,8 +394,13 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 		log.Warning("timeout == alertTimeout, alert may not fire")
 	}
 	cb := make(chan *callbackT, 5)
+	pairingSecret := client.getPairingSecret()
+	if pairingSecret == nil {
+		err = ErrNotPaired
+		return
+	}
 	go func() {
-		err := client.sendRequestAndReceiveResponses(request, cb, timeout)
+		err := client.sendRequestAndReceiveResponses(pairingSecret, request, cb, timeout)
 		if err != nil {
 			log.Error("error sendRequestAndReceiveResponses: ", err.Error())
 		}
@@ -443,12 +448,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 
 //	Send one request and receive pending responses, not necessarily associated
 //	with this request
-func (client *EnclaveClient) sendRequestAndReceiveResponses(request kr.Request, cb chan *callbackT, timeout time.Duration) (err error) {
-	pairingSecret := client.getPairingSecret()
-	if pairingSecret == nil {
-		err = errors.New("EnclaveClient pairing never initiated")
-		return
-	}
+func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.PairingSecret, request kr.Request, cb chan *callbackT, timeout time.Duration) (err error) {
 	requestJson, err := json.Marshal(request)
 	if err != nil {
 		err = &ProtoError{err}

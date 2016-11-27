@@ -96,12 +96,6 @@ func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 
 //	route request to enclave
 func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
-	if !cs.enclaveClient.IsPaired() {
-		//	not paired
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
 	var enclaveRequest kr.Request
 	err := json.NewDecoder(r.Body).Decode(&enclaveRequest)
 	if err != nil {

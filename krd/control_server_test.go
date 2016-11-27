@@ -28,11 +28,31 @@ func TestControlServerPair(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	getPairRequest, err := http.NewRequest("GET", "/pair", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recorder = httptest.NewRecorder()
+	cs.handlePair(recorder, getPairRequest)
+	resp = recorder.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("non-200 status")
+	}
+	var me kr.Profile
+	err = json.NewDecoder(resp.Body).Decode(&me)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testMe, _, _ := kr.TestMe(t)
+	if !me.Equal(testMe) {
+		t.Fatal("paired profile wrong")
+	}
 }
 
 func TestControlServerUnpair(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
-	ec := NewTestEnclaveClient(transport)
+	ec := NewTestEnclaveClientShortTimeouts(transport)
 	cs := ControlServer{ec}
 	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
 	if err != nil {
@@ -48,6 +68,31 @@ func TestControlServerUnpair(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&pairingSecret)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	unpairRequest, err := http.NewRequest("DELETE", "/pair", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recorder = httptest.NewRecorder()
+	cs.handlePair(recorder, unpairRequest)
+	resp = recorder.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("non-200 status")
+	}
+	if ec.IsPaired() {
+		t.Fatal("client should be unpaired")
+	}
+
+	getPairRequest, err := http.NewRequest("GET", "/pair", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recorder = httptest.NewRecorder()
+	cs.handlePair(recorder, getPairRequest)
+	resp = recorder.Result()
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatal("expected 404 not found")
 	}
 }
 
@@ -75,6 +120,10 @@ func TestControlServerMe(t *testing.T) {
 	pairClient(t, ec)
 	defer ec.Stop()
 
+	meRequest, err = request.HTTPRequest()
+	if err != nil {
+		t.Fatal(err)
+	}
 	recorder = httptest.NewRecorder()
 	cs.handleEnclave(recorder, meRequest)
 	resp = recorder.Result()
@@ -123,6 +172,10 @@ func TestControlServerSign(t *testing.T) {
 	pairClient(t, ec)
 	defer ec.Stop()
 
+	signRequest, err = request.HTTPRequest()
+	if err != nil {
+		t.Fatal(err)
+	}
 	recorder = httptest.NewRecorder()
 	cs.handleEnclave(recorder, signRequest)
 	resp = recorder.Result()
