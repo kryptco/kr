@@ -7,7 +7,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -21,9 +20,7 @@ import (
 	"github.com/agrinman/kr"
 	"github.com/agrinman/kr/krdclient"
 	"github.com/atotto/clipboard"
-	"github.com/fatih/color"
 	"github.com/urfave/cli"
-	"golang.org/x/crypto/ssh"
 )
 
 var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so"
