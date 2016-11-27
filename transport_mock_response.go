@@ -7,18 +7,27 @@ import (
 	"encoding/json"
 	"sync"
 	"testing"
+	"time"
 )
+
+var SHORT_ACK_DELAY = 500 * time.Millisecond
 
 type ResponseTransport struct {
 	ImmediatePairTransport
 	*testing.T
 	sync.Mutex
-	responses          [][]byte
-	sentNoOps          int
-	RespondToAlertOnly bool
+	responses             [][]byte
+	sentNoOps             int
+	RespondToAlertOnly    bool
+	DoNotRespond          bool
+	Ack                   bool
+	SendAfterHalfAckDelay bool
 }
 
-func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte) (err error) {
+func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte, ackSent bool) (err error) {
+	if t.DoNotRespond {
+		return
+	}
 	me, sk, _ := TestMe(t.T)
 	var request Request
 	err = json.Unmarshal(m, &request)
@@ -32,22 +41,34 @@ func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte) (err e
 	response := Response{
 		RequestID: request.RequestID,
 	}
-	if request.MeRequest != nil {
-		response.MeResponse = &MeResponse{
-			Me: me,
+	if request.SendACK && !ackSent && t.Ack {
+		response.AckResponse = &AckResponse{}
+		if t.SendAfterHalfAckDelay {
+			go func() {
+				<-time.After(SHORT_ACK_DELAY / 2)
+				t.Lock()
+				defer t.Unlock()
+				t.respondToMessage(ps, m, true)
+			}()
 		}
-	}
-	if request.SignRequest != nil {
-		fp := me.PublicKeyFingerprint()
-		if !bytes.Equal(request.SignRequest.PublicKeyFingerprint, fp[:]) {
-			t.Fatal("wrong public key")
+	} else {
+		if request.MeRequest != nil {
+			response.MeResponse = &MeResponse{
+				Me: me,
+			}
 		}
-		sig, err := sk.Sign(rand.Reader, request.SignRequest.Digest, crypto.SHA256)
-		if err != nil {
-			t.T.Fatal(err)
-		}
-		response.SignResponse = &SignResponse{
-			Signature: &sig,
+		if request.SignRequest != nil {
+			fp := me.PublicKeyFingerprint()
+			if !bytes.Equal(request.SignRequest.PublicKeyFingerprint, fp[:]) {
+				t.Fatal("wrong public key")
+			}
+			sig, err := sk.Sign(rand.Reader, request.SignRequest.Digest, crypto.SHA256)
+			if err != nil {
+				t.T.Fatal(err)
+			}
+			response.SignResponse = &SignResponse{
+				Signature: &sig,
+			}
 		}
 	}
 	respJson, err := json.Marshal(response)
@@ -64,14 +85,14 @@ func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error)
 	if t.RespondToAlertOnly {
 		return
 	}
-	err = t.respondToMessage(ps, m)
+	err = t.respondToMessage(ps, m, false)
 	return
 }
 
 func (t *ResponseTransport) PushAlert(ps *PairingSecret, alertText string, message []byte) (err error) {
 	t.Lock()
 	defer t.Unlock()
-	err = t.respondToMessage(ps, message)
+	err = t.respondToMessage(ps, message, false)
 	return
 }
 

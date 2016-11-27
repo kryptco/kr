@@ -33,7 +33,7 @@ func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
 			Alert: 100 * time.Millisecond,
 			Fail:  200 * time.Millisecond,
 		},
-		ACKDelay: 100 * time.Millisecond,
+		ACKDelay: kr.SHORT_ACK_DELAY,
 	}
 
 	ec := UnpairedEnclaveClient(
@@ -69,16 +69,32 @@ func TestMultiPair(t *testing.T) {
 func TestMe(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	testMe(t, ec)
+	testMeSuccess(t, ec)
 }
 
 func TestMeAlert(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t, RespondToAlertOnly: true}
 	ec := NewTestEnclaveClientShortTimeouts(transport)
-	testMe(t, ec)
+	testMeSuccess(t, ec)
 }
 
-func testMe(t *testing.T, ec EnclaveClientI) {
+func TestMeTimeout(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, DoNotRespond: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+
+	pairClient(t, ec)
+	defer ec.Stop()
+
+	me, err := ec.RequestMe(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if me != nil {
+		t.Fatal("expected nil response")
+	}
+}
+
+func testMeSuccess(t *testing.T, ec EnclaveClientI) {
 	pairClient(t, ec)
 	defer ec.Stop()
 
@@ -99,16 +115,51 @@ func testMe(t *testing.T, ec EnclaveClientI) {
 func TestSignature(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	testSignature(t, ec)
+	testSignatureSuccess(t, ec)
 }
 
 func TestSignatureAlert(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t, RespondToAlertOnly: true}
 	ec := NewTestEnclaveClientShortTimeouts(transport)
-	testSignature(t, ec)
+	testSignatureSuccess(t, ec)
 }
 
-func testSignature(t *testing.T, ec EnclaveClientI) {
+func TestSignatureTimeout(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, DoNotRespond: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	resp, _, err := testSignature(t, ec)
+	if resp != nil && err != ErrTimeout {
+		t.Fatal("expected nil response or timeout")
+	}
+}
+
+func TestSignatureAckDelayWithResponse(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, Ack: true, SendAfterHalfAckDelay: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	testSignatureSuccess(t, ec)
+}
+
+func TestSignatureAckDelayWithoutResponse(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, Ack: true, SendAfterHalfAckDelay: false}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	resp, _, err := testSignature(t, ec)
+	if resp != nil && err != ErrTimeout {
+		t.Fatal("expected nil response or timeout")
+	}
+}
+
+func testSignatureSuccess(t *testing.T, ec EnclaveClientI) {
+	_, sk, _ := kr.TestMe(t)
+	signResponse, digest, err := testSignature(t, ec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if signResponse == nil || signResponse.Signature == nil || rsa.VerifyPKCS1v15(&sk.PublicKey, crypto.SHA256, digest[:], *signResponse.Signature) != nil {
+		t.Fatal("invalid sign response")
+	}
+}
+
+func testSignature(t *testing.T, ec EnclaveClientI) (resp *kr.SignResponse, digest [32]byte, err error) {
 	pairClient(t, ec)
 	defer ec.Stop()
 
@@ -116,20 +167,15 @@ func testSignature(t *testing.T, ec EnclaveClientI) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	digest := sha256.Sum256(msg)
+	digest = sha256.Sum256(msg)
 
-	me, sk, _ := kr.TestMe(t)
+	me, _, _ := kr.TestMe(t)
 	fp := me.PublicKeyFingerprint()
 	signResponse, err := ec.RequestSignature(kr.SignRequest{
 		PublicKeyFingerprint: fp[:],
 		Digest:               digest[:],
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if signResponse == nil || signResponse.Signature == nil || rsa.VerifyPKCS1v15(&sk.PublicKey, crypto.SHA256, digest[:], *signResponse.Signature) != nil {
-		t.Fatal("invalid sign response")
-	}
+	return signResponse, digest, err
 }
 
 func TestNoOp(t *testing.T) {
