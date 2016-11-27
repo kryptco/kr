@@ -118,7 +118,7 @@ func TestControlServerMe(t *testing.T) {
 		t.Fatal("expected 404, not paired")
 	}
 
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	meRequest, err = request.HTTPRequest()
@@ -170,7 +170,7 @@ func TestControlServerSign(t *testing.T) {
 		t.Fatal("expected 404, not paired")
 	}
 
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	signRequest, err = request.HTTPRequest()
@@ -211,7 +211,7 @@ func TestControlServerNoOp(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
 	cs := ControlServer{ec}
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	request, err := kr.NewRequest()
