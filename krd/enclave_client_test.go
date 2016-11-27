@@ -66,6 +66,21 @@ func TestMultiPair(t *testing.T) {
 	}
 }
 
+func TestRemoteUnpair(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
+	pairClient(t, ec)
+	defer ec.Stop()
+
+	transport.RemoteUnpair()
+
+	go ec.RequestMe(false)
+
+	kr.TrueBefore(t, func() bool {
+		return !ec.IsPaired()
+	}, time.Now().Add(time.Second))
+}
+
 func TestMe(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/agrinman/kr"
 )
@@ -204,4 +205,32 @@ func TestControlServerPing(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatal("non-200 status")
 	}
+}
+
+func TestControlServerNoOp(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
+	cs := ControlServer{ec}
+	pairClient(t, ec)
+	defer ec.Stop()
+
+	request, err := kr.NewRequest()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	noopRequest, err := request.HTTPRequest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	recorder := httptest.NewRecorder()
+	cs.handleEnclave(recorder, noopRequest)
+	resp := recorder.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("expected 200")
+	}
+
+	kr.TrueBefore(t, func() bool {
+		return transport.GetSentNoOps() > 0
+	}, time.Now().Add(time.Second))
 }

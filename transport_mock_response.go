@@ -117,3 +117,16 @@ func (t *ResponseTransport) GetSentNoOps() int {
 	defer t.Unlock()
 	return t.sentNoOps
 }
+
+func (t *ResponseTransport) RemoteUnpair() {
+	t.Lock()
+	defer t.Unlock()
+	unpairResponse := Response{
+		UnpairResponse: &UnpairResponse{},
+	}
+	respJson, err := json.Marshal(unpairResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.responses = append(t.responses, respJson)
+}
