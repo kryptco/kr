@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/agrinman/kr"
@@ -14,14 +15,14 @@ var ErrTimedOut = fmt.Errorf("Request timed out. Make sure your phone and workst
 var ErrSigning = fmt.Errorf("Kryptonite was unable to perform SSH login. Please restart the Kryptonite app on your phone.")
 var ErrRejected = fmt.Errorf("Request Rejected ✘")
 
-func RequestMe() (me kr.Profile, err error) {
+func requestMeOver(conn net.Conn) (me kr.Profile, err error) {
 	meRequest, err := kr.NewRequest()
 	if err != nil {
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
 
-	response, err := makeRequestWithJsonResponse(meRequest)
+	response, err := makeRequestWithJsonResponse(conn, meRequest)
 	if err != nil {
 		return
 	}
@@ -34,22 +35,26 @@ func RequestMe() (me kr.Profile, err error) {
 	return
 }
 
-func makeRequestWithJsonResponse(request kr.Request) (response kr.Response, err error) {
+func RequestMe() (me kr.Profile, err error) {
 	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		return
 	}
+	requestMeOver(daemonConn)
+	return
+}
 
+func makeRequestWithJsonResponse(conn net.Conn, request kr.Request) (response kr.Response, err error) {
 	httpRequest, err := request.HTTPRequest()
 	if err != nil {
 		return
 	}
-	err = httpRequest.Write(daemonConn)
+	err = httpRequest.Write(conn)
 	if err != nil {
 		return
 	}
 
-	responseReader := bufio.NewReader(daemonConn)
+	responseReader := bufio.NewReader(conn)
 	httpResponse, err := http.ReadResponse(responseReader, httpRequest)
 	if err != nil {
 		return
@@ -75,13 +80,7 @@ func makeRequestWithJsonResponse(request kr.Request) (response kr.Response, err 
 	return
 }
 
-func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
-	daemonConn, err := kr.DaemonDialWithTimeout()
-	if err != nil {
-		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
-		return
-	}
-
+func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	signRequest, err := kr.NewRequest()
 	if err != nil {
 		return
@@ -96,13 +95,13 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	if err != nil {
 		return
 	}
-	err = httpRequest.Write(daemonConn)
+	err = httpRequest.Write(conn)
 	if err != nil {
 		err = fmt.Errorf("Daemon Write error: %s", err.Error())
 		return
 	}
 
-	responseReader := bufio.NewReader(daemonConn)
+	responseReader := bufio.NewReader(conn)
 	httpResponse, err := http.ReadResponse(responseReader, httpRequest)
 	if err != nil {
 		err = fmt.Errorf("Daemon Read error: %s", err.Error())
@@ -146,13 +145,16 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	return
 }
 
-func RequestNoOp() (err error) {
+func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return
 	}
+	return signOver(daemonConn, pkFingerprint, data)
+}
 
+func requestNoOpOver(conn net.Conn) (err error) {
 	noOpRequest, err := kr.NewRequest()
 	if err != nil {
 		return
@@ -162,10 +164,19 @@ func RequestNoOp() (err error) {
 	if err != nil {
 		return
 	}
-	err = httpRequest.Write(daemonConn)
+	err = httpRequest.Write(conn)
 	if err != nil {
 		err = fmt.Errorf("Daemon Write error: %s", err.Error())
 		return
 	}
 	return
+}
+
+func RequestNoOp() (err error) {
+	daemonConn, err := kr.DaemonDialWithTimeout()
+	if err != nil {
+		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
+		return
+	}
+	return requestNoOpOver(daemonConn)
 }

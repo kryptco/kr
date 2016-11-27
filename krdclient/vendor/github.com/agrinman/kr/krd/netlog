@@ -1,0 +1,859 @@
+Nov 14 00:09:36 MacBook-Pro krd[33002]: 00:09:36.849 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 00:09:36 MacBook-Pro krd[33002]: 00:09:36.850 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:09:51 MacBook-Pro krd[33002]: 00:09:51.866 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:09:51 MacBook-Pro krd[33002]: 00:09:51.866 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 00:12:47 MacBook-Pro krd[33002]: 00:12:47.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:12:47 MacBook-Pro krd[33002]: 00:12:47.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:12:47 MacBook-Pro krd[33002]: 00:12:47.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:12:47 MacBook-Pro krd[33002]: 00:12:47.192 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:13:32 MacBook-Pro krd[33002]: 00:13:32.686 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:13:32 MacBook-Pro krd[33002]: 00:13:32.686 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 00:17:26 MacBook-Pro krd[33002]: 00:17:26.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:17:26 MacBook-Pro krd[33002]: 00:17:26.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:17:26 MacBook-Pro krd[33002]: 00:17:26.193 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:17:26 MacBook-Pro krd[33002]: 00:17:26.193 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:18:11 MacBook-Pro krd[33002]: 00:18:11.611 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:18:11 MacBook-Pro krd[33002]: 00:18:11.612 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 00:22:05 MacBook-Pro krd[33002]: 00:22:05.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:22:05 MacBook-Pro krd[33002]: 00:22:05.169 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:22:05 MacBook-Pro krd[33002]: 00:22:05.171 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:22:05 MacBook-Pro krd[33002]: 00:22:05.171 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:22:50 MacBook-Pro krd[33002]: 00:22:50.812 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:22:50 MacBook-Pro krd[33002]: 00:22:50.812 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 00:26:44 MacBook-Pro krd[33002]: 00:26:44.183 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:26:44 MacBook-Pro krd[33002]: 00:26:44.184 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:26:44 MacBook-Pro krd[33002]: 00:26:44.188 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:26:44 MacBook-Pro krd[33002]: 00:26:44.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:26:46 MacBook-Pro krd[33002]: 00:26:46.123 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:26:46 MacBook-Pro krd[33002]: 00:26:46.123 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:52:55 MacBook-Pro krd[33002]: 00:52:55.884 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 00:52:55 MacBook-Pro krd[33002]: 00:52:55.884 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:53:10 MacBook-Pro krd[33002]: 00:53:10.896 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:53:10 MacBook-Pro krd[33002]: 00:53:10.896 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 00:56:27 MacBook-Pro krd[33002]: 00:56:27.171 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:56:27 MacBook-Pro krd[33002]: 00:56:27.172 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:56:27 MacBook-Pro krd[33002]: 00:56:27.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 00:56:27 MacBook-Pro krd[33002]: 00:56:27.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 00:57:12 MacBook-Pro krd[33002]: 00:57:12.608 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 00:57:12 MacBook-Pro krd[33002]: 00:57:12.608 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:01:06 MacBook-Pro krd[33002]: 01:01:06.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:01:06 MacBook-Pro krd[33002]: 01:01:06.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:01:06 MacBook-Pro krd[33002]: 01:01:06.195 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:01:06 MacBook-Pro krd[33002]: 01:01:06.195 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:01:08 MacBook-Pro krd[33002]: 01:01:08.375 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:01:08 MacBook-Pro krd[33002]: 01:01:08.375 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:01:24 MacBook-Pro krd[33002]: 01:01:24.358 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:01:24 MacBook-Pro krd[33002]: 01:01:24.358 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:01:52 MacBook-Pro krd[33002]: 01:01:52.378 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:01:52 MacBook-Pro krd[33002]: 01:01:52.379 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:05:45 MacBook-Pro krd[33002]: 01:05:45.176 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:05:45 MacBook-Pro krd[33002]: 01:05:45.177 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:05:45 MacBook-Pro krd[33002]: 01:05:45.194 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:05:45 MacBook-Pro krd[33002]: 01:05:45.194 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:06:30 MacBook-Pro krd[33002]: 01:06:30.615 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:06:30 MacBook-Pro krd[33002]: 01:06:30.615 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:10:24 MacBook-Pro krd[33002]: 01:10:24.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:10:24 MacBook-Pro krd[33002]: 01:10:24.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:10:24 MacBook-Pro krd[33002]: 01:10:24.194 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:10:24 MacBook-Pro krd[33002]: 01:10:24.194 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:11:09 MacBook-Pro krd[33002]: 01:11:09.625 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:11:09 MacBook-Pro krd[33002]: 01:11:09.625 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:15:03 MacBook-Pro krd[33002]: 01:15:03.171 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:15:03 MacBook-Pro krd[33002]: 01:15:03.172 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:15:03 MacBook-Pro krd[33002]: 01:15:03.176 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:15:03 MacBook-Pro krd[33002]: 01:15:03.176 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:15:48 MacBook-Pro krd[33002]: 01:15:48.614 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:15:48 MacBook-Pro krd[33002]: 01:15:48.614 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:19:42 MacBook-Pro krd[33002]: 01:19:42.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:19:42 MacBook-Pro krd[33002]: 01:19:42.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:19:42 MacBook-Pro krd[33002]: 01:19:42.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:19:42 MacBook-Pro krd[33002]: 01:19:42.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:20:27 MacBook-Pro krd[33002]: 01:20:27.607 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:20:27 MacBook-Pro krd[33002]: 01:20:27.608 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:24:21 MacBook-Pro krd[33002]: 01:24:21.186 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:24:21 MacBook-Pro krd[33002]: 01:24:21.187 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:24:21 MacBook-Pro krd[33002]: 01:24:21.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:24:21 MacBook-Pro krd[33002]: 01:24:21.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:25:06 MacBook-Pro krd[33002]: 01:25:06.636 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:25:06 MacBook-Pro krd[33002]: 01:25:06.636 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:29:00 MacBook-Pro krd[33002]: 01:29:00.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:29:00 MacBook-Pro krd[33002]: 01:29:00.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:29:00 MacBook-Pro krd[33002]: 01:29:00.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:29:00 MacBook-Pro krd[33002]: 01:29:00.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:29:45 MacBook-Pro krd[33002]: 01:29:45.619 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:29:45 MacBook-Pro krd[33002]: 01:29:45.619 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:33:39 MacBook-Pro krd[33002]: 01:33:39.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:33:39 MacBook-Pro krd[33002]: 01:33:39.165 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:33:39 MacBook-Pro krd[33002]: 01:33:39.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:33:39 MacBook-Pro krd[33002]: 01:33:39.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:34:44 MacBook-Pro krd[33002]: 01:34:44.317 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:34:44 MacBook-Pro krd[33002]: 01:34:44.318 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:38:20 MacBook-Pro krd[33002]: 01:38:20.164 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:38:20 MacBook-Pro krd[33002]: 01:38:20.164 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:38:20 MacBook-Pro krd[33002]: 01:38:20.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:38:20 MacBook-Pro krd[33002]: 01:38:20.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:39:05 MacBook-Pro krd[33002]: 01:39:05.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:39:05 MacBook-Pro krd[33002]: 01:39:05.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:42:59 MacBook-Pro krd[33002]: 01:42:59.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:42:59 MacBook-Pro krd[33002]: 01:42:59.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:42:59 MacBook-Pro krd[33002]: 01:42:59.171 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:42:59 MacBook-Pro krd[33002]: 01:42:59.172 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:43:44 MacBook-Pro krd[33002]: 01:43:44.618 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:43:44 MacBook-Pro krd[33002]: 01:43:44.618 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:47:38 MacBook-Pro krd[33002]: 01:47:38.144 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:47:38 MacBook-Pro krd[33002]: 01:47:38.146 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:47:38 MacBook-Pro krd[33002]: 01:47:38.150 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:47:38 MacBook-Pro krd[33002]: 01:47:38.150 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:48:23 MacBook-Pro krd[33002]: 01:48:23.617 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:48:23 MacBook-Pro krd[33002]: 01:48:23.617 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:52:17 MacBook-Pro krd[33002]: 01:52:17.162 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:52:17 MacBook-Pro krd[33002]: 01:52:17.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:52:17 MacBook-Pro krd[33002]: 01:52:17.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:52:17 MacBook-Pro krd[33002]: 01:52:17.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:53:02 MacBook-Pro krd[33002]: 01:53:02.614 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 01:53:02 MacBook-Pro krd[33002]: 01:53:02.614 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:56:56 MacBook-Pro krd[33002]: 01:56:56.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:56:56 MacBook-Pro krd[33002]: 01:56:56.172 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:56:56 MacBook-Pro krd[33002]: 01:56:56.172 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 01:56:56 MacBook-Pro krd[33002]: 01:56:56.172 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 01:57:41 MacBook-Pro krd[33002]: 01:57:41.616 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 01:57:41 MacBook-Pro krd[33002]: 01:57:41.616 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:01:35 MacBook-Pro krd[33002]: 02:01:35.186 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:01:35 MacBook-Pro krd[33002]: 02:01:35.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:01:35 MacBook-Pro krd[33002]: 02:01:35.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:01:35 MacBook-Pro krd[33002]: 02:01:35.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:02:20 MacBook-Pro krd[33002]: 02:02:20.614 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:02:20 MacBook-Pro krd[33002]: 02:02:20.614 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:06:14 MacBook-Pro krd[33002]: 02:06:14.183 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:06:14 MacBook-Pro krd[33002]: 02:06:14.185 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:06:14 MacBook-Pro krd[33002]: 02:06:14.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:06:14 MacBook-Pro krd[33002]: 02:06:14.188 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:06:59 MacBook-Pro krd[33002]: 02:06:59.616 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:06:59 MacBook-Pro krd[33002]: 02:06:59.617 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:10:53 MacBook-Pro krd[33002]: 02:10:53.184 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:10:53 MacBook-Pro krd[33002]: 02:10:53.185 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:10:53 MacBook-Pro krd[33002]: 02:10:53.188 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:10:53 MacBook-Pro krd[33002]: 02:10:53.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:11:38 MacBook-Pro krd[33002]: 02:11:38.623 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:11:38 MacBook-Pro krd[33002]: 02:11:38.623 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:15:32 MacBook-Pro krd[33002]: 02:15:32.161 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:15:32 MacBook-Pro krd[33002]: 02:15:32.162 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:15:32 MacBook-Pro krd[33002]: 02:15:32.165 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:15:32 MacBook-Pro krd[33002]: 02:15:32.165 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:16:17 MacBook-Pro krd[33002]: 02:16:17.634 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:16:17 MacBook-Pro krd[33002]: 02:16:17.634 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:20:11 MacBook-Pro krd[33002]: 02:20:11.184 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:20:11 MacBook-Pro krd[33002]: 02:20:11.185 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:20:11 MacBook-Pro krd[33002]: 02:20:11.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:20:11 MacBook-Pro krd[33002]: 02:20:11.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:20:56 MacBook-Pro krd[33002]: 02:20:56.632 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:20:56 MacBook-Pro krd[33002]: 02:20:56.632 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:24:50 MacBook-Pro krd[33002]: 02:24:50.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:24:50 MacBook-Pro krd[33002]: 02:24:50.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:24:50 MacBook-Pro krd[33002]: 02:24:50.170 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:24:50 MacBook-Pro krd[33002]: 02:24:50.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:25:35 MacBook-Pro krd[33002]: 02:25:35.622 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:25:35 MacBook-Pro krd[33002]: 02:25:35.622 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:29:29 MacBook-Pro krd[33002]: 02:29:29.187 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:29:29 MacBook-Pro krd[33002]: 02:29:29.187 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:29:29 MacBook-Pro krd[33002]: 02:29:29.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:29:29 MacBook-Pro krd[33002]: 02:29:29.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:30:14 MacBook-Pro krd[33002]: 02:30:14.611 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:30:14 MacBook-Pro krd[33002]: 02:30:14.611 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:34:08 MacBook-Pro krd[33002]: 02:34:08.165 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:34:08 MacBook-Pro krd[33002]: 02:34:08.166 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:34:08 MacBook-Pro krd[33002]: 02:34:08.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:34:08 MacBook-Pro krd[33002]: 02:34:08.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:34:53 MacBook-Pro krd[33002]: 02:34:53.625 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:34:53 MacBook-Pro krd[33002]: 02:34:53.626 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:38:47 MacBook-Pro krd[33002]: 02:38:47.147 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:38:47 MacBook-Pro krd[33002]: 02:38:47.147 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:38:47 MacBook-Pro krd[33002]: 02:38:47.151 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:38:47 MacBook-Pro krd[33002]: 02:38:47.151 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:39:32 MacBook-Pro krd[33002]: 02:39:32.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:39:32 MacBook-Pro krd[33002]: 02:39:32.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:43:26 MacBook-Pro krd[33002]: 02:43:26.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:43:26 MacBook-Pro krd[33002]: 02:43:26.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:43:26 MacBook-Pro krd[33002]: 02:43:26.194 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:43:26 MacBook-Pro krd[33002]: 02:43:26.194 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:44:11 MacBook-Pro krd[33002]: 02:44:11.618 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:44:11 MacBook-Pro krd[33002]: 02:44:11.618 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:48:05 MacBook-Pro krd[33002]: 02:48:05.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:48:05 MacBook-Pro krd[33002]: 02:48:05.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:48:05 MacBook-Pro krd[33002]: 02:48:05.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:48:05 MacBook-Pro krd[33002]: 02:48:05.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:48:50 MacBook-Pro krd[33002]: 02:48:50.611 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:48:50 MacBook-Pro krd[33002]: 02:48:50.611 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:52:44 MacBook-Pro krd[33002]: 02:52:44.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:52:44 MacBook-Pro krd[33002]: 02:52:44.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:52:44 MacBook-Pro krd[33002]: 02:52:44.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:52:44 MacBook-Pro krd[33002]: 02:52:44.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:53:29 MacBook-Pro krd[33002]: 02:53:29.604 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:53:29 MacBook-Pro krd[33002]: 02:53:29.605 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 02:57:23 MacBook-Pro krd[33002]: 02:57:23.185 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:57:23 MacBook-Pro krd[33002]: 02:57:23.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:57:23 MacBook-Pro krd[33002]: 02:57:23.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 02:57:23 MacBook-Pro krd[33002]: 02:57:23.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 02:58:08 MacBook-Pro krd[33002]: 02:58:08.618 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 02:58:08 MacBook-Pro krd[33002]: 02:58:08.618 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:02:02 MacBook-Pro krd[33002]: 03:02:02.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:02:02 MacBook-Pro krd[33002]: 03:02:02.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:02:02 MacBook-Pro krd[33002]: 03:02:02.193 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:02:02 MacBook-Pro krd[33002]: 03:02:02.193 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:02:47 MacBook-Pro krd[33002]: 03:02:47.622 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:02:47 MacBook-Pro krd[33002]: 03:02:47.622 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:06:41 MacBook-Pro krd[33002]: 03:06:41.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:06:41 MacBook-Pro krd[33002]: 03:06:41.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:06:41 MacBook-Pro krd[33002]: 03:06:41.173 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:06:41 MacBook-Pro krd[33002]: 03:06:41.173 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:07:26 MacBook-Pro krd[33002]: 03:07:26.626 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:07:26 MacBook-Pro krd[33002]: 03:07:26.626 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:11:20 MacBook-Pro krd[33002]: 03:11:20.170 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:11:20 MacBook-Pro krd[33002]: 03:11:20.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:11:20 MacBook-Pro krd[33002]: 03:11:20.173 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:11:20 MacBook-Pro krd[33002]: 03:11:20.173 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:12:05 MacBook-Pro krd[33002]: 03:12:05.624 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:12:05 MacBook-Pro krd[33002]: 03:12:05.624 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:15:59 MacBook-Pro krd[33002]: 03:15:59.162 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:15:59 MacBook-Pro krd[33002]: 03:15:59.162 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:15:59 MacBook-Pro krd[33002]: 03:15:59.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:15:59 MacBook-Pro krd[33002]: 03:15:59.166 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:16:44 MacBook-Pro krd[33002]: 03:16:44.612 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:16:44 MacBook-Pro krd[33002]: 03:16:44.612 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:20:38 MacBook-Pro krd[33002]: 03:20:38.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:20:38 MacBook-Pro krd[33002]: 03:20:38.165 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:20:38 MacBook-Pro krd[33002]: 03:20:38.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:20:38 MacBook-Pro krd[33002]: 03:20:38.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:21:24 MacBook-Pro krd[33002]: 03:21:24.171 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:21:24 MacBook-Pro krd[33002]: 03:21:24.171 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:25:17 MacBook-Pro krd[33002]: 03:25:17.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:25:17 MacBook-Pro krd[33002]: 03:25:17.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:25:17 MacBook-Pro krd[33002]: 03:25:17.192 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:25:17 MacBook-Pro krd[33002]: 03:25:17.192 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:26:02 MacBook-Pro krd[33002]: 03:26:02.620 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:26:02 MacBook-Pro krd[33002]: 03:26:02.620 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:29:56 MacBook-Pro krd[33002]: 03:29:56.143 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:29:56 MacBook-Pro krd[33002]: 03:29:56.144 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:29:56 MacBook-Pro krd[33002]: 03:29:56.148 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:29:56 MacBook-Pro krd[33002]: 03:29:56.148 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:30:41 MacBook-Pro krd[33002]: 03:30:41.610 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:30:41 MacBook-Pro krd[33002]: 03:30:41.610 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:34:35 MacBook-Pro krd[33002]: 03:34:35.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:34:35 MacBook-Pro krd[33002]: 03:34:35.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:34:35 MacBook-Pro krd[33002]: 03:34:35.193 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:34:35 MacBook-Pro krd[33002]: 03:34:35.194 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:35:20 MacBook-Pro krd[33002]: 03:35:20.624 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:35:20 MacBook-Pro krd[33002]: 03:35:20.624 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:39:14 MacBook-Pro krd[33002]: 03:39:14.172 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:39:14 MacBook-Pro krd[33002]: 03:39:14.173 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:39:14 MacBook-Pro krd[33002]: 03:39:14.175 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:39:14 MacBook-Pro krd[33002]: 03:39:14.175 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:39:59 MacBook-Pro krd[33002]: 03:39:59.624 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:39:59 MacBook-Pro krd[33002]: 03:39:59.625 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:43:53 MacBook-Pro krd[33002]: 03:43:53.146 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:43:53 MacBook-Pro krd[33002]: 03:43:53.147 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:43:53 MacBook-Pro krd[33002]: 03:43:53.151 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:43:53 MacBook-Pro krd[33002]: 03:43:53.151 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:44:38 MacBook-Pro krd[33002]: 03:44:38.617 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:44:38 MacBook-Pro krd[33002]: 03:44:38.617 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:48:32 MacBook-Pro krd[33002]: 03:48:32.183 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:48:32 MacBook-Pro krd[33002]: 03:48:32.183 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:48:32 MacBook-Pro krd[33002]: 03:48:32.185 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:48:32 MacBook-Pro krd[33002]: 03:48:32.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:48:34 MacBook-Pro krd[33002]: 03:48:34.122 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:48:34 MacBook-Pro krd[33002]: 03:48:34.122 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:48:50 MacBook-Pro krd[33002]: 03:48:50.131 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:48:50 MacBook-Pro krd[33002]: 03:48:50.131 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:49:18 MacBook-Pro krd[33002]: 03:49:18.160 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:49:18 MacBook-Pro krd[33002]: 03:49:18.160 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:53:11 MacBook-Pro krd[33002]: 03:53:11.197 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:53:11 MacBook-Pro krd[33002]: 03:53:11.197 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:53:11 MacBook-Pro krd[33002]: 03:53:11.215 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:53:11 MacBook-Pro krd[33002]: 03:53:11.215 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:53:56 MacBook-Pro krd[33002]: 03:53:56.625 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:53:56 MacBook-Pro krd[33002]: 03:53:56.625 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 03:57:50 MacBook-Pro krd[33002]: 03:57:50.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:57:50 MacBook-Pro krd[33002]: 03:57:50.164 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:57:50 MacBook-Pro krd[33002]: 03:57:50.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 03:57:50 MacBook-Pro krd[33002]: 03:57:50.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 03:58:35 MacBook-Pro krd[33002]: 03:58:35.624 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 03:58:35 MacBook-Pro krd[33002]: 03:58:35.624 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:02:29 MacBook-Pro krd[33002]: 04:02:29.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:02:29 MacBook-Pro krd[33002]: 04:02:29.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:02:29 MacBook-Pro krd[33002]: 04:02:29.170 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:02:29 MacBook-Pro krd[33002]: 04:02:29.171 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:03:14 MacBook-Pro krd[33002]: 04:03:14.615 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:03:14 MacBook-Pro krd[33002]: 04:03:14.615 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:07:08 MacBook-Pro krd[33002]: 04:07:08.187 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:07:08 MacBook-Pro krd[33002]: 04:07:08.187 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:07:08 MacBook-Pro krd[33002]: 04:07:08.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:07:08 MacBook-Pro krd[33002]: 04:07:08.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:07:53 MacBook-Pro krd[33002]: 04:07:53.611 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:07:53 MacBook-Pro krd[33002]: 04:07:53.611 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:11:47 MacBook-Pro krd[33002]: 04:11:47.185 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:11:47 MacBook-Pro krd[33002]: 04:11:47.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:11:47 MacBook-Pro krd[33002]: 04:11:47.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:11:47 MacBook-Pro krd[33002]: 04:11:47.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:12:32 MacBook-Pro krd[33002]: 04:12:32.599 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:12:32 MacBook-Pro krd[33002]: 04:12:32.600 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:16:26 MacBook-Pro krd[33002]: 04:16:26.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:16:26 MacBook-Pro krd[33002]: 04:16:26.164 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:16:26 MacBook-Pro krd[33002]: 04:16:26.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:16:26 MacBook-Pro krd[33002]: 04:16:26.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:17:11 MacBook-Pro krd[33002]: 04:17:11.612 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:17:11 MacBook-Pro krd[33002]: 04:17:11.612 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:21:05 MacBook-Pro krd[33002]: 04:21:05.187 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:21:05 MacBook-Pro krd[33002]: 04:21:05.187 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:21:05 MacBook-Pro krd[33002]: 04:21:05.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:21:05 MacBook-Pro krd[33002]: 04:21:05.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:21:50 MacBook-Pro krd[33002]: 04:21:50.611 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:21:50 MacBook-Pro krd[33002]: 04:21:50.611 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:25:44 MacBook-Pro krd[33002]: 04:25:44.164 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:25:44 MacBook-Pro krd[33002]: 04:25:44.165 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:25:44 MacBook-Pro krd[33002]: 04:25:44.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:25:44 MacBook-Pro krd[33002]: 04:25:44.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:26:29 MacBook-Pro krd[33002]: 04:26:29.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:26:29 MacBook-Pro krd[33002]: 04:26:29.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:30:23 MacBook-Pro krd[33002]: 04:30:23.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:30:23 MacBook-Pro krd[33002]: 04:30:23.169 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:30:23 MacBook-Pro krd[33002]: 04:30:23.173 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:30:23 MacBook-Pro krd[33002]: 04:30:23.173 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:31:08 MacBook-Pro krd[33002]: 04:31:08.629 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:31:08 MacBook-Pro krd[33002]: 04:31:08.630 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:35:02 MacBook-Pro krd[33002]: 04:35:02.165 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:35:02 MacBook-Pro krd[33002]: 04:35:02.165 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:35:02 MacBook-Pro krd[33002]: 04:35:02.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:35:02 MacBook-Pro krd[33002]: 04:35:02.169 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:35:47 MacBook-Pro krd[33002]: 04:35:47.608 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:35:47 MacBook-Pro krd[33002]: 04:35:47.609 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:39:41 MacBook-Pro krd[33002]: 04:39:41.164 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:39:41 MacBook-Pro krd[33002]: 04:39:41.165 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:39:41 MacBook-Pro krd[33002]: 04:39:41.169 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:39:41 MacBook-Pro krd[33002]: 04:39:41.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:40:26 MacBook-Pro krd[33002]: 04:40:26.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:40:26 MacBook-Pro krd[33002]: 04:40:26.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:44:20 MacBook-Pro krd[33002]: 04:44:20.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:44:20 MacBook-Pro krd[33002]: 04:44:20.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:44:20 MacBook-Pro krd[33002]: 04:44:20.194 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:44:20 MacBook-Pro krd[33002]: 04:44:20.194 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:45:05 MacBook-Pro krd[33002]: 04:45:05.623 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:45:05 MacBook-Pro krd[33002]: 04:45:05.624 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:48:59 MacBook-Pro krd[33002]: 04:48:59.164 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:48:59 MacBook-Pro krd[33002]: 04:48:59.165 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:48:59 MacBook-Pro krd[33002]: 04:48:59.170 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:48:59 MacBook-Pro krd[33002]: 04:48:59.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:49:44 MacBook-Pro krd[33002]: 04:49:44.623 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:49:44 MacBook-Pro krd[33002]: 04:49:44.623 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:53:38 MacBook-Pro krd[33002]: 04:53:38.186 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:53:38 MacBook-Pro krd[33002]: 04:53:38.187 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:53:38 MacBook-Pro krd[33002]: 04:53:38.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:53:38 MacBook-Pro krd[33002]: 04:53:38.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:54:23 MacBook-Pro krd[33002]: 04:54:23.597 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 04:54:23 MacBook-Pro krd[33002]: 04:54:23.597 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:58:17 MacBook-Pro krd[33002]: 04:58:17.162 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:58:17 MacBook-Pro krd[33002]: 04:58:17.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:58:17 MacBook-Pro krd[33002]: 04:58:17.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 04:58:17 MacBook-Pro krd[33002]: 04:58:17.166 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 04:59:02 MacBook-Pro krd[33002]: 04:59:02.613 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 04:59:02 MacBook-Pro krd[33002]: 04:59:02.613 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:02:56 MacBook-Pro krd[33002]: 05:02:56.164 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:02:56 MacBook-Pro krd[33002]: 05:02:56.164 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:02:56 MacBook-Pro krd[33002]: 05:02:56.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:02:56 MacBook-Pro krd[33002]: 05:02:56.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:03:41 MacBook-Pro krd[33002]: 05:03:41.617 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:03:41 MacBook-Pro krd[33002]: 05:03:41.617 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:07:35 MacBook-Pro krd[33002]: 05:07:35.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:07:35 MacBook-Pro krd[33002]: 05:07:35.166 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:07:35 MacBook-Pro krd[33002]: 05:07:35.173 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:07:35 MacBook-Pro krd[33002]: 05:07:35.173 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:08:20 MacBook-Pro krd[33002]: 05:08:20.619 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:08:20 MacBook-Pro krd[33002]: 05:08:20.619 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:12:14 MacBook-Pro krd[33002]: 05:12:14.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:12:14 MacBook-Pro krd[33002]: 05:12:14.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:12:14 MacBook-Pro krd[33002]: 05:12:14.173 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:12:14 MacBook-Pro krd[33002]: 05:12:14.173 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:12:59 MacBook-Pro krd[33002]: 05:12:59.624 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:12:59 MacBook-Pro krd[33002]: 05:12:59.624 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:16:53 MacBook-Pro krd[33002]: 05:16:53.186 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:16:53 MacBook-Pro krd[33002]: 05:16:53.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:16:53 MacBook-Pro krd[33002]: 05:16:53.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:16:53 MacBook-Pro krd[33002]: 05:16:53.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:17:38 MacBook-Pro krd[33002]: 05:17:38.609 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:17:38 MacBook-Pro krd[33002]: 05:17:38.609 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:21:32 MacBook-Pro krd[33002]: 05:21:32.146 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:21:32 MacBook-Pro krd[33002]: 05:21:32.146 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:21:32 MacBook-Pro krd[33002]: 05:21:32.151 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:21:32 MacBook-Pro krd[33002]: 05:21:32.151 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:22:17 MacBook-Pro krd[33002]: 05:22:17.608 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:22:17 MacBook-Pro krd[33002]: 05:22:17.609 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:26:11 MacBook-Pro krd[33002]: 05:26:11.201 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:26:11 MacBook-Pro krd[33002]: 05:26:11.202 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:26:11 MacBook-Pro krd[33002]: 05:26:11.207 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:26:11 MacBook-Pro krd[33002]: 05:26:11.207 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:26:56 MacBook-Pro krd[33002]: 05:26:56.636 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:26:56 MacBook-Pro krd[33002]: 05:26:56.636 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:30:50 MacBook-Pro krd[33002]: 05:30:50.185 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:30:50 MacBook-Pro krd[33002]: 05:30:50.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:30:50 MacBook-Pro krd[33002]: 05:30:50.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:30:50 MacBook-Pro krd[33002]: 05:30:50.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:31:35 MacBook-Pro krd[33002]: 05:31:35.632 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:31:35 MacBook-Pro krd[33002]: 05:31:35.632 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:35:29 MacBook-Pro krd[33002]: 05:35:29.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:35:29 MacBook-Pro krd[33002]: 05:35:29.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:35:29 MacBook-Pro krd[33002]: 05:35:29.172 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:35:29 MacBook-Pro krd[33002]: 05:35:29.172 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:36:14 MacBook-Pro krd[33002]: 05:36:14.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:36:14 MacBook-Pro krd[33002]: 05:36:14.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:40:08 MacBook-Pro krd[33002]: 05:40:08.146 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:40:08 MacBook-Pro krd[33002]: 05:40:08.147 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:40:08 MacBook-Pro krd[33002]: 05:40:08.151 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:40:08 MacBook-Pro krd[33002]: 05:40:08.151 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:40:53 MacBook-Pro krd[33002]: 05:40:53.620 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:40:53 MacBook-Pro krd[33002]: 05:40:53.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:44:47 MacBook-Pro krd[33002]: 05:44:47.148 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:44:47 MacBook-Pro krd[33002]: 05:44:47.148 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:44:47 MacBook-Pro krd[33002]: 05:44:47.154 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:44:47 MacBook-Pro krd[33002]: 05:44:47.154 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:45:32 MacBook-Pro krd[33002]: 05:45:32.623 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:45:32 MacBook-Pro krd[33002]: 05:45:32.623 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:49:26 MacBook-Pro krd[33002]: 05:49:26.183 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:49:26 MacBook-Pro krd[33002]: 05:49:26.184 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:49:26 MacBook-Pro krd[33002]: 05:49:26.187 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:49:26 MacBook-Pro krd[33002]: 05:49:26.188 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:50:11 MacBook-Pro krd[33002]: 05:50:11.630 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:50:11 MacBook-Pro krd[33002]: 05:50:11.630 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:54:05 MacBook-Pro krd[33002]: 05:54:05.162 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:54:05 MacBook-Pro krd[33002]: 05:54:05.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:54:05 MacBook-Pro krd[33002]: 05:54:05.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:54:05 MacBook-Pro krd[33002]: 05:54:05.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:54:50 MacBook-Pro krd[33002]: 05:54:50.616 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 05:54:50 MacBook-Pro krd[33002]: 05:54:50.618 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:58:44 MacBook-Pro krd[33002]: 05:58:44.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:58:44 MacBook-Pro krd[33002]: 05:58:44.193 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:58:44 MacBook-Pro krd[33002]: 05:58:44.196 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 05:58:44 MacBook-Pro krd[33002]: 05:58:44.196 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 05:59:29 MacBook-Pro krd[33002]: 05:59:29.619 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 05:59:29 MacBook-Pro krd[33002]: 05:59:29.619 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:03:23 MacBook-Pro krd[33002]: 06:03:23.182 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:03:23 MacBook-Pro krd[33002]: 06:03:23.182 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:03:23 MacBook-Pro krd[33002]: 06:03:23.187 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:03:23 MacBook-Pro krd[33002]: 06:03:23.187 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:04:08 MacBook-Pro krd[33002]: 06:04:08.620 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:04:08 MacBook-Pro krd[33002]: 06:04:08.620 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:08:02 MacBook-Pro krd[33002]: 06:08:02.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:08:02 MacBook-Pro krd[33002]: 06:08:02.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:08:02 MacBook-Pro krd[33002]: 06:08:02.194 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:08:02 MacBook-Pro krd[33002]: 06:08:02.194 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:08:47 MacBook-Pro krd[33002]: 06:08:47.653 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:08:47 MacBook-Pro krd[33002]: 06:08:47.653 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:12:41 MacBook-Pro krd[33002]: 06:12:41.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:12:41 MacBook-Pro krd[33002]: 06:12:41.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:12:41 MacBook-Pro krd[33002]: 06:12:41.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:12:41 MacBook-Pro krd[33002]: 06:12:41.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:13:26 MacBook-Pro krd[33002]: 06:13:26.623 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:13:26 MacBook-Pro krd[33002]: 06:13:26.623 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:17:20 MacBook-Pro krd[33002]: 06:17:20.164 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:17:20 MacBook-Pro krd[33002]: 06:17:20.164 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:17:20 MacBook-Pro krd[33002]: 06:17:20.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:17:20 MacBook-Pro krd[33002]: 06:17:20.168 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:18:05 MacBook-Pro krd[33002]: 06:18:05.645 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:18:05 MacBook-Pro krd[33002]: 06:18:05.645 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:21:59 MacBook-Pro krd[33002]: 06:21:59.184 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:21:59 MacBook-Pro krd[33002]: 06:21:59.184 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:21:59 MacBook-Pro krd[33002]: 06:21:59.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:21:59 MacBook-Pro krd[33002]: 06:21:59.188 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:22:44 MacBook-Pro krd[33002]: 06:22:44.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:22:44 MacBook-Pro krd[33002]: 06:22:44.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:26:38 MacBook-Pro krd[33002]: 06:26:38.163 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:26:38 MacBook-Pro krd[33002]: 06:26:38.163 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:26:38 MacBook-Pro krd[33002]: 06:26:38.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:26:38 MacBook-Pro krd[33002]: 06:26:38.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:27:23 MacBook-Pro krd[33002]: 06:27:23.618 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:27:23 MacBook-Pro krd[33002]: 06:27:23.619 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:31:17 MacBook-Pro krd[33002]: 06:31:17.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:31:17 MacBook-Pro krd[33002]: 06:31:17.188 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:31:17 MacBook-Pro krd[33002]: 06:31:17.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:31:17 MacBook-Pro krd[33002]: 06:31:17.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:32:02 MacBook-Pro krd[33002]: 06:32:02.618 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:32:02 MacBook-Pro krd[33002]: 06:32:02.619 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:35:56 MacBook-Pro krd[33002]: 06:35:56.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:35:56 MacBook-Pro krd[33002]: 06:35:56.166 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:35:56 MacBook-Pro krd[33002]: 06:35:56.170 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:35:56 MacBook-Pro krd[33002]: 06:35:56.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:36:41 MacBook-Pro krd[33002]: 06:36:41.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:36:41 MacBook-Pro krd[33002]: 06:36:41.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:40:35 MacBook-Pro krd[33002]: 06:40:35.165 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:40:35 MacBook-Pro krd[33002]: 06:40:35.166 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:40:35 MacBook-Pro krd[33002]: 06:40:35.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:40:35 MacBook-Pro krd[33002]: 06:40:35.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:41:20 MacBook-Pro krd[33002]: 06:41:20.612 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:41:20 MacBook-Pro krd[33002]: 06:41:20.613 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:45:14 MacBook-Pro krd[33002]: 06:45:14.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:45:14 MacBook-Pro krd[33002]: 06:45:14.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:45:14 MacBook-Pro krd[33002]: 06:45:14.195 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:45:14 MacBook-Pro krd[33002]: 06:45:14.195 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:45:59 MacBook-Pro krd[33002]: 06:45:59.623 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:45:59 MacBook-Pro krd[33002]: 06:45:59.623 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:49:53 MacBook-Pro krd[33002]: 06:49:53.187 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:49:53 MacBook-Pro krd[33002]: 06:49:53.187 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:49:53 MacBook-Pro krd[33002]: 06:49:53.191 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:49:53 MacBook-Pro krd[33002]: 06:49:53.191 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:50:38 MacBook-Pro krd[33002]: 06:50:38.620 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:50:38 MacBook-Pro krd[33002]: 06:50:38.621 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:54:32 MacBook-Pro krd[33002]: 06:54:32.186 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:54:32 MacBook-Pro krd[33002]: 06:54:32.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:54:32 MacBook-Pro krd[33002]: 06:54:32.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:54:32 MacBook-Pro krd[33002]: 06:54:32.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:55:17 MacBook-Pro krd[33002]: 06:55:17.621 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:55:17 MacBook-Pro krd[33002]: 06:55:17.622 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 06:59:11 MacBook-Pro krd[33002]: 06:59:11.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:59:11 MacBook-Pro krd[33002]: 06:59:11.166 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:59:11 MacBook-Pro krd[33002]: 06:59:11.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 06:59:11 MacBook-Pro krd[33002]: 06:59:11.170 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 06:59:56 MacBook-Pro krd[33002]: 06:59:56.614 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 06:59:56 MacBook-Pro krd[33002]: 06:59:56.615 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 07:03:50 MacBook-Pro krd[33002]: 07:03:50.166 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:03:50 MacBook-Pro krd[33002]: 07:03:50.167 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:03:50 MacBook-Pro krd[33002]: 07:03:50.172 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:03:50 MacBook-Pro krd[33002]: 07:03:50.172 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:04:35 MacBook-Pro krd[33002]: 07:04:35.632 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 07:04:35 MacBook-Pro krd[33002]: 07:04:35.633 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 07:08:29 MacBook-Pro krd[33002]: 07:08:29.186 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:08:29 MacBook-Pro krd[33002]: 07:08:29.186 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:08:29 MacBook-Pro krd[33002]: 07:08:29.190 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:08:29 MacBook-Pro krd[33002]: 07:08:29.190 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:09:14 MacBook-Pro krd[33002]: 07:09:14.620 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 07:09:14 MacBook-Pro krd[33002]: 07:09:14.620 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 07:13:08 MacBook-Pro krd[33002]: 07:13:08.184 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:13:08 MacBook-Pro krd[33002]: 07:13:08.185 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:13:08 MacBook-Pro krd[33002]: 07:13:08.188 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:13:08 MacBook-Pro krd[33002]: 07:13:08.188 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:14:12 MacBook-Pro krd[33002]: 07:14:12.580 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 07:14:12 MacBook-Pro krd[33002]: 07:14:12.580 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 07:17:48 MacBook-Pro krd[33002]: 07:17:48.167 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:17:48 MacBook-Pro krd[33002]: 07:17:48.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:17:48 MacBook-Pro krd[33002]: 07:17:48.171 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:17:48 MacBook-Pro krd[33002]: 07:17:48.171 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:18:33 MacBook-Pro krd[33002]: 07:18:33.612 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 07:18:33 MacBook-Pro krd[33002]: 07:18:33.612 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 07:19:57 MacBook-Pro krd[33002]: 07:19:57.185 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:19:57 MacBook-Pro krd[33002]: 07:19:57.185 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:19:57 MacBook-Pro krd[33002]: 07:19:57.189 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 07:19:57 MacBook-Pro krd[33002]: 07:19:57.189 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 07:20:06 MacBook-Pro krd[33002]: 07:20:06.665 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 07:20:06 MacBook-Pro krd[33002]: 07:20:06.665 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 08:30:11 MacBook-Pro krd[33002]: 08:30:11.672 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:30:11 MacBook-Pro krd[33002]: 08:30:11.672 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:30:11 MacBook-Pro krd[33002]: 08:30:11.675 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:30:11 MacBook-Pro krd[33002]: 08:30:11.943 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:30:13 MacBook-Pro krd[33002]: 08:30:13.173 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 08:30:13 MacBook-Pro krd[33002]: 08:30:13.173 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 08:30:29 MacBook-Pro krd[33002]: 08:30:29.816 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:30:29 MacBook-Pro krd[33002]: 08:30:29.816 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:30:29 MacBook-Pro krd[33002]: 08:30:29.820 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:30:29 MacBook-Pro krd[33002]: 08:30:29.821 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:30:29 MacBook-Pro krd[33002]: 08:30:29.821 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:374 central <CBCentral: 0x8922c20 identifier = 0D9EC903-A594-4438-8D73-FDDDF6237EB3, MTU = 74> didSubscribeToCharacteristic <CBMutableCharacteristic: 0x8900590 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 08:30:29 MacBook-Pro krd[33002]: 08:30:29.824 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:30:29 MacBook-Pro krd[33002]: 08:30:29.824 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:30:31 MacBook-Pro krd[33002]: 08:30:31.061 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:384 central <CBCentral: 0x8922c20 identifier = 0D9EC903-A594-4438-8D73-FDDDF6237EB3, MTU = 20> didUnsubscribeFromCharacteristic <CBMutableCharacteristic: 0x8900590 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 08:30:31 MacBook-Pro krd[33002]: 08:30:31.634 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:314 CBPeripheralManagerStateResetting
+Nov 14 08:30:31 MacBook-Pro krd[33002]: 08:30:31.638 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 08:30:31 MacBook-Pro krd[33002]: 08:30:31.661 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:278 CBCentralManagerStateResetting
+Nov 14 08:30:31 MacBook-Pro krd[33002]: 08:30:31.964 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:30:31 MacBook-Pro krd[33002]: 08:30:31.964 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 08:30:31 MacBook-Pro krd[33002]: 08:30:31.988 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:30:54 MacBook-Pro krd[33002]: 08:30:54.823 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:30:54 MacBook-Pro krd[33002]: 08:30:54.825 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:30:55 MacBook-Pro krd[33002]: 08:30:55.224 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 08:30:55 MacBook-Pro krd[33002]: 08:30:55.224 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 08:31:10 MacBook-Pro krd[33002]: 08:31:10.379 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 08:31:10 MacBook-Pro krd[33002]: 08:31:10.379 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 08:50:11 MacBook-Pro krd[33002]: 08:50:11.063 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 08:50:11 MacBook-Pro krd[33002]: 08:50:11.068 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 08:50:11 MacBook-Pro krd[33002]: 08:50:11.193 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:50:11 MacBook-Pro krd[33002]: 08:50:11.193 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:50:11 MacBook-Pro krd[33002]: 08:50:11.208 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:50:11 MacBook-Pro krd[33002]: 08:50:11.208 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:50:12 MacBook-Pro krd[33002]: 08:50:12.472 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 08:50:12 MacBook-Pro krd[33002]: 08:50:12.472 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 08:50:12 MacBook-Pro krd[33002]: 08:50:12.886 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:374 central <CBCentral: 0x521fa30 identifier = 0D9EC903-A594-4438-8D73-FDDDF6237EB3, MTU = 74> didSubscribeToCharacteristic <CBMutableCharacteristic: 0x8900590 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 08:50:23 MacBook-Pro krd[33002]: 08:50:23.674 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:50:24 MacBook-Pro krd[33002]: 08:50:24.533 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:50:25 MacBook-Pro krd[33002]: 08:50:25.713 NOTICE ‚ñ∂ CoreBluetooth: received 305 byte message over Bluetooth
+Nov 14 08:50:25 MacBook-Pro krd[33002]: 08:50:25.735 NOTICE ‚ñ∂ request 48t3FTDzLsGwGtoDPKUbRg ACKed
+Nov 14 08:50:30 MacBook-Pro krd[33002]: 08:50:30.708 NOTICE ‚ñ∂ request 48t3FTDzLsGwGtoDPKUbRg ACKed
+Nov 14 08:50:34 MacBook-Pro krd[33002]: 08:50:34.173 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:50:34 MacBook-Pro krd[33002]: 08:50:34.183 NOTICE ‚ñ∂ Signature response took 9650 ms
+Nov 14 08:50:34 MacBook-Pro krd[33002]: 08:50:34.577 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:50:34 MacBook-Pro krd[33002]: 08:50:34.608 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 08:53:31 MacBook-Pro krd[33002]: 08:53:31.433 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:53:32 MacBook-Pro krd[33002]: 08:53:32.512 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:53:33 MacBook-Pro krd[33002]: 08:53:33.997 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:53:34 MacBook-Pro krd[33002]: 08:53:34.402 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:53:34 MacBook-Pro krd[33002]: 08:53:34.433 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 08:53:34 MacBook-Pro krd[33002]: 08:53:34.435 NOTICE ‚ñ∂ Signature response took 1923 ms
+Nov 14 08:53:41 MacBook-Pro krd[33002]: 08:53:41.453 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:53:41 MacBook-Pro krd[33002]: 08:53:41.932 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:53:41 MacBook-Pro krd[33002]: 08:53:41.978 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 08:53:42 MacBook-Pro krd[33002]: 08:53:42.457 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:53:42 MacBook-Pro krd[33002]: 08:53:42.877 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:53:42 MacBook-Pro krd[33002]: 08:53:42.908 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 08:53:50 MacBook-Pro krd[33002]: 08:53:50.930 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:53:55 MacBook-Pro krd[33002]: 08:53:55.225 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:53:56 MacBook-Pro krd[33002]: 08:53:56.123 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:53:56 MacBook-Pro krd[33002]: 08:53:56.528 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:53:56 MacBook-Pro krd[33002]: 08:53:56.558 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 08:53:56 MacBook-Pro krd[33002]: 08:53:56.570 NOTICE ‚ñ∂ Signature response took 1351 ms
+Nov 14 08:53:57 MacBook-Pro krd[33002]: 08:53:57.292 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:53:57 MacBook-Pro krd[33002]: 08:53:57.698 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:53:57 MacBook-Pro krd[33002]: 08:53:57.758 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 08:55:04 MacBook-Pro krd[33002]: 08:55:04.217 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:55:06 MacBook-Pro krd[33002]: 08:55:06.466 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 08:55:07 MacBook-Pro krd[33002]: 08:55:07.276 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:55:07 MacBook-Pro krd[33002]: 08:55:07.749 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:55:07 MacBook-Pro krd[33002]: 08:55:07.780 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 08:55:07 MacBook-Pro krd[33002]: 08:55:07.791 NOTICE ‚ñ∂ Signature response took 1325 ms
+Nov 14 08:55:08 MacBook-Pro krd[33002]: 08:55:08.199 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 08:55:08 MacBook-Pro krd[33002]: 08:55:08.738 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 08:55:08 MacBook-Pro krd[33002]: 08:55:08.777 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 09:17:27 MacBook-Pro krd[33002]: 09:17:27.686 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:384 central <CBCentral: 0x521fa30 identifier = 0D9EC903-A594-4438-8D73-FDDDF6237EB3, MTU = 20> didUnsubscribeFromCharacteristic <CBMutableCharacteristic: 0x8900590 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 09:17:29 MacBook-Pro krd[33002]: 09:17:29.479 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:374 central <CBCentral: 0x521fa30 identifier = 0D9EC903-A594-4438-8D73-FDDDF6237EB3, MTU = 74> didSubscribeToCharacteristic <CBMutableCharacteristic: 0x8900590 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 10:00:37 MacBook-Pro krd[33002]: 10:00:37.580 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:384 central <CBCentral: 0x521fa30 identifier = 0D9EC903-A594-4438-8D73-FDDDF6237EB3, MTU = 20> didUnsubscribeFromCharacteristic <CBMutableCharacteristic: 0x8900590 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 10:00:39 MacBook-Pro krd[33002]: 10:00:39.248 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:374 central <CBCentral: 0x521fa30 identifier = 0D9EC903-A594-4438-8D73-FDDDF6237EB3, MTU = 74> didSubscribeToCharacteristic <CBMutableCharacteristic: 0x8900590 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 10:17:24 MacBook-Pro krd[33002]: 10:17:24.333 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 10:17:24 MacBook-Pro krd[33002]: 10:17:24.514 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 10:17:25 MacBook-Pro krd[33002]: 10:17:25.228 NOTICE ‚ñ∂ CoreBluetooth: received 337 byte message over Bluetooth
+Nov 14 10:17:25 MacBook-Pro krd[33002]: 10:17:25.229 NOTICE ‚ñ∂ request 5YStdkevRpvU4tm6huj7ut ACKed
+Nov 14 10:17:25 MacBook-Pro krd[33002]: 10:17:25.489 NOTICE ‚ñ∂ request 5YStdkevRpvU4tm6huj7ut ACKed
+Nov 14 10:17:36 MacBook-Pro krd[33002]: 10:17:36.737 NOTICE ‚ñ∂ Signature response took 12223 ms
+Nov 14 10:17:36 MacBook-Pro krd[33002]: 10:17:36.793 NOTICE ‚ñ∂ CoreBluetooth:  Received split 2 with 511 bytes over Bluetooth
+Nov 14 10:17:37 MacBook-Pro krd[33002]: 10:17:37.213 NOTICE ‚ñ∂ CoreBluetooth:  Received split 1 with 511 bytes over Bluetooth
+Nov 14 10:17:37 MacBook-Pro krd[33002]: 10:17:37.244 NOTICE ‚ñ∂ CoreBluetooth: received 1057 byte message over Bluetooth
+Nov 14 10:23:14 MacBook-Pro krd[33002]: 10:23:14.222 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 10:23:14 MacBook-Pro krd[33002]: 10:23:14.222 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 10:23:29 MacBook-Pro krd[33002]: 10:23:29.354 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 10:23:29 MacBook-Pro krd[33002]: 10:23:29.354 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.019 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.019 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.206 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.206 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.227 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.227 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.811 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 10:58:03 MacBook-Pro krd[33002]: 10:58:03.814 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 11:00:59 MacBook-Pro krd[33002]: 11:00:59.148 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 11:00:59 MacBook-Pro krd[33002]: 11:00:59.148 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 11:01:14 MacBook-Pro krd[33002]: 11:01:14.209 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 11:01:14 MacBook-Pro krd[33002]: 11:01:14.209 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 11:06:49 MacBook-Pro krd[33002]: 11:06:49.028 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:309 CBPeripheralManagerStatePoweredOff
+Nov 14 11:06:49 MacBook-Pro krd[33002]: 11:06:49.028 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:274 CBCentralManagerStateOff
+Nov 14 11:06:49 MacBook-Pro krd[33002]: 11:06:49.168 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 11:06:49 MacBook-Pro krd[33002]: 11:06:49.169 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 11:06:49 MacBook-Pro krd[33002]: 11:06:49.184 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 11:06:49 MacBook-Pro krd[33002]: 11:06:49.184 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 11:06:50 MacBook-Pro krd[33002]: 11:06:50.371 NOTICE ‚ñ∂ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 11:06:50 MacBook-Pro krd[33002]: 11:06:50.372 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 11:07:04 MacBook-Pro krd[33002]: 11:07:04.999 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:191 removeService: 1F9F4D49-185E-215F-34D4-6CAA54EB1C3F
+Nov 14 11:07:05 MacBook-Pro krd[33002]: 11:07:05.011 NOTICE ‚ñ∂ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 11:07:05 MacBook-Pro krd[33002]: 11:07:05.012 NOTICE ‚ñ∂ CoreBluetooth: removed service 1f9f4d49-185e-215f-34d4-6caa54eb1c3f
+Nov 14 11:07:05 MacBook-Pro krd[33002]: 11:07:05.019 NOTICE ‚ñ∂ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 11:07:09 MacBook-Pro krd[33002]: 11:07:09.385 ERROR ‚ñ∂ Push error: RequestError: send request failed
+Nov 14 11:07:09 MacBook-Pro krd[33002]: 11:07:09.391 ERROR ‚ñ∂ RequestError: send request failed
+Nov 14 11:07:09 MacBook-Pro krd[33002]: 11:07:09.394 ERROR ‚ñ∂ RequestError: send request failed
+Nov 14 11:07:09 MacBook-Pro krd[33002]: 11:07:09.397 ERROR ‚ñ∂ error sendRequestAndReceiveResponses:  EnclaveClient pairing never initiated
+Nov 14 11:07:55 MacBook-Pro krd[33002]: 11:07:55.962 ERROR ‚ñ∂ RequestError: send request failed
+Nov 14 11:07:55 MacBook-Pro krd[33002]: 11:07:55.964 ERROR ‚ñ∂ error sendRequestAndReceiveResponses:  EnclaveClient pairing never initiated
+
+
+
+
+
+
+
+Nov 14 11:08:39 MacBook-Pro krd[33002]: 11:08:39.470 ERROR ▶ Phone not paired
+
+
+
+
+
+
+Nov 14 11:09:18 MacBook-Pro krd[33002]: 11:09:18.573 ERROR ▶ RequestError: send request failed
+Nov 14 11:09:18 MacBook-Pro krd[33002]: 11:09:18.575 ERROR ▶ error sendRequestAndReceiveResponses:  EnclaveClient pairing never initiated
+Nov 14 11:09:25 MacBook-Pro krd[33002]: 11:09:25.965 ERROR ▶ Phone not paired
+Nov 14 11:09:30 MacBook-Pro krd[33002]: 11:09:30.588 NOTICE ▶ stopping with signal terminated
+Nov 14 11:09:30 MacBook-Pro krd[97650]: 11:09:30.666 NOTICE ▶ krd launched and listening on UNIX socket
+Nov 14 11:09:30 MacBook-Pro krd[97650]: 11:09:30.666 NOTICE ▶ pairing not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 11:09:30 MacBook-Pro krd[97650]: 11:09:30.666 NOTICE ▶ me not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 11:09:32 MacBook-Pro krd[97650]: 11:09:32.072 ERROR ▶ RequestError: send request failed
+Nov 14 11:09:32 MacBook-Pro krd[97650]: 11:09:32.079 ERROR ▶ error sendRequestAndReceiveResponses:  EnclaveClient pairing never initiated
+
+
+
+
+
+
+Nov 14 11:10:04 MacBook-Pro krd[97650]: 11:10:04.789 NOTICE ▶ stopping with signal terminated
+Nov 14 11:10:04 MacBook-Pro krd[97706]: 11:10:04.830 NOTICE ▶ krd launched and listening on UNIX socket
+Nov 14 11:10:04 MacBook-Pro krd[97706]: 11:10:04.831 NOTICE ▶ pairing not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 11:10:04 MacBook-Pro krd[97706]: 11:10:04.831 NOTICE ▶ me not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 11:10:07 MacBook-Pro krd[97706]: 11:10:07.539 ERROR ▶ RequestError: send request failed
+Nov 14 11:10:07 MacBook-Pro krd[97706]: 11:10:07.542 ERROR ▶ error sendRequestAndReceiveResponses:  EnclaveClient pairing never initiated
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nov 14 11:11:34 MacBook-Pro krd[98103]: 11:11:34.049 NOTICE ▶ krd launched and listening on UNIX socket
+Nov 14 11:11:34 MacBook-Pro krd[98103]: 11:11:34.049 NOTICE ▶ pairing not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 11:11:34 MacBook-Pro krd[98103]: 11:11:34.049 NOTICE ▶ me not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+
+Nov 14 11:11:37 MacBook-Pro krd[98103]: 11:11:37.388 NOTICE ▶ CoreBluetooth: [added service  84a562c1-b20a-f41d-c0c3-d0c9136ec0ca]
+Nov 14 11:11:37 MacBook-Pro krd[98103]: 11:11:37.397 NOTICE ▶ SendQueued: Pairing in progress, waiting for symmetric key
+Nov 14 11:11:37 MacBook-Pro krd[97706]: 11:11:37.615 ERROR ▶ Phone not paired
+Nov 14 11:11:55 MacBook-Pro krd[98103]: 11:11:55.955 NOTICE ▶ stored symmetric key
+Nov 14 11:13:24 MacBook-Pro krd[98103]: 11:13:24.068 NOTICE ▶ request 6Pvs9wKSvcqGJHbpj8P27m ACKed
+Nov 14 11:13:24 MacBook-Pro krd[98103]: 11:13:24.296 NOTICE ▶ request 6Pvs9wKSvcqGJHbpj8P27m ACKed
+Nov 14 11:13:33 MacBook-Pro krd[98103]: 11:13:33.091 NOTICE ▶ Signature response took 9611 ms
+Nov 14 11:14:14 MacBook-Pro krd[98103]: 11:14:14.142 NOTICE ▶ request 5UrCvse89qpEpagMkATmDv ACKed
+Nov 14 11:14:19 MacBook-Pro krd[98103]: 11:14:19.544 NOTICE ▶ Signature response took 7178 ms
+Nov 14 11:14:29 MacBook-Pro krd[98103]: 11:14:29.050 NOTICE ▶ request 0gJyBu5JCrC3CMUE6sBPxo ACKed
+Nov 14 11:14:30 MacBook-Pro krd[98103]: 11:14:30.365 NOTICE ▶ request 0gJyBu5JCrC3CMUE6sBPxo ACKed
+Nov 14 11:14:34 MacBook-Pro krd[98103]: 11:14:34.669 NOTICE ▶ Signature response took 6301 ms
+
+
+
+
+
+Nov 14 11:38:34 MacBook-Pro krd[98103]: 11:38:34.190 ERROR ▶ CoreBluetooth: [CBAdvertisingDriver.m:224 Not starting advertising when in state 1]
+
+
+
+
+
+
+
+
+
+
+
+Nov 14 12:14:51 MacBook-Pro krd[98103]: 12:14:51.552 ERROR ▶ CoreBluetooth: [CBAdvertisingDriver.m:224 Not starting advertising when in state 1]
+Nov 14 12:14:52 MacBook-Pro krd[98103]: 12:14:52.346 ERROR ▶ CoreBluetooth: [CBAdvertisingDriver.m:224 Not starting advertising when in state 2]
+
+
+
+
+
+
+
+
+
+
+Nov 14 12:15:22 MacBook-Pro krd[98103]: 12:15:22.712 NOTICE ▶ stopping with signal interrupt
+
+
+
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.534 NOTICE ▶ krd launched and listening on UNIX socket
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.545 NOTICE ▶ CoreBluetooth: CBDriver.m:82 Adding service [CBUUID 84A562C1-B20A-F41D-C0C3-D0C9136EC0CA] with characteristics {
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.550 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.550 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:108 Added service <CBMutableService: 0x530dfa0 Primary = YES, UUID = [CBUUID 84A562C1-B20A-F41D-C0C3-D0C9136EC0CA], Included Services = (null), Characteristics = (
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.550 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.551 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.551 NOTICE ▶ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 12:16:02 MacBook-Pro krd[99253]: 12:16:02.551 NOTICE ▶ CoreBluetooth: added service 84a562c1-b20a-f41d-c0c3-d0c9136ec0ca
+Nov 14 12:16:08 MacBook-Pro krd[99253]: 12:16:08.516 NOTICE ▶ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 12:16:08 MacBook-Pro krd[99253]: 12:16:08.783 NOTICE ▶ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 12:16:11 MacBook-Pro krd[99253]: 12:16:11.409 NOTICE ▶ request 3taohjRRsZWFujATZKun8I ACKed
+Nov 14 12:16:11 MacBook-Pro krd[99253]: 12:16:11.848 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:374 central <CBCentral: 0x68006c0 identifier = AB792B91-60DD-43DF-86CC-B41637F0F137, MTU = 101> didSubscribeToCharacteristic <CBMutableCharacteristic: 0x530e510 UUID = [CBUUID 20F53E48-C08D-423A-B2C2-1C797889AF24], Value = (null), Properties = 0x1a, Permissions = 0x3, Descriptors = (null), SubscribedCentrals = (
+Nov 14 12:16:13 MacBook-Pro krd[99253]: 12:16:13.051 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:191 removeService: 84A562C1-B20A-F41D-C0C3-D0C9136EC0CA
+Nov 14 12:16:13 MacBook-Pro krd[99253]: 12:16:13.052 NOTICE ▶ CoreBluetooth: removed service 84a562c1-b20a-f41d-c0c3-d0c9136ec0ca
+Nov 14 12:16:13 MacBook-Pro krd[99253]: 12:16:13.053 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:16:13 MacBook-Pro krd[99253]: 12:16:13.055 NOTICE ▶ CoreBluetooth: CBDriver.m:118 Writing data to characteristic
+Nov 14 12:16:14 MacBook-Pro krd[99253]: 12:16:14.134 NOTICE ▶ CoreBluetooth: CBDriver.m:82 Adding service [CBUUID CD974A6A-3D5F-42EA-98F1-81FA15A1BA4A] with characteristics {
+Nov 14 12:16:14 MacBook-Pro krd[99253]: 12:16:14.135 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:108 Added service <CBMutableService: 0x6b0aae0 Primary = YES, UUID = [CBUUID CD974A6A-3D5F-42EA-98F1-81FA15A1BA4A], Included Services = (null), Characteristics = (
+Nov 14 12:16:14 MacBook-Pro krd[99253]: 12:16:14.135 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:16:14 MacBook-Pro krd[99253]: 12:16:14.135 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 12:16:14 MacBook-Pro krd[99253]: 12:16:14.137 NOTICE ▶ CoreBluetooth: added service cd974a6a-3d5f-42ea-98f1-81fa15a1ba4a
+Nov 14 12:16:14 MacBook-Pro krd[99253]: 12:16:14.152 NOTICE ▶ SendQueued: Pairing in progress, waiting for symmetric key
+Nov 14 12:16:20 MacBook-Pro krd[99253]: 12:16:20.962 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:191 removeService: CD974A6A-3D5F-42EA-98F1-81FA15A1BA4A
+Nov 14 12:16:20 MacBook-Pro krd[99253]: 12:16:20.962 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:16:20 MacBook-Pro krd[99253]: 12:16:20.962 NOTICE ▶ CoreBluetooth: removed service cd974a6a-3d5f-42ea-98f1-81fa15a1ba4a
+Nov 14 12:16:21 MacBook-Pro krd[99253]: 12:16:21.377 NOTICE ▶ CoreBluetooth: CBDriver.m:82 Adding service [CBUUID 0E9B140C-8A67-C454-3BEF-504014946918] with characteristics {
+Nov 14 12:16:21 MacBook-Pro krd[99253]: 12:16:21.378 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:108 Added service <CBMutableService: 0x571b8f0 Primary = YES, UUID = [CBUUID 0E9B140C-8A67-C454-3BEF-504014946918], Included Services = (null), Characteristics = (
+Nov 14 12:16:21 MacBook-Pro krd[99253]: 12:16:21.378 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:16:21 MacBook-Pro krd[99253]: 12:16:21.378 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 12:16:21 MacBook-Pro krd[99253]: 12:16:21.379 NOTICE ▶ CoreBluetooth: added service 0e9b140c-8a67-c454-3bef-504014946918
+Nov 14 12:16:21 MacBook-Pro krd[99253]: 12:16:21.416 NOTICE ▶ SendQueued: Pairing in progress, waiting for symmetric key
+
+Nov 14 12:16:24 MacBook-Pro krd[99253]: 12:16:24.776 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:191 removeService: 0E9B140C-8A67-C454-3BEF-504014946918
+Nov 14 12:16:24 MacBook-Pro krd[99253]: 12:16:24.776 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:16:24 MacBook-Pro krd[99253]: 12:16:24.776 NOTICE ▶ CoreBluetooth: removed service 0e9b140c-8a67-c454-3bef-504014946918
+Nov 14 12:16:25 MacBook-Pro krd[99253]: 12:16:25.494 NOTICE ▶ CoreBluetooth: CBDriver.m:82 Adding service [CBUUID 180A99FE-2050-F84E-D65E-16351BEA6134] with characteristics {
+Nov 14 12:16:25 MacBook-Pro krd[99253]: 12:16:25.494 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:108 Added service <CBMutableService: 0x5602180 Primary = YES, UUID = [CBUUID 180A99FE-2050-F84E-D65E-16351BEA6134], Included Services = (null), Characteristics = (
+Nov 14 12:16:25 MacBook-Pro krd[99253]: 12:16:25.494 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:16:25 MacBook-Pro krd[99253]: 12:16:25.494 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 12:16:25 MacBook-Pro krd[99253]: 12:16:25.495 NOTICE ▶ CoreBluetooth: added service 180a99fe-2050-f84e-d65e-16351bea6134
+Nov 14 12:16:25 MacBook-Pro krd[99253]: 12:16:25.570 NOTICE ▶ SendQueued: Pairing in progress, waiting for symmetric key
+Nov 14 12:17:11 MacBook-Pro krd[99253]: 12:17:11.410 ERROR ▶ Request timed out
+Nov 14 12:17:11 MacBook-Pro krd[99253]: 12:17:11.410 ERROR ▶ signature request error: Request timed out
+
+
+
+
+
+
+Nov 14 12:17:44 MacBook-Pro krd[99253]: 12:17:44.153 ERROR ▶ Phone not paired
+Nov 14 12:17:51 MacBook-Pro krd[99253]: 12:17:51.419 ERROR ▶ Phone not paired
+Nov 14 12:17:51 MacBook-Pro krd[99253]: 12:17:51.420 ERROR ▶ Phone not paired
+Nov 14 12:17:55 MacBook-Pro krd[99253]: 12:17:55.575 ERROR ▶ Phone not paired
+
+
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.153 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:191 removeService: 180A99FE-2050-F84E-D65E-16351BEA6134
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.153 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.153 NOTICE ▶ CoreBluetooth: removed service 180a99fe-2050-f84e-d65e-16351bea6134
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.919 NOTICE ▶ CoreBluetooth: CBDriver.m:82 Adding service [CBUUID 1D35EB62-232B-1D59-AF28-921C871B808A] with characteristics {
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.919 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:108 Added service <CBMutableService: 0x68005f0 Primary = YES, UUID = [CBUUID 1D35EB62-232B-1D59-AF28-921C871B808A], Included Services = (null), Characteristics = (
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.919 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.919 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.920 NOTICE ▶ CoreBluetooth: added service 1d35eb62-232b-1d59-af28-921c871b808a
+Nov 14 12:18:16 MacBook-Pro krd[99253]: 12:18:16.926 NOTICE ▶ SendQueued: Pairing in progress, waiting for symmetric key
+Nov 14 12:18:18 MacBook-Pro krd[99253]: 12:18:18.487 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:191 removeService: 1D35EB62-232B-1D59-AF28-921C871B808A
+Nov 14 12:18:18 MacBook-Pro krd[99253]: 12:18:18.487 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:18:18 MacBook-Pro krd[99253]: 12:18:18.487 NOTICE ▶ CoreBluetooth: removed service 1d35eb62-232b-1d59-af28-921c871b808a
+Nov 14 12:18:19 MacBook-Pro krd[99253]: 12:18:19.611 NOTICE ▶ CoreBluetooth: CBDriver.m:82 Adding service [CBUUID 38DF47E3-1009-4137-AD8C-2A060917F3E6] with characteristics {
+Nov 14 12:18:19 MacBook-Pro krd[99253]: 12:18:19.611 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:108 Added service <CBMutableService: 0x6b08d50 Primary = YES, UUID = [CBUUID 38DF47E3-1009-4137-AD8C-2A060917F3E6], Included Services = (null), Characteristics = (
+Nov 14 12:18:19 MacBook-Pro krd[99253]: 12:18:19.611 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:18:19 MacBook-Pro krd[99253]: 12:18:19.611 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 12:18:19 MacBook-Pro krd[99253]: 12:18:19.612 NOTICE ▶ CoreBluetooth: added service 38df47e3-1009-4137-ad8c-2a060917f3e6
+Nov 14 12:18:19 MacBook-Pro krd[99253]: 12:18:19.617 NOTICE ▶ SendQueued: Pairing in progress, waiting for symmetric key
+Nov 14 12:18:32 MacBook-Pro krd[97706]: 12:18:32.679 NOTICE ▶ stopping with signal terminated
+Nov 14 12:18:32 MacBook-Pro krd[99514]: 12:18:32.744 NOTICE ▶ krd launched and listening on UNIX socket
+Nov 14 12:18:32 MacBook-Pro krd[99514]: 12:18:32.744 NOTICE ▶ pairing not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 12:18:32 MacBook-Pro krd[99514]: 12:18:32.744 NOTICE ▶ me not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 12:18:34 MacBook-Pro krd[99253]: 12:18:34.538 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:191 removeService: 38DF47E3-1009-4137-AD8C-2A060917F3E6
+Nov 14 12:18:34 MacBook-Pro krd[99253]: 12:18:34.539 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:251 stopAdvertising
+Nov 14 12:18:34 MacBook-Pro krd[99253]: 12:18:34.539 NOTICE ▶ CoreBluetooth: removed service 38df47e3-1009-4137-ad8c-2a060917f3e6
+Nov 14 12:18:34 MacBook-Pro krd[99253]: 12:18:34.541 NOTICE ▶ stopping with signal interrupt
+Nov 14 12:18:35 MacBook-Pro krd[99532]: 12:18:35.154 NOTICE ▶ krd launched and listening on UNIX socket
+Nov 14 12:18:35 MacBook-Pro krd[99532]: 12:18:35.155 NOTICE ▶ pairing not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 12:18:35 MacBook-Pro krd[99532]: 12:18:35.155 NOTICE ▶ me not loaded: open /Users/kking/.kr/pairing.json: no such file or directory
+Nov 14 12:18:37 MacBook-Pro krd[99532]: 12:18:37.281 NOTICE ▶ CoreBluetooth: CBDriver.m:82 Adding service [CBUUID D77828CD-952C-43F0-6F31-DCA6AF53EADA] with characteristics {
+Nov 14 12:18:37 MacBook-Pro krd[99532]: 12:18:37.283 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:114 Queued service <CBMutableService: 0x6b37770 Primary = YES, UUID = [CBUUID D77828CD-952C-43F0-6F31-DCA6AF53EADA], Included Services = (null), Characteristics = (
+Nov 14 12:18:37 MacBook-Pro krd[99532]: 12:18:37.283 NOTICE ▶ CoreBluetooth: added service d77828cd-952c-43f0-6f31-dca6af53eada
+Nov 14 12:18:37 MacBook-Pro krd[99532]: 12:18:37.283 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:302 CBPeripheralManagerStatePoweredOn
+Nov 14 12:18:37 MacBook-Pro krd[99532]: 12:18:37.283 NOTICE ▶ CoreBluetooth: CBAdvertisingDriver.m:242 startAdvertising (
+Nov 14 12:18:37 MacBook-Pro krd[99532]: 12:18:37.283 NOTICE ▶ CoreBluetooth: CBScanningDriver.m:268 CBCentralManagerStateOn
+Nov 14 12:18:37 MacBook-Pro krd[99532]: 12:18:37.289 NOTICE ▶ SendQueued: Pairing in progress, waiting for symmetric key

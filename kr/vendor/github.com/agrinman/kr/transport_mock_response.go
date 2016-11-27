@@ -4,51 +4,30 @@ import (
 	"bytes"
 	"crypto"
 	"crypto/rand"
-	"crypto/rsa"
 	"encoding/json"
 	"sync"
 	"testing"
-
-	"golang.org/x/crypto/ssh"
+	"time"
 )
 
-var testSK *rsa.PrivateKey
-var testPK ssh.PublicKey
-var testMe *Profile
-var testMeMutex sync.Mutex
-
-func TestMe(t *testing.T) (profile Profile, sk *rsa.PrivateKey, pk ssh.PublicKey) {
-	testMeMutex.Lock()
-	defer testMeMutex.Unlock()
-	var err error
-	if testMe == nil {
-		testSK, err = rsa.GenerateKey(rand.Reader, 2048)
-		if err != nil {
-			t.Fatal(err)
-		}
-		testPK, err = ssh.NewPublicKey(&testSK.PublicKey)
-		if err != nil {
-			t.Fatal(err)
-		}
-		testMe = &Profile{
-			SSHWirePublicKey: testPK.Marshal(),
-			Email:            "kevin@krypt.co",
-		}
-	}
-	return *testMe, testSK, testPK
-}
+var SHORT_ACK_DELAY = 500 * time.Millisecond
 
 type ResponseTransport struct {
 	ImmediatePairTransport
 	*testing.T
 	sync.Mutex
-	responses [][]byte
-	sentNoOps int
+	responses             [][]byte
+	sentNoOps             int
+	RespondToAlertOnly    bool
+	DoNotRespond          bool
+	Ack                   bool
+	SendAfterHalfAckDelay bool
 }
 
-func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error) {
-	t.Lock()
-	defer t.Unlock()
+func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte, ackSent bool) (err error) {
+	if t.DoNotRespond {
+		return
+	}
 	me, sk, _ := TestMe(t.T)
 	var request Request
 	err = json.Unmarshal(m, &request)
@@ -62,22 +41,34 @@ func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error)
 	response := Response{
 		RequestID: request.RequestID,
 	}
-	if request.MeRequest != nil {
-		response.MeResponse = &MeResponse{
-			Me: me,
+	if request.SendACK && !ackSent && t.Ack {
+		response.AckResponse = &AckResponse{}
+		if t.SendAfterHalfAckDelay {
+			go func() {
+				<-time.After(SHORT_ACK_DELAY / 2)
+				t.Lock()
+				defer t.Unlock()
+				t.respondToMessage(ps, m, true)
+			}()
 		}
-	}
-	if request.SignRequest != nil {
-		fp := me.PublicKeyFingerprint()
-		if !bytes.Equal(request.SignRequest.PublicKeyFingerprint, fp[:]) {
-			t.Fatal("wrong public key")
+	} else {
+		if request.MeRequest != nil {
+			response.MeResponse = &MeResponse{
+				Me: me,
+			}
 		}
-		sig, err := sk.Sign(rand.Reader, request.SignRequest.Digest, crypto.SHA256)
-		if err != nil {
-			t.T.Fatal(err)
-		}
-		response.SignResponse = &SignResponse{
-			Signature: &sig,
+		if request.SignRequest != nil {
+			fp := me.PublicKeyFingerprint()
+			if !bytes.Equal(request.SignRequest.PublicKeyFingerprint, fp[:]) {
+				t.Fatal("wrong public key")
+			}
+			sig, err := sk.Sign(rand.Reader, request.SignRequest.Digest, crypto.SHA256)
+			if err != nil {
+				t.T.Fatal(err)
+			}
+			response.SignResponse = &SignResponse{
+				Signature: &sig,
+			}
 		}
 	}
 	respJson, err := json.Marshal(response)
@@ -85,6 +76,23 @@ func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error)
 		t.T.Fatal(err)
 	}
 	t.responses = append(t.responses, respJson)
+	return
+}
+
+func (t *ResponseTransport) SendMessage(ps *PairingSecret, m []byte) (err error) {
+	t.Lock()
+	defer t.Unlock()
+	if t.RespondToAlertOnly {
+		return
+	}
+	err = t.respondToMessage(ps, m, false)
+	return
+}
+
+func (t *ResponseTransport) PushAlert(ps *PairingSecret, alertText string, message []byte) (err error) {
+	t.Lock()
+	defer t.Unlock()
+	err = t.respondToMessage(ps, message, false)
 	return
 }
 
@@ -108,4 +116,17 @@ func (t *ResponseTransport) GetSentNoOps() int {
 	t.Lock()
 	defer t.Unlock()
 	return t.sentNoOps
+}
+
+func (t *ResponseTransport) RemoteUnpair() {
+	t.Lock()
+	defer t.Unlock()
+	unpairResponse := Response{
+		UnpairResponse: &UnpairResponse{},
+	}
+	respJson, err := json.Marshal(unpairResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.responses = append(t.responses, respJson)
 }

@@ -11,43 +11,10 @@ import (
 	"github.com/agrinman/kr"
 )
 
-func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {
-	return UnpairedEnclaveClient(
-		transport,
-		&kr.MemoryPersister{},
-		nil,
-	)
-}
-
-func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
-	shortTimeouts := Timeouts{
-		Me: TimeoutPhases{
-			Alert: 100 * time.Millisecond,
-			Fail:  200 * time.Millisecond,
-		},
-		Pair: TimeoutPhases{
-			Alert: 100 * time.Millisecond,
-			Fail:  200 * time.Millisecond,
-		},
-		Sign: TimeoutPhases{
-			Alert: 100 * time.Millisecond,
-			Fail:  200 * time.Millisecond,
-		},
-		ACKDelay: kr.SHORT_ACK_DELAY,
-	}
-
-	ec := UnpairedEnclaveClient(
-		transport,
-		&kr.MemoryPersister{},
-		&shortTimeouts,
-	)
-	return ec
-}
-
 func TestPair(t *testing.T) {
 	transport := &kr.ImmediatePairTransport{}
 	ec := NewTestEnclaveClient(transport)
-	ps := pairClient(t, ec)
+	ps := PairClient(t, ec)
 	defer ec.Stop()
 
 	if ps.SymmetricSecretKey == nil || !bytes.Equal(*ps.SymmetricSecretKey, transport.SymKey) {
@@ -58,7 +25,7 @@ func TestPair(t *testing.T) {
 func TestMultiPair(t *testing.T) {
 	transport := &kr.MultiPairTransport{}
 	ec := NewTestEnclaveClient(transport)
-	ps := pairClient(t, ec)
+	ps := PairClient(t, ec)
 	defer ec.Stop()
 
 	if ps.SymmetricSecretKey == nil || !bytes.Equal(*ps.SymmetricSecretKey, transport.SymKey) {
@@ -69,7 +36,7 @@ func TestMultiPair(t *testing.T) {
 func TestRemoteUnpair(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	transport.RemoteUnpair()
@@ -97,7 +64,7 @@ func TestMeTimeout(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t, DoNotRespond: true}
 	ec := NewTestEnclaveClientShortTimeouts(transport)
 
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	me, err := ec.RequestMe(true)
@@ -107,7 +74,7 @@ func TestMeTimeout(t *testing.T) {
 }
 
 func testMeSuccess(t *testing.T, ec EnclaveClientI) {
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	me, err := ec.RequestMe(true)
@@ -172,7 +139,7 @@ func testSignatureSuccess(t *testing.T, ec EnclaveClientI) {
 }
 
 func testSignature(t *testing.T, ec EnclaveClientI) (resp *kr.SignResponse, digest [32]byte, err error) {
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	msg, err := kr.RandNBytes(32)
@@ -193,7 +160,7 @@ func testSignature(t *testing.T, ec EnclaveClientI) (resp *kr.SignResponse, dige
 func TestNoOp(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	pairClient(t, ec)
+	PairClient(t, ec)
 	defer ec.Stop()
 
 	go ec.RequestNoOp()
@@ -201,18 +168,4 @@ func TestNoOp(t *testing.T) {
 	kr.TrueBefore(t, func() bool {
 		return transport.GetSentNoOps() > 0
 	}, time.Now().Add(time.Second))
-}
-
-func pairClient(t *testing.T, client EnclaveClientI) (ps *kr.PairingSecret) {
-	err := client.Start()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ps, err = client.Pair()
-	if err != nil {
-		t.Fatal(err)
-	}
-	go client.RequestMe(true)
-	kr.TrueBefore(t, client.IsPaired, time.Now().Add(time.Second))
-	return
 }
