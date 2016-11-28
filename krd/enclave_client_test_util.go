@@ -43,17 +43,17 @@ func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
 	return ec
 }
 
-func NewLocalUnixServer(t *testing.T) (ec EnclaveClientI, cs ControlServer, unixFile string) {
+func NewLocalUnixServer(t *testing.T) (ec EnclaveClientI, cs *ControlServer, unixFile string) {
 	transport := &kr.ResponseTransport{T: t}
 	ec = NewTestEnclaveClient(transport)
-	cs = ControlServer{ec}
+	cs = &ControlServer{ec}
 
 	randFile, err := kr.Rand128Base62()
 	if err != nil {
 		t.Fatal(err)
 	}
 	unixFile = filepath.Join(os.TempDir(), randFile)
-	l, err := net.ListenUnix("unix", &net.UnixAddr{unixFile, "unix"})
+	l, err := net.Listen("unix", unixFile)
 	if err != nil {
 		t.Fatal(err)
 	}

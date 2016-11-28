@@ -1,26 +1,34 @@
 package kr
 
 import (
+	"encoding/base64"
 	"sync"
 )
 
 type ImmediatePairTransport struct {
 	NoopTransport
 	sync.Mutex
-	paired bool
-	SymKey []byte
+	Keys map[string][]byte
+}
+
+func (t *ImmediatePairTransport) Setup(ps *PairingSecret) (err error) {
+	if t.Keys == nil {
+		t.Keys = map[string][]byte{}
+	}
+	return
 }
 
 func (t *ImmediatePairTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
 	t.Lock()
 	defer t.Unlock()
-	if !t.paired {
-		t.paired = true
-		t.SymKey, err = RandNBytes(32)
+	if _, ok := t.Keys[base64.StdEncoding.EncodeToString(ps.WorkstationPublicKey)]; !ok {
+		var key []byte
+		key, err = RandNBytes(32)
 		if err != nil {
 			return
 		}
-		wrappedKey, wrapErr := WrapKey(t.SymKey, ps.WorkstationPublicKey)
+		t.Keys[base64.StdEncoding.EncodeToString(ps.WorkstationPublicKey)] = key
+		wrappedKey, wrapErr := WrapKey(t.Keys[base64.StdEncoding.EncodeToString(ps.WorkstationPublicKey)], ps.WorkstationPublicKey)
 		if wrapErr != nil {
 			err = wrapErr
 			return

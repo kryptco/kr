@@ -15,7 +15,7 @@ var ErrTimedOut = fmt.Errorf("Request timed out. Make sure your phone and workst
 var ErrSigning = fmt.Errorf("Kryptonite was unable to perform SSH login. Please restart the Kryptonite app on your phone.")
 var ErrRejected = fmt.Errorf("Request Rejected ✘")
 
-func requestMeOver(conn net.Conn) (me kr.Profile, err error) {
+func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 	meRequest, err := kr.NewRequest()
 	if err != nil {
 		return
@@ -36,11 +36,15 @@ func requestMeOver(conn net.Conn) (me kr.Profile, err error) {
 }
 
 func RequestMe() (me kr.Profile, err error) {
-	daemonConn, err := kr.DaemonDialWithTimeout()
+	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
 	if err != nil {
 		return
 	}
-	requestMeOver(daemonConn)
+	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	if err != nil {
+		return
+	}
+	me, err = RequestMeOver(daemonConn)
 	return
 }
 
@@ -146,7 +150,11 @@ func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byt
 }
 
 func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
-	daemonConn, err := kr.DaemonDialWithTimeout()
+	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		return
+	}
+	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
 		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return
@@ -173,7 +181,11 @@ func requestNoOpOver(conn net.Conn) (err error) {
 }
 
 func RequestNoOp() (err error) {
-	daemonConn, err := kr.DaemonDialWithTimeout()
+	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		return
+	}
+	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
 		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return

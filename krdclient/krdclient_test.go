@@ -21,7 +21,7 @@ func TestMe(t *testing.T) {
 	}
 	defer os.Remove(unixFile)
 
-	me, err := requestMeOver(conn)
+	me, err := RequestMeOver(conn)
 	if err != nil {
 		t.Fatal(err)
 	}

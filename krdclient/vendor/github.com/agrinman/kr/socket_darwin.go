@@ -1,11 +1,11 @@
 package kr
 
-import(
-	"net"
+import (
 	"fmt"
+	"net"
 )
 
-func DaemonDial() (conn net.Conn, err error) {
+func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	socketPath, err := KrDirFile(DAEMON_SOCKET_FILENAME)
 	if err == nil {
 		conn, err = net.Dial("unix", socketPath)

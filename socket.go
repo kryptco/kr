@@ -60,8 +60,8 @@ func DaemonListen() (listener net.Listener, err error) {
 	return
 }
 
-func pingDaemon() (err error) {
-	conn, err := DaemonDial()
+func pingDaemon(unixFile string) (err error) {
+	conn, err := DaemonDial(unixFile)
 	if err != nil {
 		return
 	}
@@ -83,10 +83,10 @@ func pingDaemon() (err error) {
 	return
 }
 
-func DaemonDialWithTimeout() (conn net.Conn, err error) {
+func DaemonDialWithTimeout(unixFile string) (conn net.Conn, err error) {
 	done := make(chan error, 1)
 	go func() {
-		done <- pingDaemon()
+		done <- pingDaemon(unixFile)
 	}()
 
 	select {
@@ -99,6 +99,14 @@ func DaemonDialWithTimeout() (conn net.Conn, err error) {
 		return
 	}
 
-	conn, err = DaemonDial()
+	conn, err = DaemonDial(unixFile)
+	return
+}
+
+func DaemonSocketOrFatal() (unixFile string) {
+	unixFile, err := KrDirFile(DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		log.Fatal("Could not open connection to daemon. Make sure it is running by typing \"kr restart\".")
+	}
 	return
 }

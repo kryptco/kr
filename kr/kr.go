@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -50,13 +51,23 @@ func confirmOrFatal(message string) {
 }
 
 func pairCommand(c *cli.Context) (err error) {
-	_, err = krdclient.RequestMe()
-	if err == nil {
-		confirmOrFatal("Already paired, unpair current session?")
+	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"))
+}
+
+func pairOver(unixFile string, forceUnpair bool) (err error) {
+	if !forceUnpair {
+		meConn, err := net.Dial("unix", unixFile)
+		if err != nil {
+			PrintFatal("Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
+		}
+		_, err = krdclient.RequestMeOver(meConn)
+		if err == nil {
+			confirmOrFatal("Already paired, unpair current session?")
+		}
 	}
-	putConn, err := kr.DaemonDialWithTimeout()
+	putConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
-		PrintFatal(err.Error())
+		PrintFatal("Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
 	}
 	defer putConn.Close()
 
@@ -93,7 +104,7 @@ func pairCommand(c *cli.Context) (err error) {
 	fmt.Println("Scan this QR Code with the Kryptonite mobile app to connect it with this workstation. Maximize the window and/or lower your font size if the QR code does not fit.")
 	fmt.Println()
 
-	getConn, err := kr.DaemonDialWithTimeout()
+	getConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -141,7 +152,11 @@ func pairCommand(c *cli.Context) (err error) {
 }
 
 func unpairCommand(c *cli.Context) (err error) {
-	conn, err := kr.DaemonDialWithTimeout()
+	return unpairOver(kr.DaemonSocketOrFatal())
+}
+
+func unpairOver(unixFile string) (err error) {
+	conn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
 		PrintFatal(err.Error())
 	}
@@ -164,7 +179,7 @@ func unpairCommand(c *cli.Context) (err error) {
 	}
 	switch response.StatusCode {
 	case http.StatusNotFound, http.StatusInternalServerError:
-		PrintFatal("Unpair failed, ensure the Kryptonite daemon is running with \"kr reset\".")
+		PrintFatal("Unpair failed, ensure the Kryptonite daemon is running with \"kr restart\".")
 	case http.StatusOK:
 	default:
 		PrintFatal("Unpair failed with error %d", response.StatusCode)
@@ -304,8 +319,14 @@ func main() {
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{
-			Name:   "pair",
-			Usage:  "Initiate pairing of this workstation with a phone running Kryptonite.",
+			Name:  "pair",
+			Usage: "Initiate pairing of this workstation with a phone running Kryptonite.",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "force",
+					Usage: "Do not ask for confirmation to unpair a currently paired device.",
+				},
+			},
 			Action: pairCommand,
 		},
 		cli.Command{

@@ -1,0 +1,200 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package watch defines interfaces for watching a sequence of changes.
+//
+// API Overview
+//
+// Watcher service allows a client to watch for updates that match a
+// query.  For each watched query, the client will receive a reliable
+// stream of watch events without re-ordering.
+//
+// The watching is done by starting a streaming RPC. The argument to
+// the RPC contains the query. The result stream consists of a
+// never-ending sequence of Change messages (until the call fails or
+// is cancelled).
+//
+// Root Entity
+//
+// The Object name that receives the Watch RPC is called the root
+// entity.  The root entity is the parent of all entities that the
+// client cares about.  Therefore, the query is confined to children
+// of the root entity, and the names in the Change messages are all
+// relative to the root entity.
+//
+// Watch Request
+//
+// When a client makes a watch request, it can indicate whether it
+// wants to receive the initial states of the entities that match the
+// query, just new changes to the entities, or resume watching from a
+// particular point in a previous watch stream.  On receiving a watch
+// request, the server sends one or more messages to the client. The
+// first message informs the client that the server has registered the
+// client's request; the instant of time when the client receives the
+// event is referred to as the client's "watch point" for that query.
+//
+// Atomic Delivery
+//
+// The response stream consists of a sequence of Change messages. Each
+// Change message contains an optional continued bit
+// (default=false). A sub-sequence of Change messages with
+// continued=true followed by a Change message with continued=false
+// forms an "atomic group". Systems that support multi-entity atomic
+// updates may guarantee that all changes resulting from a single
+// atomic update are delivered in the same "atomic group". It is up to
+// the documentation of a particular system that implements the Watch
+// API to document whether or not it supports such grouping. We expect
+// that most callers will ignore the notion of atomic delivery and the
+// continued bit, i.e., they will just process each Change message as
+// it is received.
+//
+// Initial State
+//
+// The first atomic group delivered by a watch call is special. It is
+// delivered as soon as possible and contains the initial state of the
+// entities being watched.  The client should consider itself caught up
+// after processing this first atomic group.  The messages in this first
+// atomic group depend on the value of ResumeMarker.
+//
+//   (1) ResumeMarker is "" or not specified: For every entity P that
+//       matches the query and exists, there will be at least one message
+//       delivered with entity == P and the last such message will contain
+//       the current state of P.  For every entity Q (including the entity
+//       itself) that matches the query but does not exist, either no
+//       message will be delivered, or the last message for Q will have
+//       state == DOES_NOT_EXIST. At least one message for entity="" will
+//       be delivered.
+//
+//   (2) ResumeMarker == "now": there will be exactly one message with
+//       entity = "" and state INITIAL_STATE_SKIPPED.  The client cannot
+//       assume whether or not the entity exists after receiving this
+//       message.
+//
+//   (3) ResumeMarker has a value R from a preceding watch call on this
+//       entity: The same messages as described in (1) will be delivered
+//       to the client except that any information implied by messages
+//       received on the preceding call up to and including R may not be
+//       delivered. The expectation is that the client will start with
+//       state it had built up from the preceding watch call, apply the
+//       changes received from this call and build an up-to-date view of
+//       the entities without having to fetch a potentially large amount
+//       of information that has not changed.  Note that some information
+//       that had already been delivered by the preceding call might be
+//       delivered again.
+//
+// Ordering and Reliability
+//
+// The Change messages that apply to a particular element of the
+// entity will be delivered eventually in order without loss for the
+// duration of the RPC. Note however that if multiple Changes apply to
+// the same element, the implementation is free to suppress them and
+// deliver just the last one.  The underlying system must provide the
+// guarantee that any relevant update received for an entity E after a
+// client's watch point for E MUST be delivered to that client.
+//
+// These tight guarantees allow for the following simplifications in
+// the client:
+//
+//   (1) The client does not need to have a separate polling loop to
+//       make up for missed updates.
+//
+//   (2) The client does not need to manage timestamps/versions
+//       manually; the last update delivered corresponds to the
+//       eventual state of the entity.
+package watch
+
+import "v.io/v23/security/access"
+
+// GlobWatcher allows a client to receive updates for changes to objects
+// that match a pattern.  See the package comments for details.
+type GlobWatcher interface {
+  // WatchGlob returns a stream of changes that match a pattern.
+  WatchGlob(req GlobRequest) stream<_, Change> error {access.Resolve}
+}
+
+// GlobRequest specifies which entities should be watched and, optionally,
+// how to resume from a previous Watch call.
+type GlobRequest struct {
+  // Pattern specifies the subset of the children of the root entity
+  // for which the client wants updates.
+  Pattern string
+
+  // ResumeMarker specifies how to resume from a previous Watch call.
+  // See the ResumeMarker type for detailed comments.
+  ResumeMarker ResumeMarker
+}
+
+// ResumeMarker specifies how much of the existing underlying state
+// is delivered to the client when the watch request is received by
+// the system. The client can set this marker in one of the
+// following ways to get different semantics:
+//
+// (A) Parameter is left empty.
+//     Semantics: Fetch initial state.
+//     The client wants the entities' initial states to be delivered.
+//     See the description in "Initial State".
+//
+// (B) Parameter is set to the string "now" (UTF-8 encoding).
+//     Semantics: Fetch new changes only.
+//     The client just wants to get the changes received by the
+//     system after the watch point. The system may deliver changes
+//     from before the watch point as well.
+//
+// (C) Parameter is set to a value received in an earlier
+//     Change.ResumeMarker field while watching the same entity with
+//     the same query.
+//     Semantics: Resume from a specific point.
+//     The client wants to receive the changes from a specific point
+//     - this value must correspond to a value received in the
+//     Change.ResumeMarker field. The system may deliver changes
+//     from before the ResumeMarker as well.  If the system cannot
+//     resume the stream from this point (e.g., if it is too far
+//     behind in the stream), it can return the
+//     ErrUnknownResumeMarker error.
+//
+// An implementation MUST support the empty string "" marker
+// (initial state fetching) and the "now" marker. It need not
+// support resuming from a specific point.
+type ResumeMarker []byte
+
+const (
+  // The entity exists and its full value is included in Value.
+  Exists = int32(0)
+
+  // The entity does not exist.
+  DoesNotExist = int32(1)
+
+  // The root entity and its children may or may not exist. Used only
+  // for initial state delivery when the client is not interested in
+  // fetching the initial state. See the "Initial State" section
+  // above.
+  InitialStateSkipped = int32(2)
+)
+
+// Change is the new value for a watched entity.
+type Change struct {
+  // Name is the Object name of the entity that changed.  This name is relative
+  // to the root entity (i.e. the name of the Watcher service).
+  Name string
+
+  // State must be one of Exists, DoesNotExist, or InitialStateSkipped.
+  State int32
+
+  // Value contains the service-specific data for the entity.
+  Value any
+
+  // If present, provides a compact representation of all the messages
+  // that have been received by the caller for the given Watch call.
+  // For example, it could be a sequence number or a multi-part
+  // timestamp/version vector. This marker can be provided in the
+  // Request message to allow the caller to resume the stream watching
+  // at a specific point without fetching the initial state.
+  ResumeMarker ResumeMarker
+
+  // If true, this Change is followed by more Changes that are in the
+  // same group as this Change.
+  Continued bool
+}
+
+error UnknownResumeMarker() {"en": "unknown resume marker {_}"}

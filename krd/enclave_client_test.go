@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/rsa"
 	"crypto/sha256"
+	"encoding/base64"
 	"testing"
 	"time"
 
@@ -17,7 +18,7 @@ func TestPair(t *testing.T) {
 	ps := PairClient(t, ec)
 	defer ec.Stop()
 
-	if ps.SymmetricSecretKey == nil || !bytes.Equal(*ps.SymmetricSecretKey, transport.SymKey) {
+	if ps.SymmetricSecretKey == nil || !bytes.Equal(*ps.SymmetricSecretKey, transport.Keys[base64.StdEncoding.EncodeToString(ps.WorkstationPublicKey)]) {
 		t.Fatal()
 	}
 }
