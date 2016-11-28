@@ -1,0 +1,17 @@
+// Copyright 2016 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package math
+
+// Complex64 is a complex number composed of 32-bit real and imaginary parts.
+type Complex64 struct {
+	Real float32
+	Imag float32
+}
+
+// Complex128 is a complex number composed of 64-bit real and imaginary parts.
+type Complex128 struct {
+	Real float64
+	Imag float64
+}

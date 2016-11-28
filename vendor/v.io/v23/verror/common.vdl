@@ -1,0 +1,81 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package verror
+
+error (
+	// Unknown means the error has no known Id.  A more specific error should
+	// always be used, if possible.  Unknown is typically only used when
+	// automatically converting errors that do not contain an Id.
+	Unknown() {"en":"Error{:_}"}
+
+	// Internal means an internal error has occurred.  A more specific error
+	// should always be used, if possible.
+	Internal() {"en":"Internal error{:_}"}
+
+	// NotImplemented means that the request type is valid but that the method to
+	// handle the request has not been implemented.
+	NotImplemented() {"en":"Not implemented{:_}"}
+
+	// EndOfFile means the end-of-file has been reached; more generally, no more
+	// input data is available.
+	EndOfFile() {"en":"End of file{:_}"}
+
+	// BadArg means the arguments to an operation are invalid or incorrectly
+	// formatted.
+	BadArg() {"en":"Bad argument{:_}"}
+
+	// BadState means an operation was attempted on an object while the object was
+	// in an incompatible state.
+	BadState() {"en":"Invalid state{:_}"}
+
+	// BadVersion means the version presented by the client (e.g. to a service
+	// that supports content-hash-based caching or atomic read-modify-write) was
+	// out of date or otherwise invalid, likely because some other request caused
+	// the version at the server to change. The client should get a fresh version
+	// and try again.
+	BadVersion() {"en":"Version is out of date"}
+
+	// Exist means that the requested item already exists; typically returned when
+	// an attempt to create an item fails because it already exists.
+	Exist() {"en":"Already exists{:_}"}
+
+	// NoExist means that the requested item does not exist; typically returned
+	// when an attempt to lookup an item fails because it does not exist.
+	NoExist() {"en":"Does not exist{:_}"}
+
+	UnknownMethod() {"en": "Method does not exist{:_}"}
+	UnknownSuffix() {"en": "Suffix does not exist{:_}"}
+
+	// NoExistOrNoAccess means that either the requested item does not exist, or
+	// is inaccessible.  Typically returned when the distinction between existence
+	// and inaccessiblity should be hidden to preserve privacy.
+	NoExistOrNoAccess() {"en":"Does not exist or access denied{:_}"}
+
+	// NoServers means a name was resolved to unusable or inaccessible servers.
+	NoServers() {RetryRefetch, "en":"No usable servers found{:_}"}
+
+	// NoAccess means the server does not authorize the client for access.
+	NoAccess() {RetryRefetch, "en":"Access denied{:_}"}
+
+	// NotTrusted means the client does not trust the server.
+	NotTrusted() {RetryRefetch, "en":"Client does not trust server{:_}"}
+
+	// Aborted means that an operation was not completed because it was aborted by
+	// the receiver.  A more specific error should be used if it would help the
+	// caller decide how to proceed.
+	Aborted() {"en":"Aborted{:_}"}
+
+	// BadProtocol means that an operation was not completed because of a protocol
+	// or codec error.
+	BadProtocol() {"en":"Bad protocol or type{:_}"}
+
+	// Canceled means that an operation was not completed because it was
+	// explicitly cancelled by the caller.
+	Canceled() {"en":"Canceled{:_}"}
+
+	// Timeout means that an operation was not completed before the time deadline
+	// for the operation.
+	Timeout() {"en":"Timeout{:_}"}
+)
