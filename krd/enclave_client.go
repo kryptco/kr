@@ -10,9 +10,6 @@ import (
 	"fmt"
 	"github.com/agrinman/kr"
 	"github.com/golang/groupcache/lru"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"sync"
 	"time"
 )
@@ -322,9 +319,9 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 			if persistErr := client.Persister.SaveMe(meResponse.Me); persistErr != nil {
 				log.Error("persist me error:", persistErr.Error())
 			}
+			client.Persister.SaveMySSHPubKey(meResponse.Me)
 			client.Unlock()
 		}
-		ioutil.WriteFile(filepath.Join(os.Getenv("HOME"), ".ssh", "id_kryptonite.pub"), []byte(meResponse.Me.AuthorizedKeyString()), 0700)
 	}
 	return
 }

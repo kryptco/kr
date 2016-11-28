@@ -30,26 +30,26 @@
 			"checksumSHA1": "uqUSHXJEszv1i1yZkXwyoK15ASg=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/agrinman/go.corebluetooth",
 			"path": "github.com/agrinman/go.corebluetooth",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "Oz00DU3RKISYoHjSUIyHkG7ojGs=",
 			"path": "github.com/agrinman/kr",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
-			"checksumSHA1": "0LujeWcsNrmRfAMgo0F1ZtQGIjQ=",
+			"checksumSHA1": "rIa4Wea+ZtLY2O52sYz39O0p7YU=",
 			"path": "github.com/agrinman/kr/krd",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "XChbUrSIqPhoyiuyADIt2kcQdNY=",
 			"path": "github.com/agrinman/kr/krdclient",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "SNSgdp5ShDZ57VZqBkQ0PXJCJIM=",
@@ -211,29 +211,29 @@
 			"checksumSHA1": "fazUXuuuqf29mSju2q30sB+zNNU=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/cosnicolaou/llog",
 			"path": "github.com/cosnicolaou/llog",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "FCeEm2BWZV/n4oTy+SGd/k0Ab5c=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/go-ini/ini",
 			"path": "github.com/go-ini/ini",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "Bra/9XucW0ivjIalL27XqSw2dTk=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/golang/groupcache/lru",
 			"path": "github.com/golang/groupcache/lru",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "0ZrwvB6KoGPj2PoDNSEJwxQ6Mog=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/jmespath/go-jmespath",
 			"path": "github.com/jmespath/go-jmespath",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "+M7ZCwfOlTTydJiINKWOyzz/NSg=",
@@ -257,8 +257,8 @@
 			"checksumSHA1": "mhvIMH8oAtOiEyg37zWKmgb+6v4=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/pborman/uuid",
 			"path": "github.com/pborman/uuid",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
@@ -276,15 +276,15 @@
 			"checksumSHA1": "Ni79F3uE8yJJWHCm0hYanLSm3yE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/vanadium/go.ref/lib/discovery/plugins/ble",
 			"path": "github.com/vanadium/go.ref/lib/discovery/plugins/ble",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "wy9KcY+mP43BpRj5LdTvPDQpp0I=",
 			"origin": "github.com/agrinman/kr/krd/vendor/github.com/vanadium/go.v23/context",
 			"path": "github.com/vanadium/go.v23/context",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "shXkK7zCsmzBXzxPPtZgAb0Rs1k=",
@@ -296,8 +296,8 @@
 			"checksumSHA1": "+d7J5FBWNdBRLUZLNusDChY+QCs=",
 			"origin": "github.com/agrinman/kr/krd/vendor/golang.org/x/crypto/bn256",
 			"path": "golang.org/x/crypto/bn256",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "dwOedwBJ1EIK9+S3t108Bx054Y8=",
@@ -321,22 +321,22 @@
 			"checksumSHA1": "Y/FcWB2/xSfX1rRp7HYhktHNw8s=",
 			"origin": "github.com/agrinman/kr/krd/vendor/golang.org/x/crypto/nacl/secretbox",
 			"path": "golang.org/x/crypto/nacl/secretbox",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "x7EiaCEsuaZ3jc8r+8KBmYwESmA=",
 			"origin": "github.com/agrinman/kr/krd/vendor/golang.org/x/crypto/poly1305",
 			"path": "golang.org/x/crypto/poly1305",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "w8PESKJweP+BCAxCYPU1QC08qUU=",
 			"origin": "github.com/agrinman/kr/krd/vendor/golang.org/x/crypto/salsa20/salsa",
 			"path": "golang.org/x/crypto/salsa20/salsa",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "74BhfQ3KWI+q237hKY6rZYZfHnY=",
@@ -348,309 +348,309 @@
 			"checksumSHA1": "fAkR8gWlET11hG136KiKVFvoPZ0=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23",
 			"path": "v.io/v23",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "Of3U0Kx6fZ/6YsLoIRHVvialRSo=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/context",
 			"path": "v.io/v23/context",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "AFykGlSvaQkNc+Cw4VEc1gaBXLU=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/discovery",
 			"path": "v.io/v23/discovery",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "ozDrwCoDYNu1mH8QJy2lUx8Uhrw=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/flow",
 			"path": "v.io/v23/flow",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "IJRnhrW7Dwjnb4jFlhSmtvLcLiE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/glob",
 			"path": "v.io/v23/glob",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "uRRMVlakh3+H9JTZNXIECkO1Z/o=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/i18n",
 			"path": "v.io/v23/i18n",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "OXlFEUXz6eKHlBvWAggUhZW5Iks=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/logging",
 			"path": "v.io/v23/logging",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "BVRwQpsdg6WPTITtPJ2XQVeGPSk=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/namespace",
 			"path": "v.io/v23/namespace",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "Kspsb8I0tFmwNMnrqxtFaYm/XOE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/naming",
 			"path": "v.io/v23/naming",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "c2lVy5J5QI+shK+g/PQV9EEVCNs=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/options",
 			"path": "v.io/v23/options",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "YMgB+6TgT7rWp9hkfYraB3BwqkI=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine",
 			"path": "v.io/v23/query/engine",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "cgMH6IyIX/2WWT/cX/fx0t2OFnI=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine/datasource",
 			"path": "v.io/v23/query/engine/datasource",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "9bFtDxcADFoVg7impvOILQ1oNNg=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine/internal",
 			"path": "v.io/v23/query/engine/internal",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "RmLBLdTXPOmi4qf5XE0zO/FnDEE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine/internal/conversions",
 			"path": "v.io/v23/query/engine/internal/conversions",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "OaXVrymwZdb2g1cOeELPGD84zxc=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine/internal/query_checker",
 			"path": "v.io/v23/query/engine/internal/query_checker",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "3FunWYT34ZxPI9d7+FDDK55x2VM=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine/internal/query_functions",
 			"path": "v.io/v23/query/engine/internal/query_functions",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "b60Izit5Y+BeTT2XqVFl/0Mj8ek=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine/internal/query_parser",
 			"path": "v.io/v23/query/engine/internal/query_parser",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "YA6s/J8frq1tkUjnjIiUu70K5Nw=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/engine/public",
 			"path": "v.io/v23/query/engine/public",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "8H76nT4Vnm0elakt5dqVLpehfKE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/pattern",
 			"path": "v.io/v23/query/pattern",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "7Qtd0Zsx1oUoNpTcO8BwoL/uhN8=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/query/syncql",
 			"path": "v.io/v23/query/syncql",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "PmT1QcLMKi6s77gSKSBUElEkkXw=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/rpc",
 			"path": "v.io/v23/rpc",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "HpB26RLUPach/AikgNrSbiCJD/o=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/rpc/version",
 			"path": "v.io/v23/rpc/version",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "j4TeqztGdrmYE/tJybVCGBGmS9s=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/security",
 			"path": "v.io/v23/security",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "eaz2lSnj+OT2sHYENNHzh/ngnnQ=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/security/access",
 			"path": "v.io/v23/security/access",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "cFZpU45mkj4pQYd6MKNuhlV2TUE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/services/stats",
 			"path": "v.io/v23/services/stats",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "zi0JeJIKSi6WLPOwCeUuvPxyEyM=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/services/watch",
 			"path": "v.io/v23/services/watch",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "wgKBUty1pZ595/YtBs2im9xX1lM=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/uniqueid",
 			"path": "v.io/v23/uniqueid",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "uuT9hiXysheOhXqivznZoJtHahs=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vdl",
 			"path": "v.io/v23/vdl",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "J766TpWbFVrP7hUxvhxXpMK9EQg=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vdlroot",
 			"path": "v.io/v23/vdlroot",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "Y0Hv2G2oStLOAsu6VsdoAlctuOE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vdlroot/math",
 			"path": "v.io/v23/vdlroot/math",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "xIn0kq5F5xXtn6J+tgaHpFPymDY=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vdlroot/signature",
 			"path": "v.io/v23/vdlroot/signature",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "CjKmIHbjbtWpyh3mSOSWPrURmJ8=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vdlroot/time",
 			"path": "v.io/v23/vdlroot/time",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "IYUNoYX9cXCKAzF7SW4fdRqvkHs=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vdlroot/vdltool",
 			"path": "v.io/v23/vdlroot/vdltool",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "boNHQ2MbJTchJwel+qA+XT+2vOc=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/verror",
 			"path": "v.io/v23/verror",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "eQbbyF/EMjh2GnoTb0Fx8ZdVjXE=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vom",
 			"path": "v.io/v23/vom",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "Znal6ABxPJgY3EMaROJzDq1AN18=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/v23/vtrace",
 			"path": "v.io/v23/vtrace",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "D4xP0bqzrJ88bhwlF8Qceqa3PF8=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/lib/ibe",
 			"path": "v.io/x/lib/ibe",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "xz14D7GiuiY4ZMf+ZnCzK5g6cDo=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/lib/vlog",
 			"path": "v.io/x/lib/vlog",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "EMynASye/p1NWuU6smSRznu4W5A=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/ref/lib/discovery",
 			"path": "v.io/x/ref/lib/discovery",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "5628l3ZtKHhps7se3hcwTmuvM+U=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/ref/lib/security/bcrypter",
 			"path": "v.io/x/ref/lib/security/bcrypter",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "V/fQf4tWUmevQIv4LukyvY3teqo=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/ref/lib/stats",
 			"path": "v.io/x/ref/lib/stats",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "6Vdh/kjjd5Wrtz3F+ynMYi7aXz0=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/ref/lib/stats/counter",
 			"path": "v.io/x/ref/lib/stats/counter",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "wJnAnr18GgY4ve8ox40se45K1/M=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/ref/lib/stats/histogram",
 			"path": "v.io/x/ref/lib/stats/histogram",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
 			"checksumSHA1": "sWI4Dn1FJ8QkHghtT6VL5ZVomjA=",
 			"origin": "github.com/agrinman/kr/krd/vendor/v.io/x/ref/services/stats",
 			"path": "v.io/x/ref/services/stats",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
+			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
+			"revisionTime": "2016-11-28T04:34:34Z"
 		}
 	],
 	"rootPath": "github.com/agrinman/kr/kr"
