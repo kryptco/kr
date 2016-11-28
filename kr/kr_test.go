@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"os"
 	"testing"
 
@@ -10,13 +10,40 @@ import (
 
 func TestPair(t *testing.T) {
 	ec, _, unixFile := krd.NewLocalUnixServer(t)
-	fmt.Println(unixFile)
 	defer os.Remove(unixFile)
 	ec.Start()
 	defer ec.Stop()
 
-	err := pairOver(unixFile, true)
+	testPairSuccess(t, unixFile, ec)
+}
+
+func testPairSuccess(t *testing.T, unixFile string, ec krd.EnclaveClientI) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	err := pairOver(unixFile, true, stdout, stderr)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if !ec.IsPaired() {
+		t.Fatal("not paired")
+	}
+}
+
+func TestUnpair(t *testing.T) {
+	ec, _, unixFile := krd.NewLocalUnixServer(t)
+	defer os.Remove(unixFile)
+	ec.Start()
+	defer ec.Stop()
+
+	testPairSuccess(t, unixFile, ec)
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	err := unpairOver(unixFile, stdout, stderr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ec.IsPaired() {
+		t.Fatal("paired")
 	}
 }

@@ -15,7 +15,7 @@ func restartCommand(c *cli.Context) (err error) {
 	exec.Command("launchctl", "unload", plist).Run()
 	err = exec.Command("launchctl", "load", plist).Run()
 	if err != nil {
-		PrintFatal("Failed to restart Kryptonite daemon.")
+		PrintFatal(os.Stderr, "Failed to restart Kryptonite daemon.")
 	}
 	fmt.Println("Restarted Kryptonite daemon.")
 	return
@@ -26,7 +26,7 @@ func openBrowser(url string) {
 }
 
 func uninstallCommand(c *cli.Context) (err error) {
-	confirmOrFatal("Uninstall Kryptonite from this workstation?")
+	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation?")
 	exec.Command("brew", "uninstall", "kr").Run()
 	exec.Command("npm", "uninstall", "-g", "krd").Run()
 	os.Remove("/usr/local/bin/kr")
@@ -36,7 +36,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	exec.Command("launchctl", "unload", plist).Run()
 	os.Remove(plist)
 	exec.Command(cleanSSHConfigCommand[0], cleanSSHConfigCommand[1:]...).Run()
-	PrintErr("Kryptonite uninstalled.")
+	PrintErr(os.Stderr, "Kryptonite uninstalled.")
 	return
 }
 
@@ -51,7 +51,7 @@ func installedWithNPM() bool {
 }
 
 func upgradeCommand(c *cli.Context) (err error) {
-	confirmOrFatal("Upgrade Kryptonite on this workstation?")
+	confirmOrFatal(os.Stderr, "Upgrade Kryptonite on this workstation?")
 	var cmd *exec.Cmd
 	if installedWithBrew() {
 		cmd = exec.Command("brew", "upgrade", "kryptco/tap/kr")
