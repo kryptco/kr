@@ -34,24 +34,6 @@
 			"revisionTime": "2016-11-28T04:34:34Z"
 		},
 		{
-			"checksumSHA1": "Oz00DU3RKISYoHjSUIyHkG7ojGs=",
-			"path": "github.com/agrinman/kr",
-			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
-			"revisionTime": "2016-11-28T04:34:34Z"
-		},
-		{
-			"checksumSHA1": "rIa4Wea+ZtLY2O52sYz39O0p7YU=",
-			"path": "github.com/agrinman/kr/krd",
-			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
-			"revisionTime": "2016-11-28T04:34:34Z"
-		},
-		{
-			"checksumSHA1": "XChbUrSIqPhoyiuyADIt2kcQdNY=",
-			"path": "github.com/agrinman/kr/krdclient",
-			"revision": "eb863aa7fddc66037478d06f38226e574ae9cf4d",
-			"revisionTime": "2016-11-28T04:34:34Z"
-		},
-		{
 			"checksumSHA1": "SNSgdp5ShDZ57VZqBkQ0PXJCJIM=",
 			"path": "github.com/atotto/clipboard",
 			"revision": "bb272b845f1112e10117e3e45ce39f690c0001ad",

@@ -21,12 +21,6 @@
 			"revisionTime": "2016-11-04T19:28:37Z"
 		},
 		{
-			"checksumSHA1": "Oz00DU3RKISYoHjSUIyHkG7ojGs=",
-			"path": "github.com/agrinman/kr",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
-		},
-		{
 			"checksumSHA1": "nXQkxtbv18ZrhC6peNNXORzMMDw=",
 			"path": "github.com/aws/aws-sdk-go/aws",
 			"revision": "32cdc88aa5cd2ba4afa049da884aaf9a3d103ef4",
@@ -209,22 +203,10 @@
 			"revisionTime": "2016-05-05T18:20:05Z"
 		},
 		{
-			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
-			"path": "github.com/op/go-logging",
-			"revision": "970db520ece77730c7e4724c61121037378659d9",
-			"revisionTime": "2016-03-15T20:05:05Z"
-		},
-		{
 			"checksumSHA1": "mhvIMH8oAtOiEyg37zWKmgb+6v4=",
 			"path": "github.com/pborman/uuid",
 			"revision": "b984ec7fa9ff9e428bd0cf0abf429384dfbe3e37",
 			"revisionTime": "2016-08-24T21:06:00Z"
-		},
-		{
-			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
-			"path": "github.com/satori/go.uuid",
-			"revision": "0aa62d5ddceb50dbcb909d790b5345affd3669b6",
-			"revisionTime": "2016-07-13T18:03:06Z"
 		},
 		{
 			"checksumSHA1": "Ni79F3uE8yJJWHCm0hYanLSm3yE=",

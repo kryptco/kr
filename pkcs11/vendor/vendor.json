@@ -21,18 +21,6 @@
 			"revisionTime": "2016-07-13T06:31:29Z"
 		},
 		{
-			"checksumSHA1": "sruyFzqqtMHyw2V17imSy/z6cNU=",
-			"path": "github.com/agrinman/kr",
-			"revision": "baad74f2002ebdaed937a36fad6cf914cb6f8748",
-			"revisionTime": "2016-11-26T22:47:21Z"
-		},
-		{
-			"checksumSHA1": "kSHyXR3vOtPtuLlLpkhqEtr2p00=",
-			"path": "github.com/agrinman/kr/krdclient",
-			"revision": "30a9ab6f27ad5a12950b716123cc89d7465f13b0",
-			"revisionTime": "2016-11-27T02:04:14Z"
-		},
-		{
 			"checksumSHA1": "ITuDW4N6W+2v6VNjo7VtwSiFHvA=",
 			"path": "github.com/aws/aws-sdk-go/aws",
 			"revision": "d6b4bfeba6997082629986cac2a932a233ba745e",
@@ -177,12 +165,6 @@
 			"revisionTime": "2016-08-30T22:35:58Z"
 		},
 		{
-			"checksumSHA1": "Oae/AzW8+W/lPdL6smTcgyhncrc=",
-			"path": "github.com/blang/semver",
-			"revision": "60ec3488bfea7cca02b021d106d9911120d25fe9",
-			"revisionTime": "2016-07-01T05:46:53Z"
-		},
-		{
 			"checksumSHA1": "0LxZKE4y1Vzff32xdqhN8C0ouUg=",
 			"path": "github.com/deckarep/gosx-notifier",
 			"revision": "9daaf8a4715ebe4daf300036644762fe27d3aded",
@@ -225,12 +207,6 @@
 			"path": "github.com/mattn/go-isatty",
 			"revision": "66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8",
 			"revisionTime": "2016-08-06T12:27:52Z"
-		},
-		{
-			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
-			"path": "github.com/op/go-logging",
-			"revision": "970db520ece77730c7e4724c61121037378659d9",
-			"revisionTime": "2016-03-15T20:05:05Z"
 		},
 		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",

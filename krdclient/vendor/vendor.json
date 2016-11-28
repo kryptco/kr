@@ -24,18 +24,6 @@
 			"revisionTime": "2016-11-27T02:04:14Z"
 		},
 		{
-			"checksumSHA1": "f1XAYJPB57wWBsKuhF2fG3fu7yU=",
-			"path": "github.com/agrinman/kr",
-			"revision": "13566072dfb5a42625ffda939bbb0b4f5bf066dd",
-			"revisionTime": "2016-11-27T03:15:24Z"
-		},
-		{
-			"checksumSHA1": "Vkbfwynlf5Bp5eIcR1kPV9AzEcM=",
-			"path": "github.com/agrinman/kr/krd",
-			"revision": "30a9ab6f27ad5a12950b716123cc89d7465f13b0",
-			"revisionTime": "2016-11-27T02:04:14Z"
-		},
-		{
 			"checksumSHA1": "nXQkxtbv18ZrhC6peNNXORzMMDw=",
 			"origin": "github.com/agrinman/kr/vendor/github.com/aws/aws-sdk-go/aws",
 			"path": "github.com/aws/aws-sdk-go/aws",
