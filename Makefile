@@ -5,8 +5,4 @@ all:
 	cd pkcs11; make; cp kr-pkcs11.so ../bin/kr-pkcs11.so
 
 check:
-	go test
-	cd kr; go test
-	cd krd; go test
-	cd pkcs11; go test
-	cd krdclient; go test
+	go test github.com/agrinman/kr/{,pkcs11,krd,krdclient,kr}
