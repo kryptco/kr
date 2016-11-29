@@ -8,6 +8,7 @@ package main
 import (
 	"C"
 )
+
 import (
 	"bytes"
 	"crypto/sha256"
@@ -21,6 +22,19 @@ import (
 	"github.com/fatih/color"
 	"github.com/op/go-logging"
 )
+
+type CK_SESSION_HANDLE C.CK_SESSION_HANDLE
+type CK_SESSION_HANDLE_PTR C.CK_SESSION_HANDLE_PTR
+type CK_OBJECT_HANDLE C.CK_OBJECT_HANDLE
+type CK_ATTRIBUTE C.CK_ATTRIBUTE
+
+const CKR_OK = C.CKR_OK
+const CKF_SERIAL_SESSION = C.CKF_SERIAL_SESSION
+const CKA_CLASS = C.CKA_CLASS
+const CKO_PUBLIC_KEY = C.CKO_PUBLIC_KEY
+const CKO_PRIVATE_KEY = C.CKO_PRIVATE_KEY
+
+type ULONG C.CK_ULONG
 
 var log = kr.SetupLogging("", logging.WARNING, os.Getenv("KR_LOG_SYSLOG") != "")
 
@@ -143,11 +157,11 @@ func C_GetTokenInfo(slotID C.CK_SLOT_ID, tokenInfo *C.CK_TOKEN_INFO) C.CK_RV {
 	return C.CKR_OK
 }
 
-var nextSessionIota = C.CK_SESSION_HANDLE(1)
+var nextSessionIota = CK_SESSION_HANDLE(1)
 
 //export C_OpenSession
 func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID_PTR,
-	notify C.CK_NOTIFY, sessionHandle C.CK_SESSION_HANDLE_PTR) C.CK_RV {
+	notify C.CK_NOTIFY, sessionHandle *CK_SESSION_HANDLE) C.CK_RV {
 	mutex.Lock()
 	defer mutex.Unlock()
 	log.Notice("OpenSession")
@@ -164,7 +178,7 @@ func C_OpenSession(slotID C.CK_SLOT_ID, flags C.CK_FLAGS, pApplication C.CK_VOID
 }
 
 //export C_GetSessionInfo
-func C_GetSessionInfo(session C.CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK_RV {
+func C_GetSessionInfo(session CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK_RV {
 	log.Notice("GetSessionInfo")
 	*info = C.CK_SESSION_INFO{
 		slotID: 0,
@@ -211,23 +225,23 @@ func C_GetMechanismInfo(slotID C.CK_SLOT_ID, _type C.CK_MECHANISM_TYPE, info *C.
 }
 
 //export C_CloseSession
-func C_CloseSession(session C.CK_SESSION_HANDLE) C.CK_RV {
+func C_CloseSession(session CK_SESSION_HANDLE) C.CK_RV {
 	log.Notice("CloseSession")
 	mutex.Lock()
 	defer mutex.Unlock()
 	return C.CKR_OK
 }
 
-var sessionFoundObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
-var sessionFindingObjects map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool = map[C.CK_SESSION_HANDLE]map[C.CK_OBJECT_HANDLE]bool{}
+var sessionFoundObjects map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool = map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool{}
+var sessionFindingObjects map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool = map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool{}
 
 //	only starts search for object if session has not found it yet
-func findOnce(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
+func findOnce(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE) {
 	if _, ok := sessionFindingObjects[session]; !ok {
-		sessionFindingObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+		sessionFindingObjects[session] = map[CK_OBJECT_HANDLE]bool{}
 	}
 	if _, ok := sessionFoundObjects[session]; !ok {
-		sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+		sessionFoundObjects[session] = map[CK_OBJECT_HANDLE]bool{}
 	}
 	if found, ok := sessionFoundObjects[session][object]; ok && found {
 		return
@@ -236,26 +250,26 @@ func findOnce(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
 }
 
 //	always starts search for object even if session has found it previously
-func findAlways(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
+func findAlways(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE) {
 	if _, ok := sessionFindingObjects[session]; !ok {
-		sessionFindingObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+		sessionFindingObjects[session] = map[CK_OBJECT_HANDLE]bool{}
 	}
 	sessionFindingObjects[session][object] = true
 }
 
-func found(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE) {
+func found(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE) {
 	if _, ok := sessionFindingObjects[session]; !ok {
-		sessionFindingObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+		sessionFindingObjects[session] = map[CK_OBJECT_HANDLE]bool{}
 	}
 	if _, ok := sessionFoundObjects[session]; !ok {
-		sessionFoundObjects[session] = map[C.CK_OBJECT_HANDLE]bool{}
+		sessionFoundObjects[session] = map[CK_OBJECT_HANDLE]bool{}
 	}
 	delete(sessionFindingObjects[session], object)
 	sessionFoundObjects[session][object] = true
 }
 
 //export C_FindObjectsInit
-func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
+func C_FindObjectsInit(session CK_SESSION_HANDLE, templates *CK_ATTRIBUTE, count ULONG) C.CK_RV {
 	log.Notice("FindObjectsInit")
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -265,7 +279,7 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 		findOnce(session, PRIVKEY_HANDLE)
 		return C.CKR_OK
 	}
-	for i := C.CK_ULONG(0); i < count; i++ {
+	for i := ULONG(0); i < count; i++ {
 		log.Notice("Template type:", templates._type)
 		switch templates._type {
 		case C.CKA_CLASS:
@@ -283,25 +297,28 @@ func C_FindObjectsInit(session C.CK_SESSION_HANDLE, templates C.CK_ATTRIBUTE_PTR
 				log.Notice("init search for CKO_CERTIFICATE unsupported")
 			}
 		}
-		templates = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templates)) + unsafe.Sizeof(*templates)))
+		templates = (*CK_ATTRIBUTE)(unsafe.Pointer(uintptr(unsafe.Pointer(templates)) + unsafe.Sizeof(*templates)))
 	}
 	return C.CKR_OK
 }
 
-const PUBKEY_HANDLE C.CK_OBJECT_HANDLE = 1
-const PRIVKEY_HANDLE C.CK_OBJECT_HANDLE = 2
-const CERT_HANDLE C.CK_OBJECT_HANDLE = 3
+const PUBKEY_HANDLE CK_OBJECT_HANDLE = 1
+const PRIVKEY_HANDLE CK_OBJECT_HANDLE = 2
+const CERT_HANDLE CK_OBJECT_HANDLE = 3
 
 var PUBKEY_ID []byte = []byte{1}
 
 //export C_FindObjects
-func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, maxCount C.CK_ULONG, count C.CK_ULONG_PTR) C.CK_RV {
+func C_FindObjects(session CK_SESSION_HANDLE, objects *CK_OBJECT_HANDLE, maxCount ULONG, count *ULONG) C.CK_RV {
 	log.Notice("FindObjects")
 	mutex.Lock()
 	defer mutex.Unlock()
 	remainingCount := maxCount
-	foundCount := C.CK_ULONG(0)
+	foundCount := ULONG(0)
 	for handle, _ := range sessionFindingObjects[session] {
+		if remainingCount == 0 {
+			break
+		}
 		switch handle {
 		case PUBKEY_HANDLE:
 			*objects = PUBKEY_HANDLE
@@ -312,17 +329,14 @@ func C_FindObjects(session C.CK_SESSION_HANDLE, objects C.CK_OBJECT_HANDLE_PTR, 
 		}
 		foundCount++
 		remainingCount--
-		if remainingCount == 0 {
-			break
-		}
-		objects = (*C.CK_OBJECT_HANDLE)(unsafe.Pointer((uintptr(unsafe.Pointer(objects)) + unsafe.Sizeof(*objects))))
+		objects = (*CK_OBJECT_HANDLE)(unsafe.Pointer((uintptr(unsafe.Pointer(objects)) + unsafe.Sizeof(*objects))))
 	}
 	*count = foundCount
 	return C.CKR_OK
 }
 
 //export C_FindObjectsFinal
-func C_FindObjectsFinal(session C.CK_SESSION_HANDLE) C.CK_RV {
+func C_FindObjectsFinal(session CK_SESSION_HANDLE) C.CK_RV {
 	return C.CKR_OK
 }
 
@@ -330,7 +344,7 @@ var staticMe = kr.Profile{}
 var checkedForUpdate = false
 
 //export C_GetAttributeValue
-func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE, template C.CK_ATTRIBUTE_PTR, count C.CK_ULONG) C.CK_RV {
+func C_GetAttributeValue(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE, template *CK_ATTRIBUTE, count C.CK_ULONG) C.CK_RV {
 	mutex.Lock()
 	defer mutex.Unlock()
 	log.Notice("C_GetAttributeValue")
@@ -405,13 +419,13 @@ func C_GetAttributeValue(session C.CK_SESSION_HANDLE, object C.CK_OBJECT_HANDLE,
 			log.Notice("unknown template type", (*templateIter)._type)
 		}
 
-		templateIter = C.CK_ATTRIBUTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(templateIter)) + unsafe.Sizeof(*template)))
+		templateIter = (*CK_ATTRIBUTE)(unsafe.Pointer(uintptr(unsafe.Pointer(templateIter)) + unsafe.Sizeof(*template)))
 	}
 	return C.CKR_OK
 }
 
 //export C_SignInit
-func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C.CK_OBJECT_HANDLE) C.CK_RV {
+func C_SignInit(session CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key CK_OBJECT_HANDLE) C.CK_RV {
 	log.Notice("C_SignInit mechanism", mechanism.mechanism)
 	switch mechanism.mechanism {
 	case C.CKM_RSA_PKCS:
@@ -426,7 +440,7 @@ func C_SignInit(session C.CK_SESSION_HANDLE, mechanism C.CK_MECHANISM_PTR, key C
 }
 
 //export C_Sign
-func C_Sign(session C.CK_SESSION_HANDLE,
+func C_Sign(session CK_SESSION_HANDLE,
 	data C.CK_BYTE_PTR, dataLen C.ulong,
 	signature C.CK_BYTE_PTR, signatureLen *C.ulong) C.CK_RV {
 	log.Notice("C_Sign")
