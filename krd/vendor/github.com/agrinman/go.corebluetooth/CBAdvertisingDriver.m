@@ -146,7 +146,11 @@ static const char pingByte = 1;
 		CBErrorLog(@"message of length %d too long", message.length);
 		return split;
 	}
-	for (char n = message.length / msgBlockSize; n >= 0; n--) {
+	if (message.length == 0) {
+		CBErrorLog(@"message of length 0");
+		return split;
+	}
+	for (char n = (message.length - 1) / msgBlockSize; n >= 0; n--) {
 		int endIndex = MIN(message.length, offset + msgBlockSize);
 		NSMutableData* block = [NSMutableData new];
 		[block appendBytes:&n length: 1];
