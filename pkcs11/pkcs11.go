@@ -354,7 +354,8 @@ func C_GetAttributeValue(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE, tem
 		checkedForUpdate = true
 	}
 
-	me, err := krdclient.RequestMe()
+	var err error
+	staticMe, err = krdclient.RequestMe()
 	if err == krdclient.ErrNotPaired {
 		log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
 		//	return OK to silence SSH error output
@@ -370,7 +371,7 @@ func C_GetAttributeValue(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE, tem
 		log.Error("unexpected error " + err.Error())
 		return C.CKR_GENERAL_ERROR
 	}
-	pk, err := me.RSAPublicKey()
+	pk, err := staticMe.RSAPublicKey()
 	if err != nil {
 		log.Error("me.RSAPublicKey error " + err.Error())
 		return C.CKR_GENERAL_ERROR

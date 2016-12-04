@@ -357,7 +357,7 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 		log.Notice("Signature response took", millis, "ms")
 		client.postEvent("signature", "success", &callback.medium, &millis)
 		if signResponse.Error != nil {
-			log.Error("Signature error:", signResponse.Error)
+			log.Error("Signature error:", *signResponse.Error)
 		}
 	}
 	return
