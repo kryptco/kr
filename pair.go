@@ -117,6 +117,9 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		didUnwrapKey = true
 		log.Notice("stored symmetric key")
 		return
+	default:
+		err = fmt.Errorf("unknown header")
+		return
 	}
 	return
 }
