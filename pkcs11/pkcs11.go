@@ -367,14 +367,20 @@ func C_GetAttributeValue(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE, tem
 		//	return OK to silence SSH error output
 		return C.CKR_OK
 	}
+	if err == krdclient.ErrConnectingToDaemon {
+		log.Error(err.Error())
+		log.Warning("Falling back to local keys.")
+		//	return OK to silence SSH error output
+		return C.CKR_OK
+	}
 	if err != nil {
 		log.Error("unexpected error " + err.Error())
-		return C.CKR_GENERAL_ERROR
+		return C.CKR_OK
 	}
 	pk, err := staticMe.RSAPublicKey()
 	if err != nil {
 		log.Error("me.RSAPublicKey error " + err.Error())
-		return C.CKR_GENERAL_ERROR
+		return C.CKR_OK
 	}
 
 	templateIter := template

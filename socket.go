@@ -65,6 +65,7 @@ func pingDaemon(unixFile string) (err error) {
 	if err != nil {
 		return
 	}
+	defer conn.Close()
 
 	pingRequest, err := http.NewRequest("GET", "/ping", nil)
 	if err != nil {

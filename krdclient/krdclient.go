@@ -14,6 +14,7 @@ var ErrNotPaired = fmt.Errorf("Workstation not yet paired. Please run \"kr pair\
 var ErrTimedOut = fmt.Errorf("Request timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.")
 var ErrSigning = fmt.Errorf("Kryptonite was unable to perform SSH login. Please restart the Kryptonite app on your phone.")
 var ErrRejected = fmt.Errorf("Request Rejected ✘")
+var ErrConnectingToDaemon = fmt.Errorf("Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
 
 func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 	meRequest, err := kr.NewRequest()
@@ -38,12 +39,15 @@ func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 func RequestMe() (me kr.Profile, err error) {
 	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
 	if err != nil {
+		err = ErrConnectingToDaemon
 		return
 	}
 	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
+		err = ErrConnectingToDaemon
 		return
 	}
+	defer daemonConn.Close()
 	me, err = RequestMeOver(daemonConn)
 	return
 }
@@ -53,14 +57,17 @@ func makeRequestWithJsonResponse(conn net.Conn, request kr.Request) (response kr
 	if err != nil {
 		return
 	}
+	defer httpRequest.Body.Close()
 	err = httpRequest.Write(conn)
 	if err != nil {
+		err = ErrConnectingToDaemon
 		return
 	}
 
 	responseReader := bufio.NewReader(conn)
 	httpResponse, err := http.ReadResponse(responseReader, httpRequest)
 	if err != nil {
+		err = ErrConnectingToDaemon
 		return
 	}
 	defer httpResponse.Body.Close()
@@ -99,6 +106,7 @@ func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byt
 	if err != nil {
 		return
 	}
+	defer httpRequest.Body.Close()
 	err = httpRequest.Write(conn)
 	if err != nil {
 		err = fmt.Errorf("Daemon Write error: %s", err.Error())
@@ -159,6 +167,7 @@ func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
 		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return
 	}
+	defer daemonConn.Close()
 	return signOver(daemonConn, pkFingerprint, data)
 }
 
@@ -172,6 +181,7 @@ func requestNoOpOver(conn net.Conn) (err error) {
 	if err != nil {
 		return
 	}
+	defer httpRequest.Body.Close()
 	err = httpRequest.Write(conn)
 	if err != nil {
 		err = fmt.Errorf("Daemon Write error: %s", err.Error())
@@ -190,5 +200,6 @@ func RequestNoOp() (err error) {
 		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return
 	}
+	defer daemonConn.Close()
 	return requestNoOpOver(daemonConn)
 }
