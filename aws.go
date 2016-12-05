@@ -59,7 +59,7 @@ func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueN
 				"category":          "authorize_identifier",
 			},
 		})
-	err = pushToSNS(endpointARN, apnsPayload)
+	err = pushToSNS(endpointARN, apnsPayload, []byte{})
 	return
 }
 
@@ -75,18 +75,26 @@ func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err
 				"c":                 requestCiphertext,
 			},
 		})
-	err = pushToSNS(endpointARN, apnsPayload)
+	gcmPayload, _ := json.Marshal(
+		map[string]interface{}{
+			"data": map[string]interface{}{
+				"message": requestCiphertext,
+				"queue":   sqsQueueName,
+			},
+		})
+	err = pushToSNS(endpointARN, apnsPayload, gcmPayload)
 	return
 }
 
-func pushToSNS(endpointARN string, payload []byte) (err error) {
+func pushToSNS(endpointARN string, apnsPayload []byte, gcmPayload []byte) (err error) {
 	snsService, err := getSNSService()
 	if err != nil {
 		return
 	}
 	message := map[string]interface{}{
-		"APNS":         string(payload),
-		"APNS_SANDBOX": string(payload),
+		"APNS":         string(apnsPayload),
+		"APNS_SANDBOX": string(apnsPayload),
+		"GCM":          string(gcmPayload),
 	}
 	messageJson, err := json.Marshal(message)
 	if err != nil {
