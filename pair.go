@@ -13,8 +13,6 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
-
 var ErrWaitingForKey = fmt.Errorf("Pairing in progress, waiting for symmetric key")
 
 //	TODO: Indicate whether bluetooth support enabled
@@ -38,12 +36,6 @@ func (ps *PairingSecret) DeriveUUID() (derivedUUID uuid.UUID, err error) {
 	return uuid.FromBytes(keyDigest[0:16])
 }
 
-func (ps *PairingSecret) SQSSendQueueURL() string {
-	return SQS_BASE_QUEUE_URL + ps.SQSBaseQueueName()
-}
-func (ps *PairingSecret) SQSRecvQueueURL() string {
-	return SQS_BASE_QUEUE_URL + ps.SQSRecvQueueName()
-}
 func (ps *PairingSecret) SQSSendQueueName() string {
 	return ps.SQSBaseQueueName()
 }

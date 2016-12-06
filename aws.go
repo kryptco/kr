@@ -13,6 +13,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
+const SQS_BASE_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/911777333295/"
+
+func queueNameToURL(name string) string {
+	return SQS_BASE_QUEUE_URL + name
+}
+
 func getAWSSession() (conf client.ConfigProvider, err error) {
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
 	_, err = creds.Get()
@@ -136,7 +142,7 @@ func enableSNSEndpoint(arn string) (err error) {
 	return
 }
 
-func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
+func ReceiveAndDeleteFromQueue(queueName string) (messages []string, err error) {
 	sqsService, err := getSQSService()
 	if err != nil {
 		log.Error(err)
@@ -145,13 +151,24 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 
 	receiveMessageInput := &sqs.ReceiveMessageInput{
 		MaxNumberOfMessages: aws.Int64(10),
-		QueueUrl:            aws.String(queueUrl),
+		QueueUrl:            aws.String(queueNameToURL(queueName)),
 		WaitTimeSeconds:     aws.Int64(3),
 	}
 
 	receiveResponse, err := sqsService.ReceiveMessage(receiveMessageInput)
 	if err != nil {
-		log.Error(err)
+		if strings.Contains(err.Error(), "AWS.SimpleQueueService.NonExistentQueue") {
+			log.Warning("SQS queue " + queueName + " does not exist, creating")
+			_, err = CreateQueue(queueName)
+			if err != nil {
+				return
+			}
+		}
+		_, err = sqsService.ReceiveMessage(receiveMessageInput)
+		if err != nil {
+			log.Error(err)
+			return
+		}
 		return
 	}
 
@@ -165,7 +182,7 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 	}
 	if len(messages) > 0 {
 		deleteMessageInput := &sqs.DeleteMessageBatchInput{
-			QueueUrl: aws.String(queueUrl),
+			QueueUrl: aws.String(queueNameToURL(queueName)),
 			Entries:  deleteRequestEntries,
 		}
 
@@ -179,7 +196,7 @@ func ReceiveAndDeleteFromQueue(queueUrl string) (messages []string, err error) {
 	return
 }
 
-func SendToQueue(queueUrl string, message string) (err error) {
+func SendToQueue(queueName string, message string) (err error) {
 	sqsService, err := getSQSService()
 	if err != nil {
 		log.Error(err)
@@ -188,13 +205,23 @@ func SendToQueue(queueUrl string, message string) (err error) {
 
 	sendMessageInput := &sqs.SendMessageInput{
 		MessageBody: aws.String(message),
-		QueueUrl:    aws.String(queueUrl),
+		QueueUrl:    aws.String(queueNameToURL(queueName)),
 	}
 
 	_, err = sqsService.SendMessage(sendMessageInput)
 	if err != nil {
-		log.Error(err)
-		return
+		if strings.Contains(err.Error(), "AWS.SimpleQueueService.NonExistentQueue") {
+			log.Warning("SQS queue " + queueName + " does not exist, creating")
+			_, err = CreateQueue(queueName)
+			if err != nil {
+				return
+			}
+		}
+		_, err = sqsService.SendMessage(sendMessageInput)
+		if err != nil {
+			log.Error(err)
+			return
+		}
 	}
 	return
 }

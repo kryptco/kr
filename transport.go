@@ -60,7 +60,7 @@ func (t AWSTransport) SendMessage(ps *PairingSecret, message []byte) (err error)
 		}
 	}()
 
-	err = SendToQueue(ps.SQSSendQueueURL(), ctxtString)
+	err = SendToQueue(ps.SQSSendQueueName(), ctxtString)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (t AWSTransport) SendMessage(ps *PairingSecret, message []byte) (err error)
 }
 
 func (t AWSTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
-	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueURL())
+	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueName())
 	if err != nil {
 		return
 	}
