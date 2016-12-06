@@ -60,7 +60,7 @@ type EnclaveClientI interface {
 	Unpair()
 	Start() (err error)
 	Stop() (err error)
-	RequestMe(longTimeout bool) (*kr.MeResponse, error)
+	RequestMe(isPairing bool) (*kr.MeResponse, error)
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
 	RequestNoOp() error
@@ -128,10 +128,9 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 		return
 	}
 
-	err = ec.Transport.Setup(pairingSecret)
-	if err != nil {
-		log.Error(err)
-		return
+	setupErr := ec.Transport.Setup(pairingSecret)
+	if setupErr != nil {
+		log.Error(setupErr)
 	}
 
 	//	erase any existing pairing
@@ -294,7 +293,7 @@ func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeo
 	}
 }
 
-func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeResponse, err error) {
+func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeResponse, err error) {
 	meRequest, err := kr.NewRequest()
 	if err != nil {
 		log.Error(err)
@@ -302,7 +301,7 @@ func (client *EnclaveClient) RequestMe(longTimeout bool) (meResponse *kr.MeRespo
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
 	timeout := client.Timeouts.Me.Fail
-	if longTimeout {
+	if isPairing {
 		timeout = client.Timeouts.Pair.Fail
 	}
 	callback, err := client.tryRequest(meRequest, timeout, client.Timeouts.Me.Alert, "Incoming kr me request. Open Kryptonite to continue.")
@@ -462,7 +461,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 
 	if err != nil {
 		switch err.(type) {
-		case *SendQueued:
+		case *SendQueued, *SendError:
 			log.Notice(err)
 			err = nil
 		default:
@@ -498,11 +497,12 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 		if requestAcked {
 			timeout = timeout.Add(client.Timeouts.ACKDelay)
 		}
-		if err != nil || (n == 0 && time.Now().After(timeout)) || !requestPending {
-			if err != nil {
-				log.Error("queue err:", err)
-			}
+		if (n == 0 && time.Now().After(timeout)) || !requestPending {
 			break
+		}
+		if err != nil {
+			log.Error("queue err:", err)
+			<-time.After(time.Second)
 		}
 	}
 	client.Lock()
