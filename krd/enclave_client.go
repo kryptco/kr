@@ -128,10 +128,12 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 		return
 	}
 
-	setupErr := ec.Transport.Setup(pairingSecret)
-	if setupErr != nil {
-		log.Error(setupErr)
-	}
+	go func() {
+		setupErr := ec.Transport.Setup(pairingSecret)
+		if setupErr != nil {
+			log.Error(setupErr)
+		}
+	}()
 
 	//	erase any existing pairing
 	ec.pairingSecret = pairingSecret
@@ -294,6 +296,10 @@ func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeo
 }
 
 func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeResponse, err error) {
+	if !isPairing && !client.IsPaired() {
+		err = ErrNotPaired
+		return
+	}
 	meRequest, err := kr.NewRequest()
 	if err != nil {
 		log.Error(err)
