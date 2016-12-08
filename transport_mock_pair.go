@@ -12,15 +12,15 @@ type ImmediatePairTransport struct {
 }
 
 func (t *ImmediatePairTransport) Setup(ps *PairingSecret) (err error) {
-	if t.Keys == nil {
-		t.Keys = map[string][]byte{}
-	}
 	return
 }
 
 func (t *ImmediatePairTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
 	t.Lock()
 	defer t.Unlock()
+	if t.Keys == nil {
+		t.Keys = map[string][]byte{}
+	}
 	if _, ok := t.Keys[base64.StdEncoding.EncodeToString(ps.WorkstationPublicKey)]; !ok {
 		var key []byte
 		key, err = RandNBytes(32)
