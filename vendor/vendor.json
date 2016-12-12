@@ -15,6 +15,12 @@
 			"revisionTime": "2016-11-15T15:00:08Z"
 		},
 		{
+			"checksumSHA1": "SNSgdp5ShDZ57VZqBkQ0PXJCJIM=",
+			"path": "github.com/atotto/clipboard",
+			"revision": "bb272b845f1112e10117e3e45ce39f690c0001ad",
+			"revisionTime": "2016-02-19T03:44:21Z"
+		},
+		{
 			"checksumSHA1": "4xOksgb6+UlSj06NdNOOw//S4hw=",
 			"path": "github.com/aws/aws-sdk-go/aws",
 			"revision": "654534755951d5af0bef2b612cf98fe529acdb7b",
@@ -191,6 +197,12 @@
 			"revisionTime": "2016-11-16T23:44:19Z"
 		},
 		{
+			"checksumSHA1": "8xh8QQe9tO+IFoBEg6HUxkBTNUA=",
+			"path": "github.com/kryptco/qr",
+			"revision": "29a3dc96057a503315f7b7a7a411b87d3fdeee4a",
+			"revisionTime": "2016-04-14T00:56:07Z"
+		},
+		{
 			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
 			"path": "github.com/op/go-logging",
 			"revision": "970db520ece77730c7e4724c61121037378659d9",
@@ -201,6 +213,12 @@
 			"path": "github.com/satori/go.uuid",
 			"revision": "b061729afc07e77a8aa4fad0a2fd840958f1942a",
 			"revisionTime": "2016-09-27T10:08:44Z"
+		},
+		{
+			"checksumSHA1": "LMu1NsthSqcXfKu0m6YGPAmwBcY=",
+			"path": "github.com/urfave/cli",
+			"revision": "0bdeddeeb0f650497d603c4ad7b20cfe685682f6",
+			"revisionTime": "2016-11-22T04:36:10Z"
 		},
 		{
 			"checksumSHA1": "shXkK7zCsmzBXzxPPtZgAb0Rs1k=",
