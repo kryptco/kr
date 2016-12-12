@@ -31,13 +31,6 @@
 			"revisionTime": "2016-11-28T19:54:59Z"
 		},
 		{
-			"checksumSHA1": "uqUSHXJEszv1i1yZkXwyoK15ASg=",
-			"origin": "github.com/agrinman/kr/kr/vendor/github.com/agrinman/go.corebluetooth",
-			"path": "github.com/agrinman/go.corebluetooth",
-			"revision": "f35d7599c1396c8b112072f63a7e6c0431ddb79d",
-			"revisionTime": "2016-11-28T19:54:59Z"
-		},
-		{
 			"checksumSHA1": "SNSgdp5ShDZ57VZqBkQ0PXJCJIM=",
 			"origin": "github.com/agrinman/kr/kr/vendor/github.com/atotto/clipboard",
 			"path": "github.com/atotto/clipboard",
@@ -235,6 +228,12 @@
 			"path": "github.com/keybase/saltpack/encoding/basex",
 			"revision": "f35d7599c1396c8b112072f63a7e6c0431ddb79d",
 			"revisionTime": "2016-11-28T19:54:59Z"
+		},
+		{
+			"checksumSHA1": "I4pVxHzSLW+/JfDr4QDZ+12aB0k=",
+			"path": "github.com/kryptco/go.corebluetooth",
+			"revision": "4547d50c0658e4065debbacf29c3e443604aa00b",
+			"revisionTime": "2016-12-01T19:32:20Z"
 		},
 		{
 			"checksumSHA1": "8xh8QQe9tO+IFoBEg6HUxkBTNUA=",
