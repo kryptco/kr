@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 	"github.com/golang/groupcache/lru"
 	"sync"
 	"time"

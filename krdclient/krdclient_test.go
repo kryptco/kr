@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/agrinman/kr"
-	krd "github.com/agrinman/kr/krd"
+	"github.com/kryptco/kr"
+	krd "github.com/kryptco/kr/krd"
 )
 
 func TestMe(t *testing.T) {

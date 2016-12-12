@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 )
 
 func TestPair(t *testing.T) {

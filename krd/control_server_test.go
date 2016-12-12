@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 )
 
 func TestControlServerPair(t *testing.T) {

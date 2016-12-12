@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 	"github.com/op/go-logging"
 )
 

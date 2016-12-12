@@ -19,8 +19,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/agrinman/kr"
-	"github.com/agrinman/kr/krdclient"
+	"github.com/kryptco/kr"
+	"github.com/kryptco/kr/krdclient"
 	"github.com/atotto/clipboard"
 	"github.com/urfave/cli"
 )

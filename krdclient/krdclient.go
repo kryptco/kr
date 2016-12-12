@@ -7,7 +7,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 )
 
 var ErrNotPaired = fmt.Errorf("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")

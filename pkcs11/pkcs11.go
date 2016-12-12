@@ -17,8 +17,8 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/agrinman/kr"
-	"github.com/agrinman/kr/krdclient"
+	"github.com/kryptco/kr"
+	"github.com/kryptco/kr/krdclient"
 	"github.com/fatih/color"
 	"github.com/op/go-logging"
 )

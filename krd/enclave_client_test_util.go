@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 )
 
 func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {

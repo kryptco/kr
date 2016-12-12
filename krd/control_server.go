@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 )
 
 type ControlServer struct {

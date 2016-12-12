@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	krd "github.com/agrinman/kr/krd"
+	krd "github.com/kryptco/kr/krd"
 )
 
 func TestPair(t *testing.T) {

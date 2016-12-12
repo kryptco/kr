@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/agrinman/kr"
+	"github.com/kryptco/kr"
 	"github.com/blang/semver"
 	"github.com/youtube/vitess/go/ioutil2"
 )

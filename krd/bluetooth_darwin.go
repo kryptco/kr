@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/agrinman/go.corebluetooth"
+	"github.com/kryptco/go.corebluetooth"
 	"github.com/op/go-logging"
 	"github.com/satori/go.uuid"
 )
