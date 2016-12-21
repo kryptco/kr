@@ -197,6 +197,12 @@
 			"revisionTime": "2016-11-16T23:44:19Z"
 		},
 		{
+			"checksumSHA1": "D+2D1UyPEf/Fhvs+aXtZWRwA0+k=",
+			"path": "github.com/kryptco/gf256",
+			"revision": "bbd714a0764d8cb2ea9f6b9e78363b7510394a86",
+			"revisionTime": "2016-04-13T18:01:33Z"
+		},
+		{
 			"checksumSHA1": "1FNUYeTxvldrwoTRD7mLx9Zi1M4=",
 			"path": "github.com/kryptco/qr",
 			"revision": "eb334d7d50ea58421480ecf53dc234df6bcc35e9",
