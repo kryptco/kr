@@ -9,10 +9,10 @@
 			"revisionTime": "2016-08-03T20:04:08Z"
 		},
 		{
-			"checksumSHA1": "L3FCtdMYK+dUwAhXzppKru0RZ9I=",
+			"checksumSHA1": "JBBsKS0O0xw5Pi861aveoUsMHrE=",
 			"path": "github.com/kryptco/go.corebluetooth",
-			"revision": "2dc4ea6cea0e591f3b8f78129ef065ce39645a94",
-			"revisionTime": "2016-12-21T14:41:14Z"
+			"revision": "9225e2a98f74689f9c8546aa62c4e2df98614f89",
+			"revisionTime": "2016-12-21T20:12:33Z"
 		}
 	],
 	"rootPath": "github.com/kryptco/kr/krd"

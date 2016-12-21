@@ -93,7 +93,7 @@ static const char pingByte = 1;
     CBMutableService *service =
 	[[CBMutableService alloc] initWithType:uuid primary:YES];
 	CBUUID *charUUID = [CBUUID UUIDWithString:@"20F53E48-C08D-423A-B2C2-1C797889AF24"];
-	CBMutableCharacteristic *characteristic = [[CBMutableCharacteristic alloc] initWithType:charUUID properties:CBCharacteristicPropertyWrite|CBCharacteristicPropertyRead|CBCharacteristicPropertyNotify|CBCharacteristicPropertyWriteWithoutResponse value:nil permissions:CBAttributePermissionsWriteable|CBAttributePermissionsReadable];
+	CBMutableCharacteristic *characteristic = [[CBMutableCharacteristic alloc] initWithType:charUUID properties:CBCharacteristicPropertyWrite|CBCharacteristicPropertyRead|CBCharacteristicPropertyNotify|CBCharacteristicPropertyWriteWithoutResponse|CBCharacteristicPropertyIndicate value:nil permissions:CBAttributePermissionsWriteable|CBAttributePermissionsReadable];
 	service.characteristics = @[characteristic];
     // Save the service & characteristics for later reads
     this.services[uuid] = service;

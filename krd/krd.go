@@ -9,7 +9,15 @@ import (
 	"github.com/op/go-logging"
 )
 
-var log *logging.Logger = kr.SetupLogging("krd", logging.INFO, true)
+func useSyslog() bool {
+	env := os.Getenv("KR_LOG_SYSLOG")
+	if env != "" {
+		return env == "true"
+	}
+	return true
+}
+
+var log *logging.Logger = kr.SetupLogging("krd", logging.INFO, useSyslog())
 
 func main() {
 	SetBTLogger(log)
