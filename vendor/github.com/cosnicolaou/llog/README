@@ -1,0 +1,18 @@
+llog
+====
+
+Low level implementation of leveled execution logs for Go.
+
+It is a fork of the github.com/golang/glog (c6f9652c7179652e2fd8ed7002330db089f4c9db) package that is itself an efficient pure Go implementation of leveled
+logs in the manner of the open source C++ package
+
+	http://code.google.com/p/google-glog
+
+Changes:
+- This version refactors code to not rely on a single global variable
+  and associated log state.
+- It separates out the flag parsing so that an application can choose
+  to use whatever command-line flags they wish to configure the
+  package.
+- When built with the 'android' build tag (such as with gomobile),
+  it uses the Android logging primitives instead of writing to files.

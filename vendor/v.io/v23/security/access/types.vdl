@@ -1,0 +1,177 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package access defines types and interfaces for dynamic access control.
+// Examples: "allow app to read this photo", "prevent user from modifying this
+// file".
+//
+// Target Developers
+//
+// Developers creating functionality to share data or services between
+// multiple users/devices/apps.
+//
+// Overview
+//
+// Vanadium objects provide GetPermissions and SetPermissions methods.  An
+// AccessList contains the set of blessings that grant principals access to the
+// object. All methods on objects can have "tags" on them and the AccessList
+// used for the method is selected based on that tag (from a Permissions).
+//
+// An object can have multiple names, so GetPermissions and SetPermissions can
+// be invoked on any of these names, but the object itself has a single
+// AccessList.
+//
+// SetPermissions completely replaces the Permissions. To perform an atomic
+// read-modify-write of the AccessList, use the version parameter.
+//
+// Conventions
+//
+// Service implementors should follow the conventions below to be consistent
+// with other parts of Vanadium and with each other.
+//
+// All methods that create an object (e.g. Put, Mount, Link) should take an
+// optional AccessList parameter.  If the AccessList is not specified, the new
+// object, O, copies its AccessList from the parent.  Subsequent changes to the
+// parent AccessList are not automatically propagated to O.  Instead, a client
+// library must make recursive AccessList changes.
+//
+// Resolve access is required on all components of a name, except the last one,
+// in order to access the object referenced by that name.  For example, for
+// principal P to access the name "a/b/c", P must have resolve access to "a"
+// and "a/b".
+//
+// The Resolve tag means that a principal can traverse that component of the
+// name to access the child.  It does not give the principal permission to list
+// the children via Glob or a similar method.  For example, a server might have
+// an object named "home" with a child for each user of the system.  If these
+// users were allowed to list the contents of "home", they could discover the
+// other users of the system.  That could be a privacy violation.  Without
+// Resolve, every user of the system would need read access to "home" to access
+// "home/<user>".  If the user called Glob("home/*"), it would then be up to
+// the server to filter out the names that the user could not access.  That
+// could be a very expensive operation if there were a lot of children of
+// "home".  Resolve protects these servers against potential denial of service
+// attacks on these large, shared directories.
+//
+// Blessings allow for sweeping access changes. In particular, a blessing is
+// useful for controlling access to objects that are always accessed together.
+// For example, a document may have embedded images and comments, each with a
+// unique name. When accessing a document, the server would generate a blessing
+// that the client would use to fetch the images and comments; the images and
+// comments would have this blessed identity in their AccessLists. Changes to
+// the document's AccessLists are therefore "propagated" to the images and
+// comments.
+//
+// In the future, we may add some sort of "groups" mechanism to provide an
+// alternative way to express access control policies.
+//
+// Some services will want a concept of implicit access control. They are free
+// to implement this as appropriate for their service. However, GetPermissions
+// should respond with the correct Permissions. For example, a corporate file
+// server would allow all employees to create their own directory and have full
+// control within that directory. Employees should not be allowed to modify
+// other employee directories. In other words, within the directory "home",
+// employee E should be allowed to modify only "home/E". The file server doesn't
+// know the list of all employees a priori, so it uses an
+// implementation-specific rule to map employee identities to their home
+// directory.
+//
+// Examples
+//
+//   client := access.ObjectClient(name)
+//   for {
+//     perms, version, err := client.GetPermissions()
+//     if err != nil {
+//       return err
+//     }
+//     perms[newTag] = AccessList{In: []security.BlessingPattern{newPattern}}
+//     // Use the same version with the modified perms to ensure that no other
+//     // client has modified the perms since GetPermissions returned.
+//     if err := client.SetPermissions(perms, version); err != nil {
+//       if verror.ErrorID(err) == verror.ErrBadVersion.Id {
+//         // Another client replaced the Permissions after our GetPermissions
+//         // returned. Try again.
+//         continue
+//       }
+//       return err
+//     }
+//   }
+package access
+
+import "v.io/v23/security"
+import "v.io/v23/uniqueid"
+
+// AccessList represents a set of blessings that should be granted access.
+//
+// See also: https://vanadium.github.io/glossary.html#access-list
+type AccessList struct {
+  // In denotes the set of blessings (represented as BlessingPatterns) that
+  // should be granted access, unless blacklisted by an entry in NotIn.
+  //
+  // For example:
+  //   In: {"alice:family"}
+  // grants access to a principal that presents at least one of
+  // "alice:family", "alice:family:friend", "alice:family:friend:spouse" etc.
+  // as a blessing.
+  In []security.BlessingPattern
+
+  // NotIn denotes the set of blessings (and their delegates) that
+  // have been explicitly blacklisted from the In set.
+  //
+  // For example:
+  //   In: {"alice:friend"}, NotIn: {"alice:friend:bob"}
+  // grants access to principals that present "alice:friend",
+  // "alice:friend:carol" etc. but NOT to a principal that presents
+  // "alice:friend:bob" or "alice:friend:bob:spouse" etc.
+  NotIn []string
+}
+
+// Permissions maps string tags to access lists specifying the blessings
+// required to invoke methods with that tag.
+//
+// These tags are meant to add a layer of interposition between the set of
+// users (blessings, specifically) and the set of methods, much like "Roles" do
+// in Role Based Access Control.
+// (http://en.wikipedia.org/wiki/Role-based_access_control)
+type Permissions map[string]AccessList
+
+// Tag is used to associate methods with an AccessList in a Permissions.
+//
+// While services can define their own tag type and values, many
+// services should be able to use the type and values defined in
+// this package.
+type Tag string
+
+const (
+  Admin   = Tag("Admin")    // Operations that require privileged access for object administration.
+  Debug   = Tag("Debug")    // Operations that return debugging information (e.g., logs, statistics etc.) about the object.
+  Read    = Tag("Read")     // Operations that do not mutate the state of the object.
+  Write   = Tag("Write")    // Operations that mutate the state of the object.
+  Resolve = Tag("Resolve")  // Operations involving namespace navigation.
+
+  // AccessTagCaveat represents a caveat that validates iff the method being invoked has
+  // at least one of the tags listed in the caveat.
+  AccessTagCaveat  = security.CaveatDescriptor{
+    Id:        uniqueid.Id{0xef, 0xcd, 0xe3, 0x75, 0x14, 0x16, 0xc7, 0x3b, 0x18, 0x9c, 0xe8, 0x9c, 0xcc, 0x93, 0x80, 0x0},
+    ParamType: typeobject([]Tag),
+  }
+)
+
+// Note: For "bad version" errors, use verror.ErrBadVersion.
+error (
+	// The AccessList is too big.  Use groups to represent large sets of principals.
+	TooBig() {"en": "AccessList is too big"}
+
+	NoPermissions(validBlessings []string, rejectedBlessings []security.RejectedBlessing, tag string){"en":"{validBlessings} does not have {tag} access (rejected blessings: {rejectedBlessings})"}
+
+	AccessListMatch(validBlessings []string, rejectedBlessings []security.RejectedBlessing){"en":"{validBlessings} does not match the access list (rejected blessings: {rejectedBlessings})"}
+
+	UnenforceablePatterns(rejectedPatterns []security.BlessingPattern){"en":"AccessList contains the following invalid or unrecognized patterns in the In list: {rejectedPatterns}"}
+
+	InvalidOpenAccessList(){"en": "AccessList with the pattern ... in its In list must have no other patterns in the In or NotIn lists"}
+
+	AccessTagCaveatValidation(methodTags []string, caveatTags []Tag){
+		"en": "access tags on method ({methodTags}) do not include any of the ones in the caveat ({caveatTags}), or the method is using a different tag type",
+	}
+)

@@ -1,0 +1,23 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package flow
+
+// Implementors of the flow interfaces guarantee to return one of the verror codes defined
+// here, their messages are constructed so as to avoid embedding a component/method name
+// and are thus more suitable for inclusion in other verrors.
+// This practiced of omitting {1}{2} should be used throughout the flow implementations
+// since all of their errors are intended to be used as arguments to higher level errors.
+// TODO(suharshs,toddw): Allow skipping of {1}{2} in vdl generated errors.
+error (
+	Auth(err error) {"en":"{:err}"}
+	NotTrusted(err error) {"en":"{:err}"}
+	Network(err error) {"en":"{:err}"}
+	DialFailed(err error) {"en":"{:err}"}
+	ResolveFailed(err error) {"en":"{:err}"}
+	Proxy(err error) {"en":"{:err}"}
+	BadArg(err error) {"en":"{:err}"}
+	BadState(err error) {"en":"{:err}"}
+	Aborted(err error) {"en":"{:err}"}
+)

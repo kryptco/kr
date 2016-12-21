@@ -1,0 +1,40 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Packages stats defines the non-native types exported by the stats service.
+package stats
+
+import "time"
+
+// HistogramValue is the value of Histogram objects.
+type HistogramValue struct {
+	// Count is the total number of values added to the histogram.
+	Count int64
+	// Sum is the sum of all the values added to the histogram.
+	Sum int64
+	// Min is the minimum of all the values added to the histogram.
+	Min int64
+	// Max is the maximum of all the values added to the histogram.
+	Max int64
+	// Buckets contains all the buckets of the histogram.
+	Buckets []HistogramBucket
+}
+
+// HistogramBucket is one histogram bucket.
+type HistogramBucket struct {
+	// LowBound is the lower bound of the bucket.
+	LowBound int64
+	// Count is the number of values in the bucket.
+	Count int64
+}
+
+// TimeSeries records data of a single time series.
+type TimeSeries struct {
+	// Values holds the time series values (from oldest to newest).
+	Values []int64
+	// Resolution is the time resolution of the time series.
+	Resolution time.Duration
+	// StartTime is the time of the first value of the time series.
+	StartTime time.Time
+}
