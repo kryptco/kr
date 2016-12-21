@@ -203,6 +203,12 @@
 			"revisionTime": "2016-12-21T15:47:00Z"
 		},
 		{
+			"checksumSHA1": "P6pCSep7qojFYaNGY/nEwAG3gBs=",
+			"path": "github.com/kryptco/qr/coding",
+			"revision": "eb334d7d50ea58421480ecf53dc234df6bcc35e9",
+			"revisionTime": "2016-12-21T15:47:00Z"
+		},
+		{
 			"checksumSHA1": "BoXdUBWB8UnSlFlbnuTQaPqfCGk=",
 			"path": "github.com/op/go-logging",
 			"revision": "970db520ece77730c7e4724c61121037378659d9",
