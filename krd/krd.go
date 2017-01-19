@@ -33,7 +33,8 @@ func main() {
 	}
 	go func() {
 		controlServer.enclaveClient.Start()
-		err := controlServer.HandleControlHTTP(daemonSocket)
+		//err := controlServer.HandleControlHTTP(daemonSocket)
+		err := ServeKRAgent(controlServer.enclaveClient, daemonSocket)
 		if err != nil {
 			log.Error("controlServer return:", err)
 		}
