@@ -75,6 +75,7 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
 		Digest:               digest,
+		Command: getLastCommand(),
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
 	signature := *signResponse.Signature

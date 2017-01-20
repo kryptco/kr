@@ -27,16 +27,28 @@ func main() {
 	}
 	defer daemonSocket.Close()
 
+	agentSocket, err := kr.AgentListen()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer agentSocket.Close()
+
 	controlServer, err := NewControlServer()
 	if err != nil {
 		log.Fatal(err)
 	}
 	go func() {
 		controlServer.enclaveClient.Start()
-		//err := controlServer.HandleControlHTTP(daemonSocket)
-		err := ServeKRAgent(controlServer.enclaveClient, daemonSocket)
+		err := controlServer.HandleControlHTTP(daemonSocket)
 		if err != nil {
 			log.Error("controlServer return:", err)
+		}
+	}()
+
+	go func() {
+		err := ServeKRAgent(controlServer.enclaveClient, agentSocket)
+		if err != nil {
+			log.Error("agent return:", err)
 		}
 	}()
 

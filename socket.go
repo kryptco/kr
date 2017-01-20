@@ -47,6 +47,19 @@ func KrDirFile(file string) (fullPath string, err error) {
 	return
 }
 
+const AGENT_SOCKET_FILENAME = "krd-agent.sock"
+
+func AgentListen() (listener net.Listener, err error) {
+	socketPath, err := KrDirFile(AGENT_SOCKET_FILENAME)
+	if err != nil {
+		return
+	}
+	//	delete UNIX socket in case daemon was not killed cleanly
+	_ = os.Remove(socketPath)
+	listener, err = net.Listen("unix", socketPath)
+	return
+}
+
 const DAEMON_SOCKET_FILENAME = "krd.sock"
 
 func DaemonListen() (listener net.Listener, err error) {
