@@ -19,9 +19,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
-	"github.com/atotto/clipboard"
 	"github.com/urfave/cli"
 )
 
@@ -148,7 +148,10 @@ func pairOver(unixFile string, forceUnpair bool, stdout io.ReadWriter, stderr io
 	err = json.Unmarshal(responseBody, &me)
 
 	stdout.Write([]byte("Paired successfully with identity\r\n"))
-	authorizedKey := me.AuthorizedKeyString()
+	authorizedKey, err := me.AuthorizedKeyString()
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
 	stdout.Write([]byte(authorizedKey))
 	stdout.Write([]byte("\r\n"))
 	return
@@ -196,7 +199,7 @@ func meCommand(c *cli.Context) (err error) {
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
-	authorizedKey := me.AuthorizedKeyString()
+	authorizedKey, err := me.AuthorizedKeyString()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
@@ -216,7 +219,10 @@ func copyKey() (err error) {
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
-	authorizedKey := me.AuthorizedKeyString()
+	authorizedKey, err := me.AuthorizedKeyString()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
 	err = clipboard.WriteAll(authorizedKey)
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
@@ -236,7 +242,11 @@ func addCommand(c *cli.Context) (err error) {
 		PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
 	}
 
-	authorizedKey := append([]byte(me.AuthorizedKeyString()), []byte("\n")...)
+	authorizedKeyString, err := me.AuthorizedKeyString()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	authorizedKey := append([]byte(authorizedKeyString), []byte("\n")...)
 
 	PrintErr(os.Stderr, "Adding your SSH public key to %s", server)
 

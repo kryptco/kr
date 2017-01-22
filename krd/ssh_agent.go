@@ -66,6 +66,8 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 	case ssh.KeyAlgoRSA:
 		sha1Digest := sha1.Sum(data)
 		digest = append(hashPrefixes[crypto.SHA1], sha1Digest[:]...)
+	case ssh.KeyAlgoED25519:
+		digest = data
 	default:
 		err = errors.New("unsupported key type: " + key.Type())
 		log.Error(err.Error())
@@ -75,7 +77,7 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
 		Digest:               digest,
-		Command: getLastCommand(),
+		Command:              getLastCommand(),
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
 	signature := *signResponse.Signature

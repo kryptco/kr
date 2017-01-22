@@ -59,7 +59,11 @@ func (fp FilePersister) DeleteMe() (err error) {
 }
 
 func (fp FilePersister) SaveMySSHPubKey(me Profile) (err error) {
-	err = ioutil.WriteFile(filepath.Join(fp.SSHDir, "id_kryptonite.pub"), []byte(me.AuthorizedKeyString()), 0700)
+	authString, err := me.AuthorizedKeyString()
+	if err != nil {
+		return
+	}
+	err = ioutil.WriteFile(filepath.Join(fp.SSHDir, "id_kryptonite.pub"), []byte(authString), 0700)
 	return
 }
 
