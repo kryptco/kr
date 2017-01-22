@@ -2,19 +2,13 @@ package main
 
 import (
 	"crypto"
-	//"crypto/dsa"
-	//"crypto/ecdsa"
 	"crypto/sha1"
 	"crypto/sha256"
-	//"encoding/asn1"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/kryptco/kr"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	"io"
-	//"math/big"
 	"net"
 )
 
@@ -41,6 +35,7 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 		pk, parseErr := ssh.ParsePublicKey(cachedProfile.SSHWirePublicKey)
 		if parseErr != nil {
 			log.Error("list: parseKey error: " + parseErr.Error())
+			err = parseErr
 			return
 		}
 		keys = []*agent.Key{
@@ -57,8 +52,6 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 // Sign has the agent sign the data using a protocol 2 key as defined
 // in [PROTOCOL.agent] section 2.6.2.
 func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
-	log.Notice("Sign: " + base64.StdEncoding.EncodeToString(data))
-	log.Notice("Sign: " + string(data))
 	keyFingerprint := sha256.Sum256(key.Marshal())
 
 	var digest []byte
@@ -80,36 +73,22 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		Command:              getLastCommand(),
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
-	signature := *signResponse.Signature
-	//switch key.Type() {
-	//case ssh.KeyAlgoRSA
-	//ssh.KeyAlgoDSA
-	//ssh.KeyAlgoECDSA256
-	//ssh.KeyAlgoECDSA384
-	//ssh.KeyAlgoECDSA521
-	//ssh.KeyAlgoED25519
-	//type asn1Signature struct {
-	//R, S *big.Int
-	//}
-	//asn1Sig := new(asn1Signature)
-	//_, err := asn1.Unmarshal(signature, asn1Sig)
-	//if err != nil {
-	//return nil, err
-	//}
-
-	//switch key.(type) {
-	//case *ecdsa.PublicKey:
-	//signature = ssh.Marshal(asn1Sig)
-
-	//case *dsa.PublicKey:
-	//signature = make([]byte, 40)
-	//r := asn1Sig.R.Bytes()
-	//s := asn1Sig.S.Bytes()
-	//copy(signature[20-len(r):20], r)
-	//copy(signature[40-len(s):40], s)
-	//}
-	//}
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 	log.Notice(fmt.Sprintf("sign response: %+v", signResponse))
+	if signResponse.Error != nil {
+		err = errors.New(*signResponse.Error)
+		log.Error(err.Error())
+		return
+	}
+	if signResponse.Signature == nil {
+		err = errors.New("no signature in response")
+		log.Error(err.Error())
+		return
+	}
+	signature := *signResponse.Signature
 	sshSignature = &ssh.Signature{
 		Format: key.Type(),
 		Blob:   signature,
@@ -156,48 +135,5 @@ func ServeKRAgent(enclaveClient EnclaveClientI, l net.Listener) (err error) {
 		}
 		go agent.ServeAgent(Agent{enclaveClient}, conn)
 	}
-	return
-}
-
-//	Implements crypto.Signer by requesting signatures from phone
-type ProxiedKey struct {
-	crypto.PublicKey
-	publicKeyFingerprint []byte
-	enclaveClient        EnclaveClientI
-}
-
-func (pk *ProxiedKey) Public() crypto.PublicKey {
-	return pk.PublicKey
-}
-
-func (pk *ProxiedKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
-	command := getLastCommand()
-	request := kr.SignRequest{
-		PublicKeyFingerprint: pk.publicKeyFingerprint,
-		Digest:               digest,
-		Command:              command,
-	}
-	response, err := pk.enclaveClient.RequestSignature(request)
-	if err != nil {
-		log.Error("error requesting signature:", err)
-		return
-	}
-	if response != nil {
-		if response.Error != nil {
-			err = errors.New("Enclave signature error: " + *response.Error)
-			return
-		}
-		if response.Signature != nil {
-			signature = *response.Signature
-			return
-		}
-		err = errors.New("No enclave signature in response")
-		return
-	} else {
-		err = errors.New("No response from enclave")
-		return
-	}
-
-	err = errors.New("not yet implemented")
 	return
 }
