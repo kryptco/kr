@@ -25,7 +25,8 @@ var hashPrefixes = map[crypto.Hash][]byte{
 }
 
 type Agent struct {
-	client EnclaveClientI
+	client   EnclaveClientI
+	notifier kr.Notifier
 }
 
 // List returns the identities known to the agent.
@@ -67,6 +68,8 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		return
 	}
 
+	a.notify([]byte("Requesting authorization from phone..."))
+
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
 		Digest:               digest,
@@ -74,6 +77,7 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
 	if err != nil {
+		a.notify([]byte(err.Error()))
 		log.Error(err.Error())
 		return
 	}
@@ -126,14 +130,20 @@ func (a Agent) Signers() (signers []ssh.Signer, err error) {
 	return
 }
 
-func ServeKRAgent(enclaveClient EnclaveClientI, l net.Listener) (err error) {
+func (a Agent) notify(body []byte) {
+	if err := a.notifier.Notify(append(body, '\n')); err != nil {
+		log.Error("error writing notification: " + err.Error())
+	}
+}
+
+func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, l net.Listener) (err error) {
 	for {
 		conn, err := l.Accept()
 		if err != nil {
 			// handle error
 			log.Error("accept error: ", err.Error())
 		}
-		go agent.ServeAgent(Agent{enclaveClient}, conn)
+		go agent.ServeAgent(Agent{enclaveClient, n}, conn)
 	}
 	return
 }

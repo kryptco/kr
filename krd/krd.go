@@ -21,6 +21,13 @@ var log *logging.Logger = kr.SetupLogging("krd", logging.INFO, useSyslog())
 
 func main() {
 	SetBTLogger(log)
+
+	notifier, err := kr.OpenNotifier()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer notifier.Close()
+
 	daemonSocket, err := kr.DaemonListen()
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +53,7 @@ func main() {
 	}()
 
 	go func() {
-		err := ServeKRAgent(controlServer.enclaveClient, agentSocket)
+		err := ServeKRAgent(controlServer.enclaveClient, notifier, agentSocket)
 		if err != nil {
 			log.Error("agent return:", err)
 		}

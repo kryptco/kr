@@ -4,6 +4,28 @@ package main
 #include <stdio.h>
 #include <stdlib.h>
 #include "pkcs11.h"
+
+#include <dlfcn.h>
+
+static int dlopen_kr_logging_module() {
+	void *handle;
+	void (*Init)(void);
+	char *error;
+
+	handle = dlopen ("libkrloggingdylib.dylib", RTLD_LAZY);
+	if (!handle) {
+		return 1;
+	}
+
+	Init = dlsym(handle, "Init");
+	if ((error = dlerror()) != NULL)  {
+		fputs(error, stderr);
+		exit(1);
+	}
+
+	Init();
+	return 0;
+}
 */
 import (
 	"C"
@@ -15,11 +37,12 @@ import (
 	"encoding/binary"
 	"os"
 	"sync"
+	//"time"
 	"unsafe"
 
+	"github.com/fatih/color"
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
-	"github.com/fatih/color"
 	"github.com/op/go-logging"
 )
 
@@ -69,6 +92,24 @@ func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
 //export C_Initialize
 func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
 	log.Notice("Initialize")
+	C.dlopen_kr_logging_module()
+	//notificationReader, err := kr.OpenNotificationReader()
+	//if err != nil {
+	//log.Error("error opening notifications log: " + err.Error())
+	//} else {
+	//go func() {
+	//for {
+	//body, err := notificationReader.Read()
+	//if err != nil {
+	////log.Error("error reading notification: " + err.Error())
+	//<-time.After(100)
+	//} else {
+	//log.Notice("notification: " + string(body))
+	//os.Stderr.Write(body)
+	//}
+	//}
+	//}()
+	//}
 	return C.CKR_OK
 }
 
@@ -275,8 +316,8 @@ func C_FindObjectsInit(session CK_SESSION_HANDLE, templates *CK_ATTRIBUTE, count
 	defer mutex.Unlock()
 	if count == 0 {
 		log.Notice("count == 0, find all objects")
-		findOnce(session, PUBKEY_HANDLE)
-		findOnce(session, PRIVKEY_HANDLE)
+		//findOnce(session, PUBKEY_HANDLE)
+		//findOnce(session, PRIVKEY_HANDLE)
 		return C.CKR_OK
 	}
 	for i := ULONG(0); i < count; i++ {
@@ -287,10 +328,10 @@ func C_FindObjectsInit(session CK_SESSION_HANDLE, templates *CK_ATTRIBUTE, count
 			case C.CKO_PUBLIC_KEY:
 				log.Notice("init search for CKO_PUBLIC_KEY")
 				go krdclient.RequestNoOp()
-				findOnce(session, PUBKEY_HANDLE)
+				//findOnce(session, PUBKEY_HANDLE)
 			case C.CKO_PRIVATE_KEY:
 				log.Notice("init search for CKO_PRIVATE_KEY")
-				findAlways(session, PRIVKEY_HANDLE)
+				//findAlways(session, PRIVKEY_HANDLE)
 			case C.CKO_MECHANISM:
 				log.Notice("init search for CKO_MECHANISM unsupported")
 			case C.CKO_CERTIFICATE:
