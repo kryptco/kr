@@ -32,15 +32,10 @@ import (
 )
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/binary"
 	"os"
 	"sync"
-	//"time"
 	"unsafe"
 
-	"github.com/fatih/color"
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
 	"github.com/op/go-logging"
@@ -63,24 +58,6 @@ var log = kr.SetupLogging("", logging.WARNING, os.Getenv("KR_LOG_SYSLOG") != "")
 
 var mutex sync.Mutex
 
-func stderrCyan(s string) {
-	if os.Getenv("KR_NO_STDERR") != "" {
-		return
-	}
-	cyan := color.New(color.FgHiCyan)
-	cyan.EnableColor()
-	os.Stderr.WriteString(cyan.SprintFunc()(s))
-}
-
-func stderrGreen(s string) {
-	if os.Getenv("KR_NO_STDERR") != "" {
-		return
-	}
-	green := color.New(color.FgHiGreen)
-	green.EnableColor()
-	os.Stderr.WriteString(green.SprintFunc()(s))
-}
-
 //export C_GetFunctionList
 func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
 
@@ -93,23 +70,14 @@ func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
 func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
 	log.Notice("Initialize")
 	C.dlopen_kr_logging_module()
-	//notificationReader, err := kr.OpenNotificationReader()
-	//if err != nil {
-	//log.Error("error opening notifications log: " + err.Error())
-	//} else {
-	//go func() {
-	//for {
-	//body, err := notificationReader.Read()
-	//if err != nil {
-	////log.Error("error reading notification: " + err.Error())
-	//<-time.After(100)
-	//} else {
-	//log.Notice("notification: " + string(body))
-	//os.Stderr.Write(body)
-	//}
-	//}
-	//}()
-	//}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	if !checkedForUpdate {
+		CheckForUpdate()
+		checkedForUpdate = true
+	}
+
 	return C.CKR_OK
 }
 
@@ -164,7 +132,6 @@ func C_GetSlotInfo(slotID C.CK_SLOT_ID, slotInfo *C.CK_SLOT_INFO) C.CK_RV {
 			major: 0,
 			minor: 1,
 		},
-		//	TODO: for now, always present
 		flags: C.CKF_TOKEN_PRESENT | C.CKF_REMOVABLE_DEVICE,
 	}
 
@@ -229,25 +196,10 @@ func C_GetSessionInfo(session CK_SESSION_HANDLE, info *C.CK_SESSION_INFO) C.CK_R
 	return C.CKR_OK
 }
 
-var mechanismTypes []C.CK_MECHANISM_TYPE = []C.CK_MECHANISM_TYPE{
-	C.CKM_RSA_PKCS,
-	C.CKM_SHA256_RSA_PKCS,
-}
-
 //export C_GetMechanismList
 func C_GetMechanismList(slotID C.CK_SLOT_ID, mechList *C.CK_MECHANISM_TYPE, count *C.CK_ULONG) C.CK_RV {
 	log.Notice("GetMechanismList")
-	if mechList == nil {
-		*count = C.CK_ULONG(len(mechanismTypes))
-		return C.CKR_OK
-	}
-	if *count < C.CK_ULONG(len(mechanismTypes)) {
-		return C.CKR_BUFFER_TOO_SMALL
-	}
-	for i := C.CK_ULONG(0); i < *count; i++ {
-		*mechList = mechanismTypes[i]
-		mechList = (*C.CK_MECHANISM_TYPE)(unsafe.Pointer(uintptr(unsafe.Pointer(mechList)) + unsafe.Sizeof(*mechList)))
-	}
+	*count = C.CK_ULONG(0)
 	return C.CKR_OK
 }
 
@@ -276,39 +228,6 @@ func C_CloseSession(session CK_SESSION_HANDLE) C.CK_RV {
 var sessionFoundObjects map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool = map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool{}
 var sessionFindingObjects map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool = map[CK_SESSION_HANDLE]map[CK_OBJECT_HANDLE]bool{}
 
-//	only starts search for object if session has not found it yet
-func findOnce(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE) {
-	if _, ok := sessionFindingObjects[session]; !ok {
-		sessionFindingObjects[session] = map[CK_OBJECT_HANDLE]bool{}
-	}
-	if _, ok := sessionFoundObjects[session]; !ok {
-		sessionFoundObjects[session] = map[CK_OBJECT_HANDLE]bool{}
-	}
-	if found, ok := sessionFoundObjects[session][object]; ok && found {
-		return
-	}
-	sessionFindingObjects[session][object] = true
-}
-
-//	always starts search for object even if session has found it previously
-func findAlways(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE) {
-	if _, ok := sessionFindingObjects[session]; !ok {
-		sessionFindingObjects[session] = map[CK_OBJECT_HANDLE]bool{}
-	}
-	sessionFindingObjects[session][object] = true
-}
-
-func found(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE) {
-	if _, ok := sessionFindingObjects[session]; !ok {
-		sessionFindingObjects[session] = map[CK_OBJECT_HANDLE]bool{}
-	}
-	if _, ok := sessionFoundObjects[session]; !ok {
-		sessionFoundObjects[session] = map[CK_OBJECT_HANDLE]bool{}
-	}
-	delete(sessionFindingObjects[session], object)
-	sessionFoundObjects[session][object] = true
-}
-
 //export C_FindObjectsInit
 func C_FindObjectsInit(session CK_SESSION_HANDLE, templates *CK_ATTRIBUTE, count ULONG) C.CK_RV {
 	log.Notice("FindObjectsInit")
@@ -316,8 +235,6 @@ func C_FindObjectsInit(session CK_SESSION_HANDLE, templates *CK_ATTRIBUTE, count
 	defer mutex.Unlock()
 	if count == 0 {
 		log.Notice("count == 0, find all objects")
-		//findOnce(session, PUBKEY_HANDLE)
-		//findOnce(session, PRIVKEY_HANDLE)
 		return C.CKR_OK
 	}
 	for i := ULONG(0); i < count; i++ {
@@ -328,10 +245,8 @@ func C_FindObjectsInit(session CK_SESSION_HANDLE, templates *CK_ATTRIBUTE, count
 			case C.CKO_PUBLIC_KEY:
 				log.Notice("init search for CKO_PUBLIC_KEY")
 				go krdclient.RequestNoOp()
-				//findOnce(session, PUBKEY_HANDLE)
 			case C.CKO_PRIVATE_KEY:
 				log.Notice("init search for CKO_PRIVATE_KEY")
-				//findAlways(session, PRIVKEY_HANDLE)
 			case C.CKO_MECHANISM:
 				log.Notice("init search for CKO_MECHANISM unsupported")
 			case C.CKO_CERTIFICATE:
@@ -343,36 +258,10 @@ func C_FindObjectsInit(session CK_SESSION_HANDLE, templates *CK_ATTRIBUTE, count
 	return C.CKR_OK
 }
 
-const PUBKEY_HANDLE CK_OBJECT_HANDLE = 1
-const PRIVKEY_HANDLE CK_OBJECT_HANDLE = 2
-const CERT_HANDLE CK_OBJECT_HANDLE = 3
-
-var PUBKEY_ID []byte = []byte{1}
-
 //export C_FindObjects
 func C_FindObjects(session CK_SESSION_HANDLE, objects *CK_OBJECT_HANDLE, maxCount ULONG, count *ULONG) C.CK_RV {
 	log.Notice("FindObjects")
-	mutex.Lock()
-	defer mutex.Unlock()
-	remainingCount := maxCount
-	foundCount := ULONG(0)
-	for handle, _ := range sessionFindingObjects[session] {
-		if remainingCount == 0 {
-			break
-		}
-		switch handle {
-		case PUBKEY_HANDLE:
-			*objects = PUBKEY_HANDLE
-			found(session, PUBKEY_HANDLE)
-		case PRIVKEY_HANDLE:
-			*objects = PRIVKEY_HANDLE
-			found(session, PRIVKEY_HANDLE)
-		}
-		foundCount++
-		remainingCount--
-		objects = (*CK_OBJECT_HANDLE)(unsafe.Pointer((uintptr(unsafe.Pointer(objects)) + unsafe.Sizeof(*objects))))
-	}
-	*count = foundCount
+	*count = 0
 	return C.CKR_OK
 }
 
@@ -381,7 +270,6 @@ func C_FindObjectsFinal(session CK_SESSION_HANDLE) C.CK_RV {
 	return C.CKR_OK
 }
 
-var staticMe = kr.Profile{}
 var checkedForUpdate = false
 
 //export C_GetAttributeValue
@@ -390,85 +278,6 @@ func C_GetAttributeValue(session CK_SESSION_HANDLE, object CK_OBJECT_HANDLE, tem
 	defer mutex.Unlock()
 	log.Notice("C_GetAttributeValue")
 
-	if !checkedForUpdate {
-		CheckForUpdate()
-		checkedForUpdate = true
-	}
-
-	var err error
-	staticMe, err = krdclient.RequestMe()
-	if err == krdclient.ErrNotPaired {
-		log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
-		//	return OK to silence SSH error output
-		return C.CKR_OK
-	}
-	if err == krdclient.ErrTimedOut {
-		log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.")
-		log.Warning("Falling back to local keys.")
-		//	return OK to silence SSH error output
-		return C.CKR_OK
-	}
-	if err == krdclient.ErrConnectingToDaemon {
-		log.Error(err.Error())
-		log.Warning("Falling back to local keys.")
-		//	return OK to silence SSH error output
-		return C.CKR_OK
-	}
-	if err != nil {
-		log.Error("unexpected error " + err.Error())
-		return C.CKR_OK
-	}
-	pk, err := staticMe.RSAPublicKey()
-	if err != nil {
-		log.Error("me.RSAPublicKey error " + err.Error())
-		return C.CKR_OK
-	}
-
-	templateIter := template
-	modulus := pk.N.Bytes()
-	eBytes := &bytes.Buffer{}
-	err = binary.Write(eBytes, binary.BigEndian, int64(pk.E))
-	if err != nil {
-		log.Error("public exponent binary encoding error: " + err.Error())
-		return C.CKR_GENERAL_ERROR
-	}
-	e := eBytes.Bytes()
-	for i := C.CK_ULONG(0); i < count; i++ {
-		//	TODO: memory safety/leak: some PKCS11 clients allocate memory
-		switch (*templateIter)._type {
-		case C.CKA_ID:
-			(*templateIter).pValue = unsafe.Pointer(C.CBytes(PUBKEY_ID))
-			(*templateIter).ulValueLen = C.ulong(len(PUBKEY_ID))
-		case C.CKA_MODULUS:
-			log.Notice("CKA_MODULUS")
-			(*templateIter).pValue = unsafe.Pointer(C.CBytes(modulus))
-			(*templateIter).ulValueLen = C.ulong(len(modulus))
-		case C.CKA_MODULUS_BITS:
-			log.Notice("MODULUS_BITS")
-			*(*C.CK_ULONG)((*templateIter).pValue) = C.CK_ULONG(pk.N.BitLen())
-		case C.CKA_PUBLIC_EXPONENT:
-			log.Notice("CKA_PUBLIC_EXPONENT")
-			(*templateIter).pValue = unsafe.Pointer(C.CBytes(e))
-			(*templateIter).ulValueLen = C.ulong(len(e))
-		case C.CKA_KEY_TYPE:
-			log.Notice("CKA_KEY_TYPE")
-			rsaKeyType := (*C.CK_KEY_TYPE)(C.malloc(C.size_t(unsafe.Sizeof(C.CKK_RSA))))
-			*rsaKeyType = C.CKK_RSA
-			(*templateIter).pValue = unsafe.Pointer(rsaKeyType)
-			(*templateIter).ulValueLen = C.ulong(unsafe.Sizeof(*rsaKeyType))
-		case C.CKA_SIGN:
-			log.Notice("CKA_SIGN")
-			*(*C.CK_BBOOL)((*templateIter).pValue) = C.CK_TRUE
-		case C.CKA_SUBJECT:
-			log.Notice("CKA_SUBJECT not supported")
-		case C.CKA_VALUE:
-			log.Notice("CKA_VALUE not supported")
-		default:
-			log.Notice("unknown template type", (*templateIter)._type)
-		}
-
-		templateIter = (*CK_ATTRIBUTE)(unsafe.Pointer(uintptr(unsafe.Pointer(templateIter)) + unsafe.Sizeof(*template)))
-	}
 	return C.CKR_OK
 }
 
@@ -493,40 +302,6 @@ func C_Sign(session CK_SESSION_HANDLE,
 	signature C.CK_BYTE_PTR, signatureLen *C.ulong) C.CK_RV {
 	log.Notice("C_Sign")
 	log.Notice("input signatureLen", *signatureLen, "dataLen", dataLen)
-	if signature == nil {
-		*signatureLen = 512
-		return C.CKR_OK
-	}
-	if *signatureLen < 512 {
-		return C.CKR_BUFFER_TOO_SMALL
-	}
-	message := C.GoBytes(unsafe.Pointer(data), C.int(dataLen))
-	pkFingerprint := sha256.Sum256(staticMe.SSHWirePublicKey)
-	stderrCyan("Kryptonite ▶ Requesting SSH authentication from phone\n")
-	sigBytes, err := krdclient.Sign(pkFingerprint[:], message)
-	if err != nil {
-		switch err {
-		case krdclient.ErrNotPaired:
-			log.Warning("Phone not paired, please pair to use your SSH key by running \"kr pair\".")
-		case krdclient.ErrTimedOut:
-			log.Error("Request to phone timed out. Make sure your phone and workstation are paired and connected to the internet or bluetooth.")
-		case krdclient.ErrSigning:
-			log.Error(err)
-		case krdclient.ErrRejected:
-			log.Error(err)
-		}
-		log.Warning("Falling back to local keys.")
-		return C.CKR_GENERAL_ERROR
-	} else {
-		stderrGreen("Kryptonite ▶ Success. Request Allowed ✔\n")
-		log.Notice("Received signature size", len(sigBytes), "bytes")
-		for _, b := range sigBytes {
-			*signature = C.CK_BYTE(b)
-			signature = C.CK_BYTE_PTR(unsafe.Pointer(uintptr(unsafe.Pointer(signature)) + 1))
-		}
-		*signatureLen = C.ulong(len(sigBytes))
-		log.Notice("Returning signature")
-	}
 	return C.CKR_OK
 }
 
@@ -535,6 +310,7 @@ func C_Finalize(reserved C.CK_VOID_PTR) C.CK_RV {
 	log.Notice("Finalize")
 	return C.CKR_OK
 }
+
 func bytesToChar64(b []byte) [64]C.uchar {
 	for len(b) < 64 {
 		b = append(b, byte(0))
