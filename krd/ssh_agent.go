@@ -6,11 +6,38 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"net"
+
+	"github.com/fatih/color"
 	"github.com/kryptco/kr"
+	"github.com/kryptco/kr/krdclient"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	"net"
 )
+
+func cyan(s string) string {
+	cyan := color.New(color.FgHiCyan)
+	cyan.EnableColor()
+	return cyan.SprintFunc()(s)
+}
+
+func green(s string) string {
+	green := color.New(color.FgHiGreen)
+	green.EnableColor()
+	return green.SprintFunc()(s)
+}
+
+func yellow(s string) string {
+	yellow := color.New(color.FgHiYellow)
+	yellow.EnableColor()
+	return yellow.SprintFunc()(s)
+}
+
+func red(s string) string {
+	red := color.New(color.FgHiRed)
+	red.EnableColor()
+	return red.SprintFunc()(s)
+}
 
 // 	from https://golang.org/src/crypto/rsa/pkcs1v15.go
 var hashPrefixes = map[crypto.Hash][]byte{
@@ -68,7 +95,7 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		return
 	}
 
-	a.notify([]byte("Requesting authorization from phone..."))
+	a.notify(cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
 
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
@@ -77,13 +104,28 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
 	if err != nil {
-		a.notify([]byte(err.Error()))
 		log.Error(err.Error())
+		switch err {
+		case ErrNotPaired:
+			a.notify(yellow(krdclient.ErrNotPaired.Error()))
+		case ErrTimeout:
+			a.notify(red(krdclient.ErrTimedOut.Error()))
+		}
 		return
 	}
 	log.Notice(fmt.Sprintf("sign response: %+v", signResponse))
 	if signResponse.Error != nil {
 		err = errors.New(*signResponse.Error)
+		log.Error(err.Error())
+		if *signResponse.Error == "rejected" {
+			a.notify(red(krdclient.ErrRejected.Error()))
+		} else {
+			a.notify(red(krdclient.ErrSigning.Error()))
+		}
+		return
+	}
+	if signResponse == nil {
+		err = errors.New("nil response")
 		log.Error(err.Error())
 		return
 	}
@@ -92,6 +134,7 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		log.Error(err.Error())
 		return
 	}
+	a.notify(green("Kryptonite ▶ Success. Request Allowed ✔"))
 	signature := *signResponse.Signature
 	sshSignature = &ssh.Signature{
 		Format: key.Type(),
@@ -130,8 +173,8 @@ func (a Agent) Signers() (signers []ssh.Signer, err error) {
 	return
 }
 
-func (a Agent) notify(body []byte) {
-	if err := a.notifier.Notify(append(body, '\n')); err != nil {
+func (a Agent) notify(body string) {
+	if err := a.notifier.Notify(append([]byte(body), '\n')); err != nil {
 		log.Error("error writing notification: " + err.Error())
 	}
 }
