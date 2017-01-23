@@ -284,7 +284,7 @@ func digitaloceanCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
-	PrintErr(os.Stderr, "Press ENTER to open your web browser to Digital Ocean. Then click \"Add SSH Key\" and paste your public key.")
+	PrintErr(os.Stderr, "Press ENTER to open your web browser to DigitalOcean. Then click \"Add SSH Key\" and paste your public key.")
 	os.Stdin.Read([]byte{0})
 	openBrowser("https://cloud.digitalocean.com/settings/security")
 	return
@@ -363,9 +363,15 @@ func main() {
 			Action: bitbucketCommand,
 		},
 		cli.Command{
-			Name:   "digital-ocean",
-			Usage:  "Upload your public key to Digital Ocean. Copies your public key to the clipboard and opens Digital Ocean settings.",
+			Name:   "digitalocean",
+			Usage:  "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings.",
 			Action: digitaloceanCommand,
+		},
+		cli.Command{
+			Name:   "digital-ocean",
+			Usage:  "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings.",
+			Action: digitaloceanCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "heroku",
