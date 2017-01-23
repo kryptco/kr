@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -53,11 +54,14 @@ var hashPrefixes = map[crypto.Hash][]byte{
 type Agent struct {
 	client   EnclaveClientI
 	notifier kr.Notifier
+	fallback agent.Agent
 }
 
 // List returns the identities known to the agent.
 func (a Agent) List() (keys []*agent.Key, err error) {
 	cachedProfile := a.client.GetCachedMe()
+	keys = []*agent.Key{}
+
 	if cachedProfile != nil {
 		pk, parseErr := ssh.ParsePublicKey(cachedProfile.SSHWirePublicKey)
 		if parseErr != nil {
@@ -65,13 +69,16 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 			err = parseErr
 			return
 		}
-		keys = []*agent.Key{
+		keys = append(keys,
 			&agent.Key{
 				Format:  pk.Type(),
 				Blob:    pk.Marshal(),
 				Comment: cachedProfile.Email,
-			},
-		}
+			})
+	}
+	fallbackKeys, err := a.fallback.List()
+	if err == nil {
+		keys = append(keys, fallbackKeys...)
 	}
 	return
 }
@@ -80,6 +87,15 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 // in [PROTOCOL.agent] section 2.6.2.
 func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
 	keyFingerprint := sha256.Sum256(key.Marshal())
+
+	keyringKeys, err := a.fallback.List()
+	if err == nil {
+		for _, keyringKey := range keyringKeys {
+			if bytes.Equal(keyringKey.Marshal(), key.Marshal()) {
+				return a.fallback.Sign(key, data)
+			}
+		}
+	}
 
 	var digest []byte
 	switch key.Type() {
@@ -144,32 +160,32 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 
 // Add adds a private key to the agent.
 func (a Agent) Add(key agent.AddedKey) (err error) {
-	return
+	return a.fallback.Add(key)
 }
 
 // Remove removes all identities with the given public key.
 func (a Agent) Remove(key ssh.PublicKey) (err error) {
-	return
+	return a.fallback.Remove(key)
 }
 
 // RemoveAll removes all identities.
 func (a Agent) RemoveAll() (err error) {
-	return
+	return a.fallback.RemoveAll()
 }
 
 // Lock locks the agent. Sign and Remove will fail, and List will empty an empty list.
 func (a Agent) Lock(passphrase []byte) (err error) {
-	return
+	return a.fallback.Lock(passphrase)
 }
 
 // Unlock undoes the effect of Lock
 func (a Agent) Unlock(passphrase []byte) (err error) {
-	return
+	return a.fallback.Unlock(passphrase)
 }
 
 // Signers returns signers for all the known keys.
 func (a Agent) Signers() (signers []ssh.Signer, err error) {
-	return
+	return a.fallback.Signers()
 }
 
 func (a Agent) notify(body string) {
@@ -185,7 +201,7 @@ func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, l net.Listener) (
 			// handle error
 			log.Error("accept error: ", err.Error())
 		}
-		go agent.ServeAgent(Agent{enclaveClient, n}, conn)
+		go agent.ServeAgent(Agent{enclaveClient, n, agent.NewKeyring()}, conn)
 	}
 	return
 }
