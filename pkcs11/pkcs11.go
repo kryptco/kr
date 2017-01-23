@@ -12,7 +12,7 @@ static int dlopen_kr_logging_module() {
 	void (*Init)(void);
 	char *error;
 
-	handle = dlopen ("libkrloggingdylib.dylib", RTLD_LAZY);
+	handle = dlopen ("libkrlogging.dylib", RTLD_LAZY);
 	if (!handle) {
 		return 1;
 	}

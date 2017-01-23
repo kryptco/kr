@@ -6,6 +6,6 @@ authors = ["Kevin King <kevin@krypt.co>"]
 
 [lib]
 crate-type = ["cdylib"]
-name = "krloggingdylib"
+name = "krlogging"
 
 [dependencies]
