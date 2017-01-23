@@ -1,0 +1,11 @@
+[package]
+name = "loggingdylib"
+version = "0.1.0"
+authors = ["Kevin King <kevin@krypt.co>"]
+
+
+[lib]
+crate-type = ["cdylib"]
+name = "krloggingdylib"
+
+[dependencies]
