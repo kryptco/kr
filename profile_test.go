@@ -13,7 +13,10 @@ var rsaProfile = Profile{
 }
 
 func TestRSAProfile(t *testing.T) {
-	authKey := rsaProfile.AuthorizedKeyString()
+	authKey, err := rsaProfile.AuthorizedKeyString()
+	if err != nil {
+		t.Fatal(err)
+	}
 	key1, email, _, _, err := ssh.ParseAuthorizedKey([]byte(authKey))
 	if err != nil {
 		t.Fatal(err)

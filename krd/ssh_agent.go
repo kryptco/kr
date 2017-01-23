@@ -10,7 +10,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/kryptco/kr"
-	"github.com/kryptco/kr/krdclient"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
@@ -107,9 +106,9 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		log.Error(err.Error())
 		switch err {
 		case ErrNotPaired:
-			a.notify(yellow(krdclient.ErrNotPaired.Error()))
+			a.notify(yellow(kr.ErrNotPaired.Error()))
 		case ErrTimeout:
-			a.notify(red(krdclient.ErrTimedOut.Error()))
+			a.notify(red(kr.ErrTimedOut.Error()))
 		}
 		return
 	}
@@ -118,9 +117,9 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		err = errors.New(*signResponse.Error)
 		log.Error(err.Error())
 		if *signResponse.Error == "rejected" {
-			a.notify(red(krdclient.ErrRejected.Error()))
+			a.notify(red(kr.ErrRejected.Error()))
 		} else {
-			a.notify(red(krdclient.ErrSigning.Error()))
+			a.notify(red(kr.ErrSigning.Error()))
 		}
 		return
 	}

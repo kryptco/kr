@@ -7,3 +7,4 @@ all:
 
 check:
 	go test github.com/kryptco/kr github.com/kryptco/kr/pkcs11 github.com/kryptco/kr/krd github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr
+	cd pkcs11/loggingdylib; cargo test

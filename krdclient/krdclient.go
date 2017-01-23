@@ -10,12 +10,6 @@ import (
 	"github.com/kryptco/kr"
 )
 
-var ErrNotPaired = fmt.Errorf("Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.")
-var ErrTimedOut = fmt.Errorf("Request timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.")
-var ErrSigning = fmt.Errorf("Kryptonite was unable to perform SSH login. Please restart the Kryptonite app on your phone.")
-var ErrRejected = fmt.Errorf("Request Rejected ✘")
-var ErrConnectingToDaemon = fmt.Errorf("Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
-
 func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 	meRequest, err := kr.NewRequest()
 	if err != nil {
@@ -39,12 +33,12 @@ func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 func RequestMe() (me kr.Profile, err error) {
 	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
 	if err != nil {
-		err = ErrConnectingToDaemon
+		err = kr.ErrConnectingToDaemon
 		return
 	}
 	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
-		err = ErrConnectingToDaemon
+		err = kr.ErrConnectingToDaemon
 		return
 	}
 	defer daemonConn.Close()
@@ -60,23 +54,23 @@ func makeRequestWithJsonResponse(conn net.Conn, request kr.Request) (response kr
 	defer httpRequest.Body.Close()
 	err = httpRequest.Write(conn)
 	if err != nil {
-		err = ErrConnectingToDaemon
+		err = kr.ErrConnectingToDaemon
 		return
 	}
 
 	responseReader := bufio.NewReader(conn)
 	httpResponse, err := http.ReadResponse(responseReader, httpRequest)
 	if err != nil {
-		err = ErrConnectingToDaemon
+		err = kr.ErrConnectingToDaemon
 		return
 	}
 	defer httpResponse.Body.Close()
 	if httpResponse.StatusCode == http.StatusNotFound {
-		err = ErrNotPaired
+		err = kr.ErrNotPaired
 		return
 	}
 	if httpResponse.StatusCode == http.StatusInternalServerError {
-		err = ErrTimedOut
+		err = kr.ErrTimedOut
 		return
 	}
 	if httpResponse.StatusCode != http.StatusOK {
@@ -121,11 +115,11 @@ func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byt
 	}
 	defer httpResponse.Body.Close()
 	if httpResponse.StatusCode == http.StatusNotFound {
-		err = ErrNotPaired
+		err = kr.ErrNotPaired
 		return
 	}
 	if httpResponse.StatusCode == http.StatusInternalServerError {
-		err = ErrTimedOut
+		err = kr.ErrTimedOut
 		return
 	}
 	if httpResponse.StatusCode != http.StatusOK {
@@ -146,9 +140,9 @@ func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byt
 		}
 		if signResponse.Error != nil {
 			if *signResponse.Error == "rejected" {
-				err = ErrRejected
+				err = kr.ErrRejected
 			} else {
-				err = ErrSigning
+				err = kr.ErrSigning
 			}
 			return
 		}
