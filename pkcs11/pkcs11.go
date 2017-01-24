@@ -71,6 +71,8 @@ func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
 	log.Notice("Initialize")
 	C.dlopen_kr_logging_module()
 
+	os.Setenv("SSH_AUTH_SOCK", os.Getenv("HOME")+"/.kr/krd-agent.sock")
+
 	mutex.Lock()
 	defer mutex.Unlock()
 	if !checkedForUpdate {
