@@ -1,6 +1,7 @@
 package main
 
 /*
+#cgo LDFLAGS: -ldl
 #include <stdio.h>
 #include <stdlib.h>
 #include "pkcs11.h"
