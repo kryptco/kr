@@ -57,6 +57,14 @@ type ULONG C.CK_ULONG
 
 var log = kr.SetupLogging("", logging.WARNING, os.Getenv("KR_LOG_SYSLOG") != "")
 
+const KRYPTONITE_DUMMY_PK_DER = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxpGwBw6wkl/1rbvhZOlj
+lhaW7U9BskSGsd67Y2r/IHn+cs1rqjTB2yeXoYjnGc9wk2TpZV/bl7gcJlscu7t1
+z+bqeDBXk+Dgfl7JaYZvzL7oQKpIiAhmhM/JinnmDwbPCO/IyvHZBS812WO8iLAn
+LBwji71rDsRoOrytio3jezZPpL0FmOlrswzfPxMNGSIGldq9klWFhY6d/Y+jgkIE
+SC/93LT3e2SFXvnYZ1B+Zrphk6GOLftqiTMkE/5LFKV0vmjiGs5YUu4iE98w5i0a
+IGRh3o9l1LfDATDyCk1jqrNuwDM3eDGoN6wohm3wsdSUduLePIFOB3fauFkGzh0a
+nQIDAQAB`
+
 var mutex sync.Mutex
 
 //export C_GetFunctionList
