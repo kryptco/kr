@@ -35,6 +35,7 @@ import (
 import (
 	"os"
 	"sync"
+	"syscall"
 	"unsafe"
 
 	"github.com/kryptco/kr"
@@ -75,18 +76,28 @@ func C_GetFunctionList(l **C.CK_FUNCTION_LIST) C.CK_RV {
 	return C.CKR_OK
 }
 
+var oldStderr *int = nil
+
 //export C_Initialize
 func C_Initialize(C.CK_VOID_PTR) C.CK_RV {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	log.Notice("Initialize")
 	C.dlopen_kr_logging_module()
 
 	os.Setenv("SSH_AUTH_SOCK", os.Getenv("HOME")+"/.kr/krd-agent.sock")
 
-	mutex.Lock()
-	defer mutex.Unlock()
 	if !checkedForUpdate {
 		CheckForUpdate()
 		checkedForUpdate = true
+	}
+
+	devNull, _ := os.OpenFile("/dev/null", os.O_WRONLY, 0666)
+	oldStderrFd, err := syscall.Dup(int(os.Stderr.Fd()))
+	if err == nil {
+		oldStderr = &oldStderrFd
+		syscall.Dup2(int(devNull.Fd()), syscall.Stderr)
 	}
 
 	return C.CKR_OK
@@ -319,6 +330,12 @@ func C_Sign(session CK_SESSION_HANDLE,
 //export C_Finalize
 func C_Finalize(reserved C.CK_VOID_PTR) C.CK_RV {
 	log.Notice("Finalize")
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if oldStderr != nil {
+		syscall.Dup2(*oldStderr, syscall.Stderr)
+	}
 	return C.CKR_OK
 }
 
