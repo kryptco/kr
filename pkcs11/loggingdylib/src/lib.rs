@@ -3,9 +3,14 @@ use std::io::SeekFrom;
 use std::io::BufReader;
 use std::{thread, time};
 use std::collections::HashSet;
+use std::env;
 
 #[no_mangle]
 pub extern "C" fn Init() {
+    match env::var("KR_NO_STDERR") {
+        Ok(val) => return,
+        Err(e) =>{},
+    };
     thread::spawn(move || {
         use std::fs::OpenOptions;
         use std::env;
