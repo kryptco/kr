@@ -1,0 +1,16 @@
+[package]
+authors = ["Kevin King <kevin@krypt.co>"]
+name = "pkcs11shim"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+name = "krpkcs11"
+
+[dependencies]
+base64 = "*"
+hyper = "*"
+lazy_static = "*"
+rand = "*"
+syslog = "*"
+
