@@ -21,7 +21,18 @@ pub extern "C" fn Init() {
         use std::fs::OpenOptions;
         use std::env;
 
-        let mut file = OpenOptions::new().create(true).truncate(true).read(true).write(true).open(home_dir.join(".kr/krd-notify.log")).unwrap();
+        let mut file = match OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .read(true)
+            .write(true)
+            .open(home_dir.join(".kr/krd-notify.log")) {
+                Ok(file) => file,
+                Err(e) => {
+                    write!(&mut std::io::stderr(), "error opening Kryptonite log file: {:?}", e);
+                    return;
+                },
+        };
         file.seek(SeekFrom::End(0));
         let mut reader = BufReader::new(file);
 
