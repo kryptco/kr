@@ -2,11 +2,17 @@
 
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
+use std::thread;
+use std::time;
+use std::mem;
+use std::env;
 
 extern crate syslog;
 extern crate hyper;
 extern crate rand;
 extern crate base64;
+extern crate libloading as dlib;
+
 use pkcs11_unused::*;
 use pkcs11::*;
 use utils::*;
@@ -27,6 +33,32 @@ pub extern "C" fn CK_C_GetFunctionList(function_list: *mut *mut _CK_FUNCTION_LIS
 
 extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     notice!("CK_C_Initialize");
+
+    if let Some(mut home_dir) = env::home_dir() {
+        home_dir.push(".kr/krd-agent.sock");
+        env::set_var("SSH_AUTH_SOCK", home_dir);
+    }
+
+
+    let lib = match dlib::Library::new("libkrlogging.dylib") {
+        Ok(lib) => lib,
+        Err(_) => {
+            error!("could not load libkrlogging.dylib");
+            return CKR_GENERAL_ERROR;
+        },
+    };
+    unsafe {
+        let init_func : dlib::Symbol<unsafe extern fn() -> i32> = match lib.get(b"Init") {
+            Ok(init_func) => init_func,
+            Err(_) => {
+                error!("could not locate libkrlogging.dylib init function");
+                return CKR_GENERAL_ERROR;
+            },
+        };
+        init_func();
+    }
+    //  prevent libkrlogging from being unloaded
+    mem::forget(lib);
     CKR_OK
 }
 
