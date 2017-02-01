@@ -2,7 +2,7 @@ all:
 	-mkdir -p bin
 	cd kr; go build -o ../bin/kr
 	cd krd; go build -o ../bin/krd
-	cd pkcs11shim; cargo build --release; cp target/release/libkrpkcs11.* ../bin/kr-pkcs11.so
+	cd pkcs11shim; make; cp target/release/kr-pkcs11.so ../bin/
 	cd loggingdylib; make; cp target/release/libkrlogging.* ../bin/
 
 check:
