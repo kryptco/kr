@@ -2,20 +2,26 @@
 
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
-use std::thread;
-use std::time;
+use std::sync::Mutex;
 use std::mem;
 use std::env;
+use std::fs::OpenOptions;
+use std::os::unix::io::AsRawFd;
 
 extern crate syslog;
 extern crate hyper;
 extern crate rand;
 extern crate base64;
 extern crate libloading as dlib;
+extern crate libc;
 
 use pkcs11_unused::*;
 use pkcs11::*;
 use utils::*;
+
+lazy_static! {
+    static ref OLD_STDERR_FD: Mutex<Option<libc::c_int>> = Mutex::new(None);
+}
 
 #[no_mangle]
 pub extern "C" fn C_GetFunctionList(function_list: *mut *mut _CK_FUNCTION_LIST) -> CK_RV {
@@ -40,25 +46,37 @@ extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     }
 
 
-    let lib = match dlib::Library::new("libkrlogging.dylib") {
-        Ok(lib) => lib,
-        Err(_) => {
-            error!("could not load libkrlogging.dylib");
-            return CKR_GENERAL_ERROR;
-        },
-    };
-    unsafe {
-        let init_func : dlib::Symbol<unsafe extern fn() -> i32> = match lib.get(b"Init") {
-            Ok(init_func) => init_func,
-            Err(_) => {
-                error!("could not locate libkrlogging.dylib init function");
-                return CKR_GENERAL_ERROR;
-            },
-        };
-        init_func();
+    if let Ok(lib) = dlib::Library::new("libkrlogging.dylib") {
+        unsafe {
+            let init_func : dlib::Symbol<unsafe extern fn() -> i32> = match lib.get(b"Init") {
+                Ok(init_func) => init_func,
+                Err(_) => {
+                    error!("could not locate libkrlogging.dylib init function");
+                    return CKR_GENERAL_ERROR;
+                },
+            };
+            init_func();
+        }
+        //  prevent libkrlogging from being unloaded
+        mem::forget(lib);
+    } else {
+        error!("could not load libkrlogging.dylib");
     }
-    //  prevent libkrlogging from being unloaded
-    mem::forget(lib);
+
+    if let Ok(dev_null) = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open("/dev/null") {
+            match OLD_STDERR_FD.lock() {
+                Ok(mut old_stderr_fd) => {
+                    unsafe {
+                        *old_stderr_fd = Some(libc::dup(libc::STDERR_FILENO));
+                        libc::dup2(dev_null.as_raw_fd(), libc::STDERR_FILENO);
+                    };
+                },
+                Err(_) => {},
+            };
+        }
     CKR_OK
 }
 
@@ -284,6 +302,17 @@ pub extern "C" fn CK_C_GetAttributeValue(session: CK_SESSION_HANDLE,
 
 pub extern "C" fn CK_C_Finalize(pReserved: *mut ::std::os::raw::c_void) -> CK_RV {
     notice!("CK_C_Finalize");
+    match OLD_STDERR_FD.lock() {
+        Ok(old_stderr_fd) => {
+            match *old_stderr_fd {
+                Some(fd) => {
+                    unsafe { libc::dup2(fd, libc::STDERR_FILENO) };
+                },
+                _ => {},
+            };
+        },
+        Err(_) => { },
+    };
     CKR_OK
 }
 
