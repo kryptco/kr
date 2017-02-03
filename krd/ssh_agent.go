@@ -62,6 +62,10 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 	cachedProfile := a.client.GetCachedMe()
 	keys = []*agent.Key{}
 
+	if CheckIfUpdateAvailable() {
+		a.notify(yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it."))
+	}
+
 	if cachedProfile != nil {
 		pk, parseErr := ssh.ParsePublicKey(cachedProfile.SSHWirePublicKey)
 		if parseErr != nil {
