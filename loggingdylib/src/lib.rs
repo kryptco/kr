@@ -31,17 +31,20 @@ fn start_stdout_detection() {
     let write_fd : libc::c_int = pipe_fds[1];
 
     let mut real_stdout = unsafe { File::from_raw_fd(libc::dup(libc::STDOUT_FILENO)) };
-
     unsafe { libc::dup2(write_fd, libc::STDOUT_FILENO) };
+    let mut pipe_read = BufReader::new( unsafe { File::from_raw_fd(read_fd) } );
 
-    let pipe_read : File = unsafe { File::from_raw_fd(read_fd) };
     thread::spawn(move || {
-        let mut bytes = pipe_read.bytes();
-        if let Some(byte) = bytes.next() {
+        let mut byte_buf = [0u8; 1];
+        if let Ok(_) = pipe_read.read_exact(&mut byte_buf) {
             HAS_RECEIVED_STDOUT.store(true, Ordering::SeqCst);
-            real_stdout.write(&[byte.unwrap()]);
-            for byte in bytes {
-                real_stdout.write(&[byte.unwrap()]);
+            real_stdout.write(&byte_buf);
+
+            let mut larger_buf = [0u8; 1 << 15];
+            loop {
+                if let Ok(n) = pipe_read.read(&mut larger_buf) {
+                    real_stdout.write(&larger_buf.split_at(n).0);
+                }
             }
         }
     });
