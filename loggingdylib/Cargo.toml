@@ -1,11 +1,12 @@
 [package]
+authors = ["Kevin King <kevin@krypt.co>"]
 name = "loggingdylib"
 version = "0.1.0"
-authors = ["Kevin King <kevin@krypt.co>"]
 
+[dependencies]
+lazy_static = "*"
+libc = "*"
 
 [lib]
 crate-type = ["cdylib"]
 name = "krlogging"
-
-[dependencies]

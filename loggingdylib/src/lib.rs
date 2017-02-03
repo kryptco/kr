@@ -4,6 +4,48 @@ use std::io::BufReader;
 use std::{thread, time};
 use std::collections::HashSet;
 use std::env;
+use std::fs::File;
+use std::os::unix::io::FromRawFd;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+extern crate libc;
+#[macro_use]
+extern crate lazy_static;
+
+static REQUESTING_MSG : &'static str = "Kryptonite ▶ Requesting SSH authentication from phone\n";
+static TIMED_OUT_MSG : &'static str = "Kryptonite ▶ Request timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.\n";
+static NOT_PAIRED_MSG : &'static str = "Kryptonite ▶ Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.\n";
+
+lazy_static! {
+    static ref HAS_RECEIVED_STDOUT : AtomicBool = AtomicBool::new(false);
+}
+
+fn start_stdout_detection() {
+    let mut pipe_fds : [libc::c_int ; 2] = [0, 0];
+    unsafe {
+        if 0 != libc::pipe(pipe_fds.as_mut_ptr()) {
+            return;
+        }
+    }
+    let read_fd : libc::c_int = pipe_fds[0];
+    let write_fd : libc::c_int = pipe_fds[1];
+
+    let mut real_stdout = unsafe { File::from_raw_fd(libc::dup(libc::STDOUT_FILENO)) };
+
+    unsafe { libc::dup2(write_fd, libc::STDOUT_FILENO) };
+
+    let pipe_read : File = unsafe { File::from_raw_fd(read_fd) };
+    thread::spawn(move || {
+        let mut bytes = pipe_read.bytes();
+        if let Some(byte) = bytes.next() {
+            HAS_RECEIVED_STDOUT.store(true, Ordering::SeqCst);
+            real_stdout.write(&[byte.unwrap()]);
+            for byte in bytes {
+                real_stdout.write(&[byte.unwrap()]);
+            }
+        }
+    });
+}
 
 #[no_mangle]
 pub extern "C" fn Init() {
@@ -16,6 +58,8 @@ pub extern "C" fn Init() {
         Some(path) => path,
         None => return,
     };
+
+    start_stdout_detection();
 
     thread::spawn(move || {
         use std::fs::OpenOptions;
@@ -38,6 +82,9 @@ pub extern "C" fn Init() {
 
         let mut printed_messages = HashSet::<String>::new();
         loop {
+            if HAS_RECEIVED_STDOUT.load(Ordering::SeqCst) {
+                return;
+            }
             let mut buf = String::new();
             match reader.read_line(&mut buf) {
                 Ok(_) => {
@@ -45,7 +92,7 @@ pub extern "C" fn Init() {
                         printed_messages.insert(buf.clone());
                         write!(&mut std::io::stderr(), "{}", buf);
                     } else {
-                        thread::sleep(time::Duration::from_millis(250));
+                        thread::sleep(time::Duration::from_millis(10));
                     }
                 },
                 Err(e) => {
