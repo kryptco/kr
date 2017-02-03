@@ -12,14 +12,13 @@ extern crate libc;
 #[macro_use]
 extern crate lazy_static;
 
-static REQUESTING_MSG : &'static str = "Kryptonite ▶ Requesting SSH authentication from phone\n";
-static TIMED_OUT_MSG : &'static str = "Kryptonite ▶ Request timed out. Make sure your phone and workstation are paired and connected to the internet and the Kryptonite app is running.\n";
-static NOT_PAIRED_MSG : &'static str = "Kryptonite ▶ Workstation not yet paired. Please run \"kr pair\" and scan the QRCode with the Kryptonite mobile app.\n";
-
 lazy_static! {
     static ref HAS_RECEIVED_STDOUT : AtomicBool = AtomicBool::new(false);
 }
 
+//  Notifications from other Kryptonite SSH processes will also be logged by this process. To
+//  remedy this, we stop logging once any stdout has been sent by SSH (indicating successful
+//  login).
 fn start_stdout_detection() {
     let mut pipe_fds : [libc::c_int ; 2] = [0, 0];
     unsafe {
