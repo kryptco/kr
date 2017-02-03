@@ -196,7 +196,7 @@ func (a Agent) Signers() (signers []ssh.Signer, err error) {
 }
 
 func (a Agent) notify(body string) {
-	if err := a.notifier.Notify(append([]byte(body), '\n')); err != nil {
+	if err := a.notifier.Notify(append([]byte(body), '\r', '\n')); err != nil {
 		log.Error("error writing notification: " + err.Error())
 	}
 }
