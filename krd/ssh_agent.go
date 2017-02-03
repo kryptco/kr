@@ -75,6 +75,8 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 				Blob:    pk.Marshal(),
 				Comment: cachedProfile.Email,
 			})
+	} else {
+		a.notify(yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
 	}
 	fallbackKeys, err := a.fallback.List()
 	if err == nil {
@@ -122,9 +124,10 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		log.Error(err.Error())
 		switch err {
 		case ErrNotPaired:
-			a.notify(yellow(kr.ErrNotPaired.Error()))
+			a.notify(yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
 		case ErrTimeout:
-			a.notify(red(kr.ErrTimedOut.Error()))
+			a.notify(red("Kryptonite ▶ " + kr.ErrTimedOut.Error()))
+			a.notify(yellow("Kryptonite ▶ Falling back to local keys."))
 		}
 		return
 	}
@@ -133,9 +136,9 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		err = errors.New(*signResponse.Error)
 		log.Error(err.Error())
 		if *signResponse.Error == "rejected" {
-			a.notify(red(kr.ErrRejected.Error()))
+			a.notify(red("Kryptonite ▶ " + kr.ErrRejected.Error()))
 		} else {
-			a.notify(red(kr.ErrSigning.Error()))
+			a.notify(red("Kryptonite ▶ " + kr.ErrSigning.Error()))
 		}
 		return
 	}
