@@ -84,12 +84,12 @@ pub extern "C" fn Init() {
 
         let mut printed_messages = HashSet::<String>::new();
         loop {
-            if HAS_RECEIVED_STDOUT.load(Ordering::SeqCst) {
-                return;
-            }
             let mut buf = String::new();
             match reader.read_line(&mut buf) {
                 Ok(_) => {
+                    if HAS_RECEIVED_STDOUT.load(Ordering::SeqCst) {
+                        return;
+                    }
                     if buf.len() > 1 && !printed_messages.contains(&buf) {
                         printed_messages.insert(buf.clone());
                         write!(&mut std::io::stderr(), "{}", buf);
