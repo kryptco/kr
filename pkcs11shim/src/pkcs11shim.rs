@@ -37,6 +37,16 @@ pub extern "C" fn CK_C_GetFunctionList(function_list: *mut *mut _CK_FUNCTION_LIS
     C_GetFunctionList(function_list)
 }
 
+#[cfg(target_os = "linux")]
+fn libkrlogging_path() -> String {
+    "/usr/lib/libkrlogging.dylib".into()
+}
+
+#[cfg(target_os = "macos")]
+fn libkrlogging_path() -> String {
+    "/usr/local/lib/libkrlogging.dylib".into()
+}
+
 extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     notice!("CK_C_Initialize");
 
@@ -46,7 +56,7 @@ extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     }
 
 
-    if let Ok(lib) = dlib::Library::new("libkrlogging.dylib") {
+    if let Ok(lib) = dlib::Library::new(libkrlogging_path()) {
         unsafe {
             let init_func : dlib::Symbol<unsafe extern fn() -> i32> = match lib.get(b"Init") {
                 Ok(init_func) => init_func,
