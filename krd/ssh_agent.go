@@ -92,6 +92,14 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 // Sign has the agent sign the data using a protocol 2 key as defined
 // in [PROTOCOL.agent] section 2.6.2.
 func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
+	hostKey, err := parseHostPubkeyFromSignaturePayload(data)
+	if err != nil {
+		return
+	}
+	hosts, err := hostForPublicKey(hostKey)
+	if err != nil {
+		return
+	}
 	keyFingerprint := sha256.Sum256(key.Marshal())
 
 	keyringKeys, err := a.fallback.List()
@@ -121,7 +129,11 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
 		Digest:               digest,
-		Command:              getLastCommand(),
+	}
+	if len(hosts) > 0 {
+		signRequest.Command = &hosts[0]
+	} else {
+		signRequest.Command = getLastCommand()
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
 	if err != nil {
