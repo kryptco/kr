@@ -5,9 +5,11 @@ import (
 	"crypto"
 	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
+	"sync"
 
 	"github.com/fatih/color"
 	"github.com/kryptco/kr"
@@ -51,14 +53,22 @@ var hashPrefixes = map[crypto.Hash][]byte{
 	crypto.RIPEMD160: {0x30, 0x20, 0x30, 0x08, 0x06, 0x06, 0x28, 0xcf, 0x06, 0x03, 0x00, 0x31, 0x04, 0x14},
 }
 
+type sessionIDSig struct {
+	PK        ssh.PublicKey
+	Signature *ssh.Signature
+}
+
 type Agent struct {
+	mutex    sync.Mutex
 	client   EnclaveClientI
 	notifier kr.Notifier
 	fallback agent.Agent
+
+	recentSessionIDSignatures []sessionIDSig
 }
 
 // List returns the identities known to the agent.
-func (a Agent) List() (keys []*agent.Key, err error) {
+func (a *Agent) List() (keys []*agent.Key, err error) {
 	cachedProfile := a.client.GetCachedMe()
 	keys = []*agent.Key{}
 
@@ -91,7 +101,7 @@ func (a Agent) List() (keys []*agent.Key, err error) {
 
 // Sign has the agent sign the data using a protocol 2 key as defined
 // in [PROTOCOL.agent] section 2.6.2.
-func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
+func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
 	keyFingerprint := sha256.Sum256(key.Marshal())
 
 	keyringKeys, err := a.fallback.List()
@@ -101,6 +111,31 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 				return a.fallback.Sign(key, data)
 			}
 		}
+	}
+
+	session, err := parseSessionFromSignaturePayload(data)
+	var hostAuth *kr.HostAuth
+	if err == nil {
+		a.mutex.Lock()
+		for _, sig := range a.recentSessionIDSignatures {
+			if err := sig.PK.Verify(session, sig.Signature); err == nil {
+				hostAuth = &kr.HostAuth{
+					HostKey:   sig.PK.Marshal(),
+					Signature: ssh.Marshal(sig.Signature),
+				}
+				hostNames, err := hostForPublicKey(sig.PK)
+				if err == nil {
+					hostAuth.HostNames = hostNames
+				} else {
+					log.Error("error looking up hostname for public key: " + err.Error())
+				}
+				log.Notice("found remote signature for session, host auth: " + fmt.Sprintf("%+v", hostAuth))
+				break
+			}
+		}
+		a.mutex.Unlock()
+	} else {
+		log.Error("error parsing session from signature payload: " + err.Error())
 	}
 
 	var digest []byte
@@ -122,6 +157,7 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 		PublicKeyFingerprint: keyFingerprint[:],
 		Digest:               digest,
 		Command:              getLastCommand(),
+		HostAuth:             hostAuth,
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
 	if err != nil {
@@ -166,49 +202,95 @@ func (a Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature
 }
 
 // Add adds a private key to the agent.
-func (a Agent) Add(key agent.AddedKey) (err error) {
+func (a *Agent) Add(key agent.AddedKey) (err error) {
 	return a.fallback.Add(key)
 }
 
 // Remove removes all identities with the given public key.
-func (a Agent) Remove(key ssh.PublicKey) (err error) {
+func (a *Agent) Remove(key ssh.PublicKey) (err error) {
 	return a.fallback.Remove(key)
 }
 
 // RemoveAll removes all identities.
-func (a Agent) RemoveAll() (err error) {
+func (a *Agent) RemoveAll() (err error) {
 	return a.fallback.RemoveAll()
 }
 
 // Lock locks the agent. Sign and Remove will fail, and List will empty an empty list.
-func (a Agent) Lock(passphrase []byte) (err error) {
+func (a *Agent) Lock(passphrase []byte) (err error) {
 	return a.fallback.Lock(passphrase)
 }
 
 // Unlock undoes the effect of Lock
-func (a Agent) Unlock(passphrase []byte) (err error) {
+func (a *Agent) Unlock(passphrase []byte) (err error) {
 	return a.fallback.Unlock(passphrase)
 }
 
 // Signers returns signers for all the known keys.
-func (a Agent) Signers() (signers []ssh.Signer, err error) {
+func (a *Agent) Signers() (signers []ssh.Signer, err error) {
 	return a.fallback.Signers()
 }
 
-func (a Agent) notify(body string) {
+func (a *Agent) notify(body string) {
 	if err := a.notifier.Notify(append([]byte(body), '\r', '\n')); err != nil {
 		log.Error("error writing notification: " + err.Error())
 	}
 }
 
-func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, l net.Listener) (err error) {
+func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
+	sshPK, err := ssh.ParsePublicKey(hostAuth.HostKey)
+	if err != nil {
+		log.Error("error parsing hostAuth.HostKey: " + err.Error())
+		return
+	}
+
+	var sshSig ssh.Signature
+	err = ssh.Unmarshal(hostAuth.Signature, &sshSig)
+	if err != nil {
+		log.Error("error parsing hostAuth.Signature: " + err.Error())
+		return
+	}
+
+	sig := sessionIDSig{
+		PK:        sshPK,
+		Signature: &sshSig,
+	}
+
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	a.recentSessionIDSignatures = append([]sessionIDSig{sig}, a.recentSessionIDSignatures...)
+	if len(a.recentSessionIDSignatures) > 16 {
+		a.recentSessionIDSignatures = a.recentSessionIDSignatures[:16]
+	}
+	log.Notice("received hostAuth " + fmt.Sprintf("%+v", hostAuth))
+}
+
+func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net.Listener, hostAuthListener net.Listener) (err error) {
+	krAgent := &Agent{sync.Mutex{}, enclaveClient, n, agent.NewKeyring(), []sessionIDSig{}}
+	go func() {
+		for {
+			conn, err := hostAuthListener.Accept()
+			if err != nil {
+				log.Error("hostAuth accept error: ", err.Error())
+				continue
+			}
+			defer conn.Close()
+			var hostAuth kr.HostAuth
+			err = json.NewDecoder(conn).Decode(&hostAuth)
+			if err != nil {
+				log.Error("hostAuth decode error: ", err.Error())
+				continue
+			}
+			krAgent.onHostAuth(hostAuth)
+		}
+	}()
+
 	for {
-		conn, err := l.Accept()
+		conn, err := agentListener.Accept()
 		if err != nil {
-			// handle error
 			log.Error("accept error: ", err.Error())
 		}
-		go agent.ServeAgent(Agent{enclaveClient, n, agent.NewKeyring()}, conn)
+		go agent.ServeAgent(krAgent, conn)
 	}
 	return
 }

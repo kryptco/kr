@@ -73,6 +73,28 @@ func DaemonListen() (listener net.Listener, err error) {
 	return
 }
 
+const HOST_AUTH_FILENAME = "krd-hostauth.sock"
+
+func HostAuthListen() (listener net.Listener, err error) {
+	socketPath, err := KrDirFile(HOST_AUTH_FILENAME)
+	if err != nil {
+		return
+	}
+	//	delete UNIX socket in case daemon was not killed cleanly
+	_ = os.Remove(socketPath)
+	listener, err = net.Listen("unix", socketPath)
+	return
+}
+
+func HostAuthDial() (conn net.Conn, err error) {
+	socketPath, err := KrDirFile(HOST_AUTH_FILENAME)
+	if err != nil {
+		return
+	}
+	conn, err = net.Dial("unix", socketPath)
+	return
+}
+
 func pingDaemon(unixFile string) (err error) {
 	conn, err := DaemonDial(unixFile)
 	if err != nil {

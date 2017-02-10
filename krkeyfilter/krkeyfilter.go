@@ -2,10 +2,81 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
+	"encoding/json"
 	"log"
+	"math/big"
 	"net"
 	"os"
+
+	"github.com/kryptco/kr"
+
+	"golang.org/x/crypto/ssh"
 )
+
+//	from https://github.com/golang/crypto/blob/master/ssh/messages.go#L98-L102
+type kexDHReplyMsg struct {
+	HostKey   []byte `sshtype:"31"`
+	Y         *big.Int
+	Signature []byte
+}
+
+type kexECDHReplyMsg struct {
+	HostKey         []byte `sshtype:"31"`
+	EphemeralPubKey []byte
+	Signature       []byte
+}
+
+func sendHostAuth(hostAuth kr.HostAuth) {
+	conn, err := kr.HostAuthDial()
+	if err != nil {
+		log.Println("error connecting to krd-hostauth:", err.Error())
+		return
+	}
+	defer conn.Close()
+	err = json.NewEncoder(conn).Encode(hostAuth)
+	if err != nil {
+		log.Println("error sending hostauth to krd")
+		return
+	}
+}
+
+func tryParse(buf []byte) (err error) {
+	kexDHReplyTemplate := kexDHReplyMsg{}
+	kexECDHReplyTemplate := kexECDHReplyMsg{}
+	err = ssh.Unmarshal(buf, &kexDHReplyTemplate)
+	if err == nil {
+		hostAuth := kr.HostAuth{
+			HostKey:   kexDHReplyTemplate.HostKey,
+			Signature: kexDHReplyTemplate.Signature,
+		}
+		sendHostAuth(hostAuth)
+	}
+	err = ssh.Unmarshal(buf, &kexECDHReplyTemplate)
+	if err == nil {
+		hostAuth := kr.HostAuth{
+			HostKey:   kexDHReplyTemplate.HostKey,
+			Signature: kexDHReplyTemplate.Signature,
+		}
+		sendHostAuth(hostAuth)
+	}
+	return
+}
+
+func parseSSHPacket(b []byte) (packet []byte) {
+	if len(b) <= 4 {
+		return
+	}
+	packetLen := binary.BigEndian.Uint32(b[:4])
+	paddingLen := b[4]
+	payloadLen := packetLen - uint32(paddingLen) - 1
+	if len(b) <= int(5+payloadLen) {
+		return
+	}
+	packet = make([]byte, payloadLen)
+	copy(packet, b[5:5+payloadLen])
+	return
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -25,17 +96,23 @@ func main() {
 	}
 
 	go func() {
+		buf := make([]byte, 1<<18)
+		packetNum := 0
 		for {
-			buf := make([]byte, 1<<15)
 			n, err := remoteConn.Read(buf)
 			if err != nil {
 				return
 			}
 			if n > 0 {
+				packetNum++
+				if packetNum > 1 {
+					sshPacket := parseSSHPacket(buf)
+					tryParse(sshPacket)
+				}
 				byteBuf := bytes.NewBuffer(buf[:n])
 				wroteN, err := byteBuf.WriteTo(os.Stdout)
 				if wroteN != int64(n) {
-					log.Println("not all bytes written")
+					log.Println("not all bytes written to stdout")
 				}
 				if err != nil {
 					log.Println("err writing remote to stdout", err.Error())
@@ -46,8 +123,8 @@ func main() {
 	}()
 
 	go func() {
+		buf := make([]byte, 1<<18)
 		for {
-			buf := make([]byte, 1<<15)
 			n, err := os.Stdin.Read(buf)
 			if err != nil {
 				return
@@ -56,7 +133,7 @@ func main() {
 				byteBuf := bytes.NewBuffer(buf[:n])
 				wroteN, err := byteBuf.WriteTo(remoteConn)
 				if wroteN != int64(n) {
-					log.Println("not all bytes written")
+					log.Println("not all bytes written to remote")
 				}
 				if err != nil {
 					log.Println("err writing stdin to remote", err.Error())

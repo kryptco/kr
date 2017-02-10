@@ -49,8 +49,9 @@ type SignRequest struct {
 	//	N.B. []byte marshals to base64 encoding in JSON
 	Digest []byte `json:"digest"`
 	//	SHA256 hash of SSH wire format
-	PublicKeyFingerprint []byte  `json:"public_key_fingerprint"`
-	Command              *string `json:"command"`
+	PublicKeyFingerprint []byte    `json:"public_key_fingerprint"`
+	Command              *string   `json:"command"`
+	HostAuth             *HostAuth `json:"host_auth"`
 }
 
 type SignResponse struct {

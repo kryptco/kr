@@ -40,6 +40,11 @@ func main() {
 	}
 	defer agentSocket.Close()
 
+	hostAuthSocket, err := kr.HostAuthListen()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	controlServer, err := NewControlServer()
 	if err != nil {
 		log.Fatal(err)
@@ -53,7 +58,7 @@ func main() {
 	}()
 
 	go func() {
-		err := ServeKRAgent(controlServer.enclaveClient, notifier, agentSocket)
+		err := ServeKRAgent(controlServer.enclaveClient, notifier, agentSocket, hostAuthSocket)
 		if err != nil {
 			log.Error("agent return:", err)
 		}
