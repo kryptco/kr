@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/kryptco/kr"
 	"github.com/golang/groupcache/lru"
+	"github.com/kryptco/kr"
 	"sync"
 	"time"
 )
@@ -431,13 +431,13 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 				client.Lock()
 				ps := client.pairingSecret
 				client.Unlock()
-				requestJson, err := json.Marshal(request)
-				if err != nil {
-					err = &ProtoError{err}
-					continue
-				}
+				//requestJson, err := json.Marshal(request)
+				//if err != nil {
+				//err = &ProtoError{err}
+				//continue
+				//}
 				if ps != nil {
-					client.Transport.PushAlert(ps, alertText, requestJson)
+					//client.Transport.PushAlert(ps, alertText, requestJson)
 				}
 			}
 		}
