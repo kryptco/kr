@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/kryptco/kr"
@@ -21,6 +23,14 @@ var log *logging.Logger = kr.SetupLogging("krd", logging.INFO, useSyslog())
 
 func main() {
 	SetBTLogger(log)
+
+	defer func() {
+		if x := recover(); x != nil {
+			log.Error(fmt.Sprintf("run time panic: %v", x))
+			log.Error(string(debug.Stack()))
+			panic(x)
+		}
+	}()
 
 	notifier, err := kr.OpenNotifier()
 	if err != nil {

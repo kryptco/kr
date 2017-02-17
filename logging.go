@@ -1,6 +1,7 @@
 package kr
 
 import (
+	stdlog "log"
 	"log/syslog"
 	"os"
 
@@ -22,9 +23,15 @@ func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) 
 		backend, err = logging.NewSyslogBackendPriority(prefix, syslog.LOG_NOTICE)
 		if err == nil {
 			logging.SetFormatter(syslogFormat)
+			//	direct panic output to syslog as well
+			if syslogBackend, ok := backend.(*logging.SyslogBackend); ok {
+				stdlog.SetOutput(syslogBackend.Writer)
+				stdlog.Println("test")
+			}
 		} else {
 			backend = nil
 		}
+
 	}
 	if backend == nil {
 		backend = logging.NewLogBackend(os.Stderr, prefix, 0)
