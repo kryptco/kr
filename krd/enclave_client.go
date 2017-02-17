@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/kryptco/kr"
 	"github.com/golang/groupcache/lru"
+	"github.com/kryptco/kr"
 	"sync"
 	"time"
 )
@@ -437,7 +437,8 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 					continue
 				}
 				if ps != nil {
-					client.Transport.PushAlert(ps, alertText, requestJson)
+					log.Notice("pushing alert for request " + request.RequestID)
+					client.Transport.PushAlert(ps, "Kryptonite Request", requestJson)
 				}
 			}
 		}
