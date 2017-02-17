@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"crypto"
-	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -141,8 +140,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	var digest []byte
 	switch key.Type() {
 	case ssh.KeyAlgoRSA:
-		sha1Digest := sha1.Sum(data)
-		digest = append(hashPrefixes[crypto.SHA1], sha1Digest[:]...)
+		digest = data
 	case ssh.KeyAlgoED25519:
 		digest = data
 	default:
