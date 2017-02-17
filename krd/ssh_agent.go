@@ -139,10 +139,15 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 	var digest []byte
 	switch key.Type() {
-	case ssh.KeyAlgoRSA:
-		digest = data
-	case ssh.KeyAlgoED25519:
-		digest = data
+	case ssh.KeyAlgoRSA, ssh.KeyAlgoED25519:
+		var dataWithoutPubkey []byte
+		//	strip pubkey since it is redundant
+		dataWithoutPubkey, err = stripPubkeyFromSignaturePayload(data)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		digest = dataWithoutPubkey
 	default:
 		err = errors.New("unsupported key type: " + key.Type())
 		log.Error(err.Error())
