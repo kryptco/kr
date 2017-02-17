@@ -54,7 +54,7 @@ func (t AWSTransport) SendMessage(ps *PairingSecret, message []byte) (err error)
 		arn := ps.snsEndpointARN
 		ps.Unlock()
 		if arn != nil {
-			if pushErr := PushAlertToSNSEndpoint("Kryptonite Request", ctxtString, *arn, ps.SQSSendQueueName()); pushErr != nil {
+			if pushErr := PushToSNSEndpoint(ctxtString, *arn, ps.SQSSendQueueName()); pushErr != nil {
 				log.Error("Push error:", pushErr)
 			}
 		}
