@@ -47,8 +47,19 @@ func (t AWSTransport) SendMessage(ps *PairingSecret, message []byte) (err error)
 	if err != nil {
 		return
 	}
-
 	ctxtString := base64.StdEncoding.EncodeToString(ctxt)
+
+	go func() {
+		ps.Lock()
+		arn := ps.snsEndpointARN
+		ps.Unlock()
+		if arn != nil {
+			if pushErr := PushToSNSEndpoint(ctxtString, *arn, ps.SQSSendQueueName()); pushErr != nil {
+				log.Error("Push error:", pushErr)
+			}
+		}
+	}()
+
 	err = SendToQueue(ps.SQSSendQueueName(), ctxtString)
 	if err != nil {
 		return
