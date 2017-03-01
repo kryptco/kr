@@ -10,7 +10,7 @@ import (
 )
 
 type Profile struct {
-	SSHWirePublicKey []byte `json:"rsa_public_key_wire"`
+	SSHWirePublicKey []byte `json:"public_key_wire"`
 	Email            string `json:"email"`
 }
 
