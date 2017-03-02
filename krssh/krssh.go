@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"io"
 	"log"
 	"math/big"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/kryptco/kr"
 
@@ -95,53 +98,83 @@ func main() {
 		log.Fatal("err connecting to remote:", err.Error())
 	}
 
-	go func() {
-		buf := make([]byte, 1<<18)
-		packetNum := 0
-		for {
-			n, err := remoteConn.Read(buf)
-			if err != nil {
-				return
-			}
-			if n > 0 {
-				packetNum++
-				if packetNum > 1 {
-					sshPacket := parseSSHPacket(buf)
-					tryParse(sshPacket)
-				}
-				byteBuf := bytes.NewBuffer(buf[:n])
-				wroteN, err := byteBuf.WriteTo(os.Stdout)
-				if wroteN != int64(n) {
-					log.Println("not all bytes written to stdout")
-				}
-				if err != nil {
-					log.Println("err writing remote to stdout", err.Error())
-					return
-				}
-			}
-		}
-	}()
+	remoteDoneChan := make(chan bool)
 
 	go func() {
-		buf := make([]byte, 1<<18)
-		for {
-			n, err := os.Stdin.Read(buf)
-			if err != nil {
-				return
-			}
-			if n > 0 {
-				byteBuf := bytes.NewBuffer(buf[:n])
-				wroteN, err := byteBuf.WriteTo(remoteConn)
-				if wroteN != int64(n) {
-					log.Println("not all bytes written to remote")
-				}
-				if err != nil {
-					log.Println("err writing stdin to remote", err.Error())
+		func() {
+			buf := make([]byte, 1<<18)
+			packetNum := 0
+			for {
+				n, err := remoteConn.Read(buf)
+				if err != nil && err != io.EOF {
+					log.Println("remote write err:", err.Error())
 					return
 				}
+				if n > 0 {
+					packetNum++
+					if packetNum > 1 {
+						sshPacket := parseSSHPacket(buf)
+						tryParse(sshPacket)
+					}
+					byteBuf := bytes.NewBuffer(buf[:n])
+					wroteN, err := byteBuf.WriteTo(os.Stdout)
+					if wroteN != int64(n) {
+						log.Println("not all bytes written to stdout")
+					}
+					if err != nil {
+						log.Println("err writing remote to stdout", err.Error())
+						return
+					}
+				}
 			}
-		}
+		}()
+		remoteDoneChan <- true
 	}()
 
-	select {}
+	localDoneChan := make(chan bool)
+
+	go func() {
+		func() {
+			buf := make([]byte, 1<<18)
+			for {
+				n, err := os.Stdin.Read(buf)
+				if err != nil {
+					log.Println("stdin read err:", err.Error())
+					return
+				}
+				if n > 0 {
+					byteBuf := bytes.NewBuffer(buf[:n])
+					wroteN, err := byteBuf.WriteTo(remoteConn)
+					if wroteN != int64(n) {
+						log.Println("not all bytes written to remote")
+					}
+					if err != nil {
+						log.Println("err writing stdin to remote", err.Error())
+						return
+					}
+				}
+			}
+		}()
+		localDoneChan <- true
+	}()
+
+	stopSignal := make(chan os.Signal, 1)
+	signal.Notify(stopSignal, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
+	var localDone, remoteDone bool
+	for {
+		select {
+		case <-stopSignal:
+			return
+		case <-localDoneChan:
+			localDone = true
+			if remoteDone {
+				return
+			}
+		case <-remoteDoneChan:
+			remoteDone = true
+			if localDone {
+				return
+			}
+		}
+	}
 }
