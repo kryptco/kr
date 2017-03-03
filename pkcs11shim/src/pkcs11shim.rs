@@ -54,39 +54,6 @@ extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
         home_dir.push(".kr/krd-agent.sock");
         env::set_var("SSH_AUTH_SOCK", home_dir);
     }
-
-
-    if let Ok(lib) = dlib::Library::new(libkrlogging_path()) {
-        unsafe {
-            let init_func : dlib::Symbol<unsafe extern fn() -> i32> = match lib.get(b"Init") {
-                Ok(init_func) => init_func,
-                Err(_) => {
-                    error!("could not locate libkrlogging.dylib init function");
-                    return CKR_GENERAL_ERROR;
-                },
-            };
-            init_func();
-        }
-        //  prevent libkrlogging from being unloaded
-        mem::forget(lib);
-    } else {
-        error!("could not load libkrlogging.dylib");
-    }
-
-    if let Ok(dev_null) = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open("/dev/null") {
-            match OLD_STDERR_FD.lock() {
-                Ok(mut old_stderr_fd) => {
-                    unsafe {
-                        *old_stderr_fd = Some(libc::dup(libc::STDERR_FILENO));
-                        libc::dup2(dev_null.as_raw_fd(), libc::STDERR_FILENO);
-                    };
-                },
-                Err(_) => {},
-            };
-        }
     CKR_OK
 }
 
