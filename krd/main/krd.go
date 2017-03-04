@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/kryptco/kr"
+	"github.com/kryptco/kr/krd"
 	"github.com/op/go-logging"
 )
 
@@ -22,7 +23,7 @@ func useSyslog() bool {
 var log *logging.Logger = kr.SetupLogging("krd", logging.INFO, useSyslog())
 
 func main() {
-	SetBTLogger(log)
+	krd.SetBTLogger(log)
 
 	defer func() {
 		if x := recover(); x != nil {
@@ -55,12 +56,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	controlServer, err := NewControlServer()
+	controlServer, err := krd.NewControlServer(log)
 	if err != nil {
 		log.Fatal(err)
 	}
 	go func() {
-		controlServer.enclaveClient.Start()
+		controlServer.Start()
 		err := controlServer.HandleControlHTTP(daemonSocket)
 		if err != nil {
 			log.Error("controlServer return:", err)
@@ -68,7 +69,7 @@ func main() {
 	}()
 
 	go func() {
-		err := ServeKRAgent(controlServer.enclaveClient, notifier, agentSocket, hostAuthSocket)
+		err := krd.ServeKRAgent(controlServer.EnclaveClient(), notifier, agentSocket, hostAuthSocket, log)
 		if err != nil {
 			log.Error("agent return:", err)
 		}
@@ -79,7 +80,7 @@ func main() {
 	stopSignal := make(chan os.Signal, 1)
 	signal.Notify(stopSignal, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
 	sig, ok := <-stopSignal
-	controlServer.enclaveClient.Stop()
+	controlServer.Stop()
 	if ok {
 		log.Notice("stopping with signal", sig)
 	}

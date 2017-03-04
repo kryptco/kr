@@ -51,6 +51,10 @@ func (cs *ControlServer) Stop() (err error) {
 	return cs.enclaveClient.Stop()
 }
 
+func (cs *ControlServer) EnclaveClient() EnclaveClientI {
+	return cs.enclaveClient
+}
+
 func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
