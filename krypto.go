@@ -1,24 +1,68 @@
 package kr
 
 import (
-	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/hmac"
-	"crypto/sha256"
-	"errors"
+	"crypto/rand"
 	"fmt"
+	//	anonymous box
 	"github.com/GoKillers/libsodium-go/cryptobox"
+	//	authenticated box
+	"golang.org/x/crypto/nacl/box"
 )
 
 const (
 	HEADER_CIPHERTEXT = iota
 	HEADER_WRAPPED_KEY
+	//	TODO: verify that encrypting with a sodium public key does not reveal the public key
+	HEADER_WRAPPED_PUBLIC_KEY
 )
-const AES_KEY_NUM_BYTES = 32
 
-type SymmetricSecretKey struct {
-	Bytes []byte
+func sodiumBox(m, pk, sk []byte) (c []byte, err error) {
+	var n [24]byte
+	_, err = rand.Read(n[:])
+	if err != nil {
+		return
+	}
+	if len(pk) != 32 || len(sk) != 32 {
+		err = fmt.Errorf("incorrect key length")
+		return
+	}
+	var pkArr [32]byte
+	copy(pkArr[:], pk)
+
+	var skArr [32]byte
+	copy(skArr[:], sk)
+
+	c = box.Seal(c, m, &n, &pkArr, &skArr)
+	c = append(n[:], c...)
+	return
+}
+
+func sodiumBoxOpen(nonceAndCiphertext, pk, sk []byte) (m []byte, err error) {
+	if len(nonceAndCiphertext) < 24 {
+		err = fmt.Errorf("CryptoBox nonce too small")
+		return
+	}
+	var n [24]byte
+	copy(n[:], nonceAndCiphertext[:24])
+
+	if len(pk) != 32 || len(sk) != 32 {
+		err = fmt.Errorf("incorrect key length")
+		return
+	}
+	var pkArr [32]byte
+	copy(pkArr[:], pk)
+
+	var skArr [32]byte
+	copy(skArr[:], sk)
+
+	var ret bool
+	c := nonceAndCiphertext[cryptobox.CryptoBoxNonceBytes():]
+	m, ret = box.Open(m, c, &n, &pkArr, &skArr)
+	if !ret {
+		err = fmt.Errorf("Open failed")
+		return
+	}
+	return
 }
 
 func sodiumBoxSealOpen(c, pk, sk []byte) (m []byte, err error) {
@@ -54,10 +98,6 @@ func UnwrapKey(c, pk, sk []byte) (key []byte, err error) {
 	if err != nil {
 		return
 	}
-	if len(key) != AES_KEY_NUM_BYTES {
-		err = fmt.Errorf("incorrect key length of %d expected %d", len(key), AES_KEY_NUM_BYTES)
-		return
-	}
 	return
 }
 
@@ -71,115 +111,12 @@ func WrapKey(symmetricKey, pk []byte) (c []byte, err error) {
 	return
 }
 
-func GenSymmetricSecretKey() (key SymmetricSecretKey, err error) {
-	keyBytes, err := RandNBytes(AES_KEY_NUM_BYTES)
-	if err != nil {
+func GenKeyPair() (pk []byte, sk []byte, err error) {
+	var ret int
+	sk, pk, ret = cryptobox.CryptoBoxKeyPair()
+	if ret != 0 {
+		err = fmt.Errorf("nonzero sodium return status: %d", ret)
 		return
 	}
-	key = SymmetricSecretKey{
-		Bytes: keyBytes,
-	}
-	return
-}
-
-func SymmetricSecretKeyFromBytes(bytes []byte) (key *SymmetricSecretKey, err error) {
-	if len(bytes) != AES_KEY_NUM_BYTES {
-		err = errors.New(fmt.Sprintf("aes key must have %d bytes, %d provided", AES_KEY_NUM_BYTES, len(bytes)))
-		return
-	}
-	key = &SymmetricSecretKey{bytes}
-	return
-}
-
-func Seal(message []byte, key SymmetricSecretKey) (ciphertext []byte, err error) {
-	aesCipher, err := aes.NewCipher(key.Bytes)
-	if err != nil {
-		err = errors.New("error creating AES cipher: " + err.Error())
-		return
-	}
-	message = PKCS7Pad(aesCipher.BlockSize(), message)
-
-	iv, err := RandNBytes(uint(aesCipher.BlockSize()))
-	if err != nil {
-		err = errors.New("error generating IV: " + err.Error())
-		return
-	}
-
-	cbcEncryptor := cipher.NewCBCEncrypter(aesCipher, iv)
-
-	ciphertext = make([]byte, len(message))
-	cbcEncryptor.CryptBlocks(ciphertext, message)
-	ciphertext = append(iv, ciphertext...)
-
-	macFunc := hmac.New(sha256.New, key.Bytes)
-	macFunc.Write(ciphertext)
-	computedMAC := macFunc.Sum(nil)
-
-	ciphertext = append(ciphertext, computedMAC...)
-
-	return
-}
-
-func Open(ciphertext []byte, key SymmetricSecretKey) (message []byte, err error) {
-	aesCipher, err := aes.NewCipher(key.Bytes)
-	if err != nil {
-		err = errors.New("error creating AES cipher: " + err.Error())
-		return
-	}
-
-	macFunc := hmac.New(sha256.New, key.Bytes)
-
-	minCiphertextSize := aes.BlockSize + aes.BlockSize + macFunc.Size()
-	if len(ciphertext) < minCiphertextSize {
-		err = fmt.Errorf("Ciphertext of size %d too small, must be atleast %d", len(ciphertext), minCiphertextSize)
-		return
-	}
-
-	encryptedData := ciphertext[:len(ciphertext)-macFunc.Size()]
-	mac := ciphertext[len(ciphertext)-macFunc.Size():]
-
-	macFunc.Write(encryptedData)
-	computedMAC := macFunc.Sum(nil)
-
-	if !hmac.Equal(computedMAC, mac) {
-		err = errors.New("invalid HMAC")
-		return
-	}
-
-	iv := encryptedData[0:aesCipher.BlockSize()]
-	cipherBlocks := encryptedData[aesCipher.BlockSize():]
-
-	message = make([]byte, len(cipherBlocks))
-
-	cbcDecryptor := cipher.NewCBCDecrypter(aesCipher, iv)
-	cbcDecryptor.CryptBlocks(message, cipherBlocks)
-
-	message, err = PKCS7Unpad(message)
-	if err != nil {
-		err = errors.New("error PKCS7Unpad: " + err.Error())
-		return
-	}
-	return
-}
-
-func PKCS7Pad(blockSize int, message []byte) []byte {
-	numPadding := blockSize - len(message)%blockSize
-	padding := bytes.Repeat([]byte{byte(numPadding)}, numPadding)
-	return append(message, padding...)
-}
-
-func PKCS7Unpad(paddedMessage []byte) (message []byte, err error) {
-	if len(paddedMessage) == 0 {
-		err = errors.New("Empty message is not padded")
-		return
-	}
-
-	numPadding := int(paddedMessage[len(paddedMessage)-1])
-	if numPadding > len(paddedMessage) {
-		err = errors.New("Invalid padding, larger than total message")
-		return
-	}
-
-	message = paddedMessage[:len(paddedMessage)-numPadding]
 	return
 }

@@ -1,4 +1,4 @@
-package main
+package krd
 
 import (
 	"encoding/json"
@@ -7,13 +7,15 @@ import (
 	"path/filepath"
 
 	"github.com/kryptco/kr"
+	"github.com/op/go-logging"
 )
 
 type ControlServer struct {
 	enclaveClient EnclaveClientI
+	log           *logging.Logger
 }
 
-func NewControlServer() (cs *ControlServer, err error) {
+func NewControlServer(log *logging.Logger) (cs *ControlServer, err error) {
 	krdir, err := kr.KrDir()
 	if err != nil {
 		return
@@ -25,7 +27,10 @@ func NewControlServer() (cs *ControlServer, err error) {
 			SSHDir:     filepath.Join(kr.UnsudoedHomeDir(), ".ssh"),
 		},
 		nil,
-	)}
+		log,
+	),
+		log,
+	}
 	return
 }
 
@@ -40,6 +45,10 @@ func (cs *ControlServer) HandleControlHTTP(listener net.Listener) (err error) {
 
 func (cs *ControlServer) Start() (err error) {
 	return cs.enclaveClient.Start()
+}
+
+func (cs *ControlServer) Stop() (err error) {
+	return cs.enclaveClient.Stop()
 }
 
 func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {
@@ -70,13 +79,13 @@ func (cs *ControlServer) handleGetPair(w http.ResponseWriter, r *http.Request) {
 	if err == nil && meResponse != nil {
 		err = json.NewEncoder(w).Encode(meResponse.Me)
 		if err != nil {
-			log.Error(err)
+			cs.log.Error(err)
 			return
 		}
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		if err != nil {
-			log.Error(err)
+			cs.log.Error(err)
 		}
 		return
 	}
@@ -88,12 +97,12 @@ func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
-		log.Error(err)
+		cs.log.Error(err)
 		return
 	}
 	err = json.NewEncoder(w).Encode(pairingSecret)
 	if err != nil {
-		log.Error(err)
+		cs.log.Error(err)
 		return
 	}
 }
@@ -130,7 +139,7 @@ func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest k
 	} else {
 		meResponse, err := cs.enclaveClient.RequestMe(false)
 		if err != nil {
-			log.Error("me request error:", err)
+			cs.log.Error("me request error:", err)
 			switch err {
 			case ErrNotPaired:
 				w.WriteHeader(http.StatusNotFound)
@@ -153,18 +162,18 @@ func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest k
 	}
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Error(err)
+		cs.log.Error(err)
 		return
 	}
 }
 
 func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest kr.Request) {
 	if enclaveRequest.SignRequest.Command == nil {
-		enclaveRequest.SignRequest.Command = getLastCommand()
+		enclaveRequest.SignRequest.Command = getLastCommand(cs.log)
 	}
 	signResponse, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest)
 	if err != nil {
-		log.Error("signature request error:", err)
+		cs.log.Error("signature request error:", err)
 		switch err {
 		case ErrNotPaired:
 			w.WriteHeader(http.StatusNotFound)
@@ -180,7 +189,7 @@ func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest
 		}
 		err = json.NewEncoder(w).Encode(response)
 		if err != nil {
-			log.Error(err)
+			cs.log.Error(err)
 			return
 		}
 	} else {

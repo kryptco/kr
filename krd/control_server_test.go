@@ -1,4 +1,4 @@
-package main
+package krd
 
 import (
 	"encoding/json"
@@ -8,12 +8,17 @@ import (
 	"time"
 
 	"github.com/kryptco/kr"
+	"github.com/op/go-logging"
 )
+
+func NewTestControlServer(ec EnclaveClientI) *ControlServer {
+	return &ControlServer{ec, kr.SetupLogging("test", logging.INFO, false)}
+}
 
 func TestControlServerPair(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	cs := ControlServer{ec}
+	cs := NewTestControlServer(ec)
 	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -54,7 +59,7 @@ func TestControlServerPair(t *testing.T) {
 func TestControlServerUnpair(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClientShortTimeouts(transport)
-	cs := ControlServer{ec}
+	cs := NewTestControlServer(ec)
 	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -100,7 +105,7 @@ func TestControlServerUnpair(t *testing.T) {
 func TestControlServerMe(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	cs := ControlServer{ec}
+	cs := NewTestControlServer(ec)
 	request, err := kr.NewRequest()
 	if err != nil {
 		t.Fatal(err)
@@ -146,7 +151,7 @@ func TestControlServerMe(t *testing.T) {
 func TestControlServerSign(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	cs := ControlServer{ec}
+	cs := NewTestControlServer(ec)
 	request, err := kr.NewRequest()
 	if err != nil {
 		t.Fatal(err)
@@ -194,7 +199,7 @@ func TestControlServerSign(t *testing.T) {
 func TestControlServerPing(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	cs := ControlServer{ec}
+	cs := NewTestControlServer(ec)
 	pingRequest, err := http.NewRequest("GET", "/ping", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -210,7 +215,7 @@ func TestControlServerPing(t *testing.T) {
 func TestControlServerNoOp(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
-	cs := ControlServer{ec}
+	cs := NewTestControlServer(ec)
 	PairClient(t, ec)
 	defer ec.Stop()
 

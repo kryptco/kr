@@ -3,7 +3,7 @@ package kr
 const PAIRING_FILENAME = "pairing.json"
 
 type persistedPairing struct {
-	SymmetricSecretKey   *[]byte
+	EnclavePublicKey     *[]byte
 	WorkstationPublicKey []byte
 	WorkstationSecretKey []byte
 	WorkstationName      string
@@ -14,7 +14,7 @@ type persistedPairing struct {
 
 func pairingToPersisted(ps *PairingSecret) persistedPairing {
 	return persistedPairing{
-		SymmetricSecretKey:   ps.SymmetricSecretKey,
+		EnclavePublicKey:     ps.EnclavePublicKey,
 		WorkstationPublicKey: ps.WorkstationPublicKey,
 		WorkstationSecretKey: ps.workstationSecretKey,
 		WorkstationName:      ps.WorkstationName,
@@ -26,7 +26,7 @@ func pairingToPersisted(ps *PairingSecret) persistedPairing {
 
 func pairingFromPersisted(pp *persistedPairing) *PairingSecret {
 	return &PairingSecret{
-		SymmetricSecretKey:   pp.SymmetricSecretKey,
+		EnclavePublicKey:     pp.EnclavePublicKey,
 		WorkstationPublicKey: pp.WorkstationPublicKey,
 		workstationSecretKey: pp.WorkstationSecretKey,
 		WorkstationName:      pp.WorkstationName,

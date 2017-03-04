@@ -1,14 +1,16 @@
-package main
+package krd
 
 import (
 	"bytes"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/op/go-logging"
 )
 
 //	fallback using ps
-func getLastCommand() (lastCommand *string) {
+func getLastCommand(log *logging.Logger) (lastCommand *string) {
 	log.Notice("falling back to ps for command parsing")
 	psWithHeader, err := exec.Command("ps", "-o", "lstart", "-f").Output()
 	if err != nil {

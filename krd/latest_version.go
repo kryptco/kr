@@ -1,4 +1,4 @@
-package main
+package krd
 
 import (
 	"encoding/json"
@@ -7,10 +7,11 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/kryptco/kr"
+	"github.com/op/go-logging"
 	"github.com/youtube/vitess/go/ioutil2"
 )
 
-func CheckedForUpdateRecently() bool {
+func CheckedForUpdateRecently(log *logging.Logger) bool {
 	file, fileErr := kr.KrDirFile("last_update_check")
 	if fileErr != nil {
 		log.Error("Error finding home directory:", fileErr.Error())
@@ -35,10 +36,10 @@ func CheckedForUpdateRecently() bool {
 	return false
 }
 
-func CheckIfUpdateAvailable() bool {
+func CheckIfUpdateAvailable(log *logging.Logger) bool {
 	var latest semver.Version
 	var verErr error
-	if CheckedForUpdateRecently() {
+	if CheckedForUpdateRecently(log) {
 		log.Notice("Checked for update recently, falling back to latest version cache.")
 		var cacheErr error
 		latest, cacheErr = kr.GetCachedLatestVersion()
