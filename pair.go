@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -61,7 +60,8 @@ func GeneratePairingSecret() (ps *PairingSecret, err error) {
 		err = fmt.Errorf("nonzero CryptoBoxKeyPair exit status: %d", ret)
 		return
 	}
-	ps.WorkstationName = os.Getenv("USER") + "@" + MachineName()
+	ps.WorkstationName = MachineName()
+	ps.Version = CURRENT_VERSION.String()
 	return
 }
 
