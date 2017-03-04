@@ -101,13 +101,13 @@ func UnwrapKey(c, pk, sk []byte) (key []byte, err error) {
 	return
 }
 
-func WrapKey(symmetricKey, pk []byte) (c []byte, err error) {
-	encryptedKey, err := sodiumBoxSeal(symmetricKey, pk)
+func WrapKey(pkToWrap, pk []byte) (c []byte, err error) {
+	encryptedKey, err := sodiumBoxSeal(pkToWrap, pk)
 	if err != nil {
 		return
 	}
 
-	c = append([]byte{HEADER_WRAPPED_KEY}, encryptedKey...)
+	c = append([]byte{HEADER_WRAPPED_PUBLIC_KEY}, encryptedKey...)
 	return
 }
 

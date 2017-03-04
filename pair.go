@@ -93,6 +93,9 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		remainingCiphertext = &ctxt
 		return
 	case HEADER_WRAPPED_KEY:
+		err = fmt.Errorf("WRAPPED_KEY unsupported")
+		return
+	case HEADER_WRAPPED_PUBLIC_KEY:
 		if ps.EnclavePublicKey != nil {
 			return
 		}
