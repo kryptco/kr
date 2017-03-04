@@ -1,4 +1,4 @@
-package main
+package krd
 
 /*
 *	Facillitates communication with a mobile phone SSH key enclave.
@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/groupcache/lru"
-	"github.com/kryptco/kr"
 	"sync"
 	"time"
+
+	"github.com/golang/groupcache/lru"
+	"github.com/kryptco/kr"
+	"github.com/op/go-logging"
 )
 
 var ErrTimeout = errors.New("Request timed out")
@@ -78,6 +80,7 @@ type EnclaveClient struct {
 	snsEndpointARN              *string
 	cachedMe                    *kr.Profile
 	bt                          BluetoothDriverI
+	log                         *logging.Logger
 }
 
 func (ec *EnclaveClient) Pair() (pairingSecret *kr.PairingSecret, err error) {
@@ -124,14 +127,14 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 
 	pairingSecret, err := kr.GeneratePairingSecret()
 	if err != nil {
-		log.Error(err)
+		ec.log.Error(err)
 		return
 	}
 
 	go func() {
 		setupErr := ec.Transport.Setup(pairingSecret)
 		if setupErr != nil {
-			log.Error(setupErr)
+			ec.log.Error(setupErr)
 		}
 	}()
 
@@ -141,7 +144,7 @@ func (ec *EnclaveClient) generatePairing() (err error) {
 
 	savePairingErr := ec.Persister.SavePairing(pairingSecret)
 	if savePairingErr != nil {
-		log.Error("error saving pairing:", savePairingErr.Error())
+		ec.log.Error("error saving pairing:", savePairingErr.Error())
 	}
 	return
 }
@@ -159,13 +162,13 @@ func (ec *EnclaveClient) unpair(pairingSecret *kr.PairingSecret, sendUnpairReque
 		func() {
 			unpairRequest, err := kr.NewRequest()
 			if err != nil {
-				log.Error("error creating request:", err)
+				ec.log.Error("error creating request:", err)
 				return
 			}
 			unpairRequest.UnpairRequest = &kr.UnpairRequest{}
 			unpairJson, err := json.Marshal(unpairRequest)
 			if err != nil {
-				log.Error("error creating request:", err)
+				ec.log.Error("error creating request:", err)
 				return
 			}
 			go ec.sendMessage(pairingSecret, unpairJson, false)
@@ -180,7 +183,7 @@ func (ec *EnclaveClient) deactivatePairing(pairingSecret *kr.PairingSecret) (err
 		if uuidErr == nil {
 			btErr := ec.bt.RemoveService(oldBtUUID)
 			if btErr != nil {
-				log.Error("error removing bluetooth service:", btErr.Error())
+				ec.log.Error("error removing bluetooth service:", btErr.Error())
 			}
 		}
 	}
@@ -193,12 +196,12 @@ func (ec *EnclaveClient) activatePairing() (err error) {
 			btUUID, uuidErr := ec.pairingSecret.DeriveUUID()
 			if uuidErr != nil {
 				err = uuidErr
-				log.Error(err)
+				ec.log.Error(err)
 				return
 			}
 			err = ec.bt.AddService(btUUID)
 			if err != nil {
-				log.Error(err)
+				ec.log.Error(err)
 				return
 			}
 		}
@@ -224,30 +227,30 @@ func (ec *EnclaveClient) Start() (err error) {
 	if loadErr == nil && loadedPairing != nil {
 		ec.pairingSecret = loadedPairing
 	} else {
-		log.Notice("pairing not loaded:", loadErr)
+		ec.log.Notice("pairing not loaded:", loadErr)
 	}
 
 	if loadedMe, loadMeErr := ec.Persister.LoadMe(); loadMeErr == nil {
 		ec.cachedMe = &loadedMe
 	} else {
-		log.Notice("me not loaded:", loadErr)
+		ec.log.Notice("me not loaded:", loadErr)
 	}
 
 	bt, err := NewBluetoothDriver()
 	if err != nil {
-		log.Error("error starting bluetooth driver:", err)
+		ec.log.Error("error starting bluetooth driver:", err)
 	} else {
 		ec.bt = bt
 		go func() {
 			readChan, err := ec.bt.ReadChan()
 			if err != nil {
-				log.Error("error retrieving bluetooth read channel:", err)
+				ec.log.Error("error retrieving bluetooth read channel:", err)
 				return
 			}
 			for ciphertext := range readChan {
 				err = ec.handleCiphertext(ciphertext, "bluetooth")
 				if err != nil {
-					log.Error("error reading bluetooth channel:", err)
+					ec.log.Error("error reading bluetooth channel:", err)
 				}
 			}
 		}()
@@ -281,7 +284,7 @@ func (ec *EnclaveClient) postEvent(category string, action string, label *string
 	}
 }
 
-func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeoutsOverride *Timeouts) EnclaveClientI {
+func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeoutsOverride *Timeouts, log *logging.Logger) EnclaveClientI {
 	var timeouts = DefaultTimeouts()
 	if timeoutsOverride != nil {
 		timeouts = *timeoutsOverride
@@ -292,6 +295,7 @@ func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeo
 		Timeouts:                    timeouts,
 		requestCallbacksByRequestID: lru.New(128),
 		ackedRequestIDs:             lru.New(128),
+		log:                         log,
 	}
 }
 
@@ -302,7 +306,7 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 	}
 	meRequest, err := kr.NewRequest()
 	if err != nil {
-		log.Error(err)
+		client.log.Error(err)
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
@@ -312,7 +316,7 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 	}
 	callback, err := client.tryRequest(meRequest, timeout, client.Timeouts.Me.Alert, "Incoming kr me request. Open Kryptonite to continue.")
 	if err != nil {
-		log.Error(err)
+		client.log.Error(err)
 		return
 	}
 	if callback != nil {
@@ -322,7 +326,7 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 			client.Lock()
 			client.cachedMe = &meResponse.Me
 			if persistErr := client.Persister.SaveMe(meResponse.Me); persistErr != nil {
-				log.Error("persist me error:", persistErr.Error())
+				client.log.Error("persist me error:", persistErr.Error())
 			}
 			client.Persister.SaveMySSHPubKey(meResponse.Me)
 			client.Unlock()
@@ -335,7 +339,7 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 	start := time.Now()
 	request, err := kr.NewRequest()
 	if err != nil {
-		log.Error(err)
+		client.log.Error(err)
 		return
 	}
 	request.SignRequest = &signRequest
@@ -352,17 +356,17 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 			errStr := err.Error()
 			client.postEvent("signature", "error", &errStr, nil)
 		}
-		log.Error(err)
+		client.log.Error(err)
 		return
 	}
 	if callback != nil {
 		response := callback.response
 		signResponse = response.SignResponse
 		millis := uint64(time.Since(start) / time.Millisecond)
-		log.Notice("Signature response took", millis, "ms")
+		client.log.Notice("Signature response took", millis, "ms")
 		client.postEvent("signature", "success", &callback.medium, &millis)
 		if signResponse.Error != nil {
-			log.Error("Signature error:", *signResponse.Error)
+			client.log.Error("Signature error:", *signResponse.Error)
 		}
 	}
 	return
@@ -371,12 +375,12 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 func (client *EnclaveClient) RequestNoOp() (err error) {
 	request, err := kr.NewRequest()
 	if err != nil {
-		log.Error(err)
+		client.log.Error(err)
 		return
 	}
 	requestJson, err := json.Marshal(request)
 	if err != nil {
-		log.Error(err)
+		client.log.Error(err)
 		return
 	}
 	ps := client.getPairingSecret()
@@ -393,7 +397,7 @@ type callbackT struct {
 
 func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string) (callback *callbackT, err error) {
 	if timeout == alertTimeout {
-		log.Warning("timeout == alertTimeout, alert may not fire")
+		client.log.Warning("timeout == alertTimeout, alert may not fire")
 	}
 	cb := make(chan *callbackT, 5)
 	pairingSecret := client.getPairingSecret()
@@ -404,7 +408,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 	go func() {
 		err := client.sendRequestAndReceiveResponses(pairingSecret, request, cb, timeout)
 		if err != nil {
-			log.Error("error sendRequestAndReceiveResponses: ", err.Error())
+			client.log.Error("error sendRequestAndReceiveResponses: ", err.Error())
 		}
 	}()
 	timeoutChan := time.After(timeout)
@@ -416,7 +420,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 			case callback = <-cb:
 				if callback != nil && callback.response.AckResponse != nil {
 					ack = true
-					log.Notice("request", callback.response.RequestID, "ACKed")
+					client.log.Notice("request", callback.response.RequestID, "ACKed")
 					timeoutChan = time.After(client.Timeouts.ACKDelay)
 					break
 				}
@@ -437,7 +441,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 					continue
 				}
 				if ps != nil {
-					log.Notice("pushing alert for request " + request.RequestID)
+					client.log.Notice("pushing alert for request " + request.RequestID)
 					client.Transport.PushAlert(ps, "Kryptonite Request", requestJson)
 				}
 			}
@@ -469,7 +473,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 	if err != nil {
 		switch err.(type) {
 		case *SendQueued, *SendError:
-			log.Notice(err)
+			client.log.Notice(err)
 			err = nil
 		default:
 			return
@@ -508,7 +512,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 			break
 		}
 		if err != nil {
-			log.Error("queue err:", err)
+			client.log.Error("queue err:", err)
 			<-time.After(time.Second)
 		}
 	}
@@ -517,7 +521,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 		//	request still not processed, give up on it
 		cb.(chan *callbackT) <- nil
 		client.requestCallbacksByRequestID.Remove(request.RequestID)
-		log.Error("evicting request", request.RequestID)
+		client.log.Error("evicting request", request.RequestID)
 	}
 	client.Unlock()
 
@@ -543,13 +547,13 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 
 		savePairingErr := client.Persister.SavePairing(pairingSecret)
 		if savePairingErr != nil {
-			log.Error("error saving pairing:", savePairingErr.Error())
+			client.log.Error("error saving pairing:", savePairingErr.Error())
 		}
 
 		for _, queuedMessage := range queue {
 			err = client.sendMessage(pairingSecret, queuedMessage, true)
 			if err != nil {
-				log.Error("error sending queued message:", err.Error())
+				client.log.Error("error sending queued message:", err.Error())
 			}
 		}
 	}
@@ -558,7 +562,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 	}
 	message, err := pairingSecret.DecryptMessage(*unwrappedCiphertext)
 	if err != nil {
-		log.Error("decrypt error:", err)
+		client.log.Error("decrypt error:", err)
 		return
 	}
 	if message == nil {
@@ -567,7 +571,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 	responseJson := *message
 	err = client.handleMessage(pairingSecret, responseJson, medium)
 	if err != nil {
-		log.Error("handleMessage error:", err)
+		client.log.Error("handleMessage error:", err)
 		return
 	}
 	return
@@ -594,7 +598,7 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		}
 		err := client.bt.Write(ciphertext)
 		if err != nil {
-			log.Error("error writing to Bluetooth", err)
+			client.log.Error("error writing to Bluetooth", err)
 		}
 	}()
 
@@ -616,7 +620,7 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 	defer client.Unlock()
 
 	if response.UnpairResponse != nil {
-		log.Notice("Received unpair command from phone.")
+		client.log.Notice("Received unpair command from phone.")
 		client.unpair(fromPairing, false)
 		//	cancel all pending callbacks
 		client.requestCallbacksByRequestID.OnEvicted = func(key lru.Key, callback interface{}) {
@@ -647,13 +651,13 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 	}
 
 	if requestCb, ok := client.requestCallbacksByRequestID.Get(response.RequestID); ok {
-		log.Info("found callback for request", response.RequestID)
+		client.log.Info("found callback for request", response.RequestID)
 		requestCb.(chan *callbackT) <- &callbackT{
 			response: response,
 			medium:   medium,
 		}
 	} else {
-		log.Info("callback not found for request", response.RequestID)
+		client.log.Info("callback not found for request", response.RequestID)
 	}
 	if response.AckResponse != nil {
 		client.ackedRequestIDs.Add(response.RequestID, nil)

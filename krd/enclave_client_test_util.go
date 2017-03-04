@@ -1,4 +1,4 @@
-package main
+package krd
 
 import (
 	"net"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/kryptco/kr"
+	"github.com/op/go-logging"
 )
 
 func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {
@@ -15,6 +16,7 @@ func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {
 		transport,
 		&kr.MemoryPersister{},
 		nil,
+		kr.SetupLogging("test", logging.INFO, false),
 	)
 }
 
@@ -39,6 +41,7 @@ func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
 		transport,
 		&kr.MemoryPersister{},
 		&shortTimeouts,
+		kr.SetupLogging("test", logging.INFO, false),
 	)
 	return ec
 }
@@ -46,7 +49,7 @@ func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
 func NewLocalUnixServer(t *testing.T) (ec EnclaveClientI, cs *ControlServer, unixFile string) {
 	transport := &kr.ResponseTransport{T: t}
 	ec = NewTestEnclaveClient(transport)
-	cs = &ControlServer{ec}
+	cs = &ControlServer{ec, kr.SetupLogging("test", logging.INFO, false)}
 
 	randFile, err := kr.Rand128Base62()
 	if err != nil {

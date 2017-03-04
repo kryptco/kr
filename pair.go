@@ -17,13 +17,14 @@ var ErrWaitingForKey = fmt.Errorf("Pairing in progress, waiting for symmetric ke
 
 //	TODO: Indicate whether bluetooth support enabled
 type PairingSecret struct {
-	SymmetricSecretKey   *[]byte `json:"-"`
+	EnclavePublicKey     *[]byte `json:"-"`
 	WorkstationPublicKey []byte  `json:"pk"`
 	workstationSecretKey []byte
 	WorkstationName      string `json:"n"`
 	snsEndpointARN       *string
 	ApprovedUntil        *int64 `json:"-"`
 	trackingID           *string
+	Version              string `json:"v"`
 	sync.Mutex
 }
 
@@ -67,15 +68,11 @@ func GeneratePairingSecret() (ps *PairingSecret, err error) {
 func (ps *PairingSecret) EncryptMessage(message []byte) (ciphertext []byte, err error) {
 	ps.Lock()
 	defer ps.Unlock()
-	if ps.SymmetricSecretKey == nil {
+	if ps.EnclavePublicKey == nil {
 		err = ErrWaitingForKey
 		return
 	}
-	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
-	if err != nil {
-		return
-	}
-	ciphertext, err = Seal(message, *key)
+	ciphertext, err = sodiumBox(message, *ps.EnclavePublicKey, ps.workstationSecretKey)
 	if err != nil {
 		return
 	}
@@ -96,7 +93,7 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		remainingCiphertext = &ctxt
 		return
 	case HEADER_WRAPPED_KEY:
-		if ps.SymmetricSecretKey != nil {
+		if ps.EnclavePublicKey != nil {
 			return
 		}
 		wrappedKey := ciphertext[1:]
@@ -105,7 +102,7 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 			err = unwrapErr
 			return
 		}
-		ps.SymmetricSecretKey = &key
+		ps.EnclavePublicKey = &key
 		didUnwrapKey = true
 		log.Notice("stored symmetric key")
 		return
@@ -119,15 +116,11 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 func (ps *PairingSecret) DecryptMessage(ciphertext []byte) (message *[]byte, err error) {
 	ps.Lock()
 	defer ps.Unlock()
-	if ps.SymmetricSecretKey == nil {
+	if ps.EnclavePublicKey == nil {
 		err = ErrWaitingForKey
 		return
 	}
-	key, err := SymmetricSecretKeyFromBytes(*ps.SymmetricSecretKey)
-	if err != nil {
-		return
-	}
-	messageBytes, err := Open(ciphertext, *key)
+	messageBytes, err := sodiumBoxOpen(ciphertext, *ps.EnclavePublicKey, ps.workstationSecretKey)
 	if err != nil {
 		return
 	}
@@ -162,7 +155,7 @@ func (ps *PairingSecret) GetTrackingID() *string {
 func (ps *PairingSecret) IsPaired() bool {
 	ps.Lock()
 	defer ps.Unlock()
-	return ps.SymmetricSecretKey != nil
+	return ps.EnclavePublicKey != nil
 }
 
 func (ps *PairingSecret) RequiresApproval() bool {

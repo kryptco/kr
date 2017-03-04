@@ -30,7 +30,7 @@ func TestGenWrapEncDec(t *testing.T) {
 	if !didUnwrap {
 		t.Fatal()
 	}
-	if !bytes.Equal(sessionKey, *ps.SymmetricSecretKey) {
+	if !bytes.Equal(sessionKey, *ps.EnclavePublicKey) {
 		t.Fatal("SymmetricSecretKey wrong")
 	}
 

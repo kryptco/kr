@@ -5,8 +5,8 @@
 		{
 			"checksumSHA1": "WIFeS/tU39uZV9m+aJHuo2i7BZA=",
 			"path": "github.com/GoKillers/libsodium-go/cryptobox",
-			"revision": "b5f80f3d0206a8426af1ab8e0044704c35951dec",
-			"revisionTime": "2016-11-15T15:00:08Z"
+			"revision": "21fce0a96ee834a8481d6d273691a2b32a26bb18",
+			"revisionTime": "2016-07-13T06:31:29Z"
 		},
 		{
 			"checksumSHA1": "AvzjR+CmAbvkZInayqyZDW8Xxzc=",
@@ -299,10 +299,16 @@
 			"revisionTime": "2016-10-26T23:47:36Z"
 		},
 		{
+			"checksumSHA1": "LIOlUuwAjG4+meTovizhtsB+fTE=",
+			"path": "golang.org/x/crypto/nacl/box",
+			"revision": "b8a2a83acfe6e6770b75de42d5ff4c67596675c0",
+			"revisionTime": "2017-01-13T19:21:00Z"
+		},
+		{
 			"checksumSHA1": "Y/FcWB2/xSfX1rRp7HYhktHNw8s=",
 			"path": "golang.org/x/crypto/nacl/secretbox",
-			"revision": "9477e0b78b9ac3d0b03822fd95422e2fe07627cd",
-			"revisionTime": "2016-10-31T15:37:30Z"
+			"revision": "b8a2a83acfe6e6770b75de42d5ff4c67596675c0",
+			"revisionTime": "2017-01-13T19:21:00Z"
 		},
 		{
 			"checksumSHA1": "x7EiaCEsuaZ3jc8r+8KBmYwESmA=",

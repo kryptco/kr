@@ -1,6 +1,6 @@
 // +build !nobluetooth
 
-package main
+package krd
 
 import (
 	"github.com/op/go-logging"

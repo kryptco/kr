@@ -1,44 +1,21 @@
-package main
+package krd
 
 import (
 	"bytes"
 	"crypto"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"sync"
 
-	"github.com/fatih/color"
 	"github.com/kryptco/kr"
+	"github.com/op/go-logging"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
-
-func cyan(s string) string {
-	cyan := color.New(color.FgHiCyan)
-	cyan.EnableColor()
-	return cyan.SprintFunc()(s)
-}
-
-func green(s string) string {
-	green := color.New(color.FgHiGreen)
-	green.EnableColor()
-	return green.SprintFunc()(s)
-}
-
-func yellow(s string) string {
-	yellow := color.New(color.FgHiYellow)
-	yellow.EnableColor()
-	return yellow.SprintFunc()(s)
-}
-
-func red(s string) string {
-	red := color.New(color.FgHiRed)
-	red.EnableColor()
-	return red.SprintFunc()(s)
-}
 
 // 	from https://golang.org/src/crypto/rsa/pkcs1v15.go
 var hashPrefixes = map[crypto.Hash][]byte{
@@ -64,6 +41,8 @@ type Agent struct {
 	fallback agent.Agent
 
 	recentSessionIDSignatures []sessionIDSig
+
+	log *logging.Logger
 }
 
 // List returns the identities known to the agent.
@@ -71,14 +50,14 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	cachedProfile := a.client.GetCachedMe()
 	keys = []*agent.Key{}
 
-	if CheckIfUpdateAvailable() {
-		a.notify(yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it."))
+	if CheckIfUpdateAvailable(a.log) {
+		a.notify(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it."))
 	}
 
 	if cachedProfile != nil {
 		pk, parseErr := ssh.ParsePublicKey(cachedProfile.SSHWirePublicKey)
 		if parseErr != nil {
-			log.Error("list: parseKey error: " + parseErr.Error())
+			a.log.Error("list: parseKey error: " + parseErr.Error())
 			err = parseErr
 			return
 		}
@@ -89,7 +68,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 				Comment: cachedProfile.Email,
 			})
 	} else {
-		a.notify(yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
+		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
 	}
 	fallbackKeys, err := a.fallback.List()
 	if err == nil {
@@ -115,6 +94,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	session, err := parseSessionFromSignaturePayload(data)
 	var hostAuth *kr.HostAuth
 	if err == nil {
+		a.log.Notice("session: " + base64.StdEncoding.EncodeToString(session))
 		a.mutex.Lock()
 		for _, sig := range a.recentSessionIDSignatures {
 			if err := sig.PK.Verify(session, sig.Signature); err == nil {
@@ -126,15 +106,17 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 				if err == nil {
 					hostAuth.HostNames = hostNames
 				} else {
-					log.Error("error looking up hostname for public key: " + err.Error())
+					a.log.Error("error looking up hostname for public key: " + err.Error())
 				}
-				log.Notice("found remote signature for session, host auth: " + fmt.Sprintf("%+v", hostAuth))
+				a.log.Notice("found remote signature for session, host auth: " + fmt.Sprintf("%+v", hostAuth))
+				a.log.Notice("pubkey " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
+				a.log.Notice("sig " + base64.StdEncoding.EncodeToString(hostAuth.Signature))
 				break
 			}
 		}
 		a.mutex.Unlock()
 	} else {
-		log.Error("error parsing session from signature payload: " + err.Error())
+		a.log.Error("error parsing session from signature payload: " + err.Error())
 	}
 
 	var digest []byte
@@ -144,58 +126,58 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		//	strip pubkey since it is redundant
 		dataWithoutPubkey, err = stripPubkeyFromSignaturePayload(data)
 		if err != nil {
-			log.Error(err.Error())
+			a.log.Error(err.Error())
 			return
 		}
 		digest = dataWithoutPubkey
 	default:
 		err = errors.New("unsupported key type: " + key.Type())
-		log.Error(err.Error())
+		a.log.Error(err.Error())
 		return
 	}
 
-	a.notify(cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
+	a.notify(kr.Cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
 
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
 		Digest:               digest,
-		Command:              getLastCommand(),
+		Command:              getLastCommand(a.log),
 		HostAuth:             hostAuth,
 	}
 	signResponse, err := a.client.RequestSignature(signRequest)
 	if err != nil {
-		log.Error(err.Error())
+		a.log.Error(err.Error())
 		switch err {
 		case ErrNotPaired:
-			a.notify(yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
+			a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
 		case ErrTimeout:
-			a.notify(red("Kryptonite ▶ " + kr.ErrTimedOut.Error()))
-			a.notify(yellow("Kryptonite ▶ Falling back to local keys."))
+			a.notify(kr.Red("Kryptonite ▶ " + kr.ErrTimedOut.Error()))
+			a.notify(kr.Yellow("Kryptonite ▶ Falling back to local keys."))
 		}
 		return
 	}
-	log.Notice(fmt.Sprintf("sign response: %+v", signResponse))
+	a.log.Notice(fmt.Sprintf("sign response: %+v", signResponse))
 	if signResponse.Error != nil {
 		err = errors.New(*signResponse.Error)
-		log.Error(err.Error())
+		a.log.Error(err.Error())
 		if *signResponse.Error == "rejected" {
-			a.notify(red("Kryptonite ▶ " + kr.ErrRejected.Error()))
+			a.notify(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error()))
 		} else {
-			a.notify(red("Kryptonite ▶ " + kr.ErrSigning.Error()))
+			a.notify(kr.Red("Kryptonite ▶ " + kr.ErrSigning.Error()))
 		}
 		return
 	}
 	if signResponse == nil {
 		err = errors.New("nil response")
-		log.Error(err.Error())
+		a.log.Error(err.Error())
 		return
 	}
 	if signResponse.Signature == nil {
 		err = errors.New("no signature in response")
-		log.Error(err.Error())
+		a.log.Error(err.Error())
 		return
 	}
-	a.notify(green("Kryptonite ▶ Success. Request Allowed ✔"))
+	a.notify(kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
 	signature := *signResponse.Signature
 	sshSignature = &ssh.Signature{
 		Format: key.Type(),
@@ -236,21 +218,21 @@ func (a *Agent) Signers() (signers []ssh.Signer, err error) {
 
 func (a *Agent) notify(body string) {
 	if err := a.notifier.Notify(append([]byte(body), '\r', '\n')); err != nil {
-		log.Error("error writing notification: " + err.Error())
+		a.log.Error("error writing notification: " + err.Error())
 	}
 }
 
 func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 	sshPK, err := ssh.ParsePublicKey(hostAuth.HostKey)
 	if err != nil {
-		log.Error("error parsing hostAuth.HostKey: " + err.Error())
+		a.log.Error("error parsing hostAuth.HostKey: " + err.Error())
 		return
 	}
 
 	var sshSig ssh.Signature
 	err = ssh.Unmarshal(hostAuth.Signature, &sshSig)
 	if err != nil {
-		log.Error("error parsing hostAuth.Signature: " + err.Error())
+		a.log.Error("error parsing hostAuth.Signature: " + err.Error())
 		return
 	}
 
@@ -265,11 +247,11 @@ func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 	if len(a.recentSessionIDSignatures) > 16 {
 		a.recentSessionIDSignatures = a.recentSessionIDSignatures[:16]
 	}
-	log.Notice("received hostAuth " + fmt.Sprintf("%+v", hostAuth))
+	a.log.Notice("received hostAuth " + fmt.Sprintf("%+v", hostAuth))
 }
 
-func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net.Listener, hostAuthListener net.Listener) (err error) {
-	krAgent := &Agent{sync.Mutex{}, enclaveClient, n, agent.NewKeyring(), []sessionIDSig{}}
+func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net.Listener, hostAuthListener net.Listener, log *logging.Logger) (err error) {
+	krAgent := &Agent{sync.Mutex{}, enclaveClient, n, agent.NewKeyring(), []sessionIDSig{}, log}
 	go func() {
 		for {
 			conn, err := hostAuthListener.Accept()

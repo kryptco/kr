@@ -1,4 +1,4 @@
-package main
+package krd
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ func TestPair(t *testing.T) {
 	ps := PairClient(t, ec)
 	defer ec.Stop()
 
-	if ps.SymmetricSecretKey == nil || !bytes.Equal(*ps.SymmetricSecretKey, transport.Keys[base64.StdEncoding.EncodeToString(ps.WorkstationPublicKey)]) {
+	if ps.EnclavePublicKey == nil || !bytes.Equal(*ps.EnclavePublicKey, transport.Keys[base64.StdEncoding.EncodeToString(ps.WorkstationPublicKey)]) {
 		t.Fatal()
 	}
 }
@@ -29,7 +29,7 @@ func TestMultiPair(t *testing.T) {
 	ps := PairClient(t, ec)
 	defer ec.Stop()
 
-	if ps.SymmetricSecretKey == nil || !bytes.Equal(*ps.SymmetricSecretKey, transport.SymKey) {
+	if ps.EnclavePublicKey == nil || !bytes.Equal(*ps.EnclavePublicKey, transport.SymKey) {
 		t.Fatal()
 	}
 }
