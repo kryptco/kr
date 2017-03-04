@@ -3,7 +3,6 @@
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::Mutex;
-use std::mem;
 use std::env;
 use std::fs::OpenOptions;
 use std::os::unix::io::AsRawFd;
@@ -37,16 +36,6 @@ pub extern "C" fn CK_C_GetFunctionList(function_list: *mut *mut _CK_FUNCTION_LIS
     C_GetFunctionList(function_list)
 }
 
-#[cfg(target_os = "linux")]
-fn libkrlogging_path() -> String {
-    "/usr/lib/libkrlogging.dylib".into()
-}
-
-#[cfg(target_os = "macos")]
-fn libkrlogging_path() -> String {
-    "/usr/local/lib/libkrlogging.dylib".into()
-}
-
 extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     notice!("CK_C_Initialize");
 
@@ -54,6 +43,21 @@ extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
         home_dir.push(".kr/krd-agent.sock");
         env::set_var("SSH_AUTH_SOCK", home_dir);
     }
+
+    if let Ok(dev_null) = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open("/dev/null") {
+            match OLD_STDERR_FD.lock() {
+                Ok(mut old_stderr_fd) => {
+                    unsafe {
+                        *old_stderr_fd = Some(libc::dup(libc::STDERR_FILENO));
+                        libc::dup2(dev_null.as_raw_fd(), libc::STDERR_FILENO);
+                    };
+                },
+                Err(_) => {},
+            };
+        }
     CKR_OK
 }
 
