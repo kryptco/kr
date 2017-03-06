@@ -277,7 +277,10 @@ func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net
 		if err != nil {
 			log.Error("accept error: ", err.Error())
 		}
-		go agent.ServeAgent(krAgent, conn)
+		go func() {
+			defer conn.Close()
+			agent.ServeAgent(krAgent, conn)
+		}()
 	}
 	return
 }
