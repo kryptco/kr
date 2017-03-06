@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/kryptco/kr"
 
@@ -33,15 +34,11 @@ type kexECDHReplyMsg struct {
 func sendHostAuth(hostAuth kr.HostAuth) {
 	conn, err := kr.HostAuthDial()
 	if err != nil {
-		log.Println("error connecting to krd-hostauth:", err.Error())
+		log.Println(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\"."))
 		return
 	}
 	defer conn.Close()
-	err = json.NewEncoder(conn).Encode(hostAuth)
-	if err != nil {
-		log.Println("error sending hostauth to krd")
-		return
-	}
+	json.NewEncoder(conn).Encode(hostAuth)
 }
 
 func tryParse(buf []byte) (err error) {
@@ -81,7 +78,28 @@ func parseSSHPacket(b []byte) (packet []byte) {
 	return
 }
 
+func startLogger() {
+	r, err := kr.OpenNotificationReader()
+	if err != nil {
+		return
+	}
+	go func() {
+		for {
+			notification, err := r.Read()
+			switch err {
+			case nil:
+				os.Stderr.Write(notification)
+			case io.EOF:
+				<-time.After(250 * time.Millisecond)
+			default:
+				return
+			}
+		}
+	}()
+}
+
 func main() {
+	log.SetFlags(0)
 	if len(os.Args) < 2 {
 		log.Fatal("not enough arguments")
 	}
@@ -93,9 +111,11 @@ func main() {
 		port = "22"
 	}
 
+	startLogger()
+
 	remoteConn, err := net.Dial("tcp", host+":"+port)
 	if err != nil {
-		log.Fatal("err connecting to remote:", err.Error())
+		log.Fatal(kr.Red("could not connect to remote: " + err.Error()))
 	}
 
 	remoteDoneChan := make(chan bool)
@@ -139,7 +159,9 @@ func main() {
 			for {
 				n, err := os.Stdin.Read(buf)
 				if err != nil {
-					log.Println("stdin read err:", err.Error())
+					if err != io.EOF {
+						log.Println("stdin read err:", err.Error())
+					}
 					return
 				}
 				if n > 0 {
