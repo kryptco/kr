@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"io"
@@ -10,13 +11,26 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/kryptco/kr"
+	"github.com/kryptco/kr/krd"
 
+	"github.com/op/go-logging"
 	"golang.org/x/crypto/ssh"
 )
+
+func useSyslog() bool {
+	env := os.Getenv("KR_LOG_SYSLOG")
+	if env != "" {
+		return env == "true"
+	}
+	return true
+}
+
+var logger *logging.Logger = kr.SetupLogging("krssh", logging.INFO, useSyslog())
 
 //	from https://github.com/golang/crypto/blob/master/ssh/messages.go#L98-L102
 type kexDHReplyMsg struct {
@@ -41,7 +55,7 @@ func sendHostAuth(hostAuth kr.HostAuth) {
 	json.NewEncoder(conn).Encode(hostAuth)
 }
 
-func tryParse(buf []byte) (err error) {
+func tryParse(onHostPrefix chan string, buf []byte) (err error) {
 	kexDHReplyTemplate := kexDHReplyMsg{}
 	kexECDHReplyTemplate := kexECDHReplyMsg{}
 	err = ssh.Unmarshal(buf, &kexDHReplyTemplate)
@@ -50,13 +64,21 @@ func tryParse(buf []byte) (err error) {
 			HostKey:   kexDHReplyTemplate.HostKey,
 			Signature: kexDHReplyTemplate.Signature,
 		}
+		select {
+		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]":
+		default:
+		}
 		sendHostAuth(hostAuth)
 	}
 	err = ssh.Unmarshal(buf, &kexECDHReplyTemplate)
 	if err == nil {
 		hostAuth := kr.HostAuth{
-			HostKey:   kexDHReplyTemplate.HostKey,
-			Signature: kexDHReplyTemplate.Signature,
+			HostKey:   kexECDHReplyTemplate.HostKey,
+			Signature: kexECDHReplyTemplate.Signature,
+		}
+		select {
+		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]":
+		default:
 		}
 		sendHostAuth(hostAuth)
 	}
@@ -78,19 +100,39 @@ func parseSSHPacket(b []byte) (packet []byte) {
 	return
 }
 
-func startLogger() {
+func startLogger(prefix chan string) {
 	r, err := kr.OpenNotificationReader()
 	if err != nil {
 		return
 	}
+	var loggingPrefix string
 	go func() {
+		if krd.CheckIfUpdateAvailable(logger) {
+			os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it."))
+		}
+
 		for {
 			notification, err := r.Read()
+			select {
+			case loggingPrefix = <-prefix:
+			default:
+			}
 			switch err {
 			case nil:
-				os.Stderr.Write(notification)
+				notificationStr := string(notification)
+				if strings.HasPrefix(notificationStr, "[") {
+					if loggingPrefix != "" && strings.HasPrefix(notificationStr, loggingPrefix) {
+						trimmed := strings.TrimPrefix(notificationStr, loggingPrefix)
+						if strings.HasPrefix(trimmed, "STOP") {
+							return
+						}
+						os.Stderr.WriteString(trimmed)
+					}
+				} else {
+					os.Stderr.Write(notification)
+				}
 			case io.EOF:
-				<-time.After(250 * time.Millisecond)
+				<-time.After(50 * time.Millisecond)
 			default:
 				return
 			}
@@ -111,7 +153,8 @@ func main() {
 		port = "22"
 	}
 
-	startLogger()
+	notifyPrefix := make(chan string, 1)
+	startLogger(notifyPrefix)
 
 	remoteConn, err := net.Dial("tcp", host+":"+port)
 	if err != nil {
@@ -134,7 +177,7 @@ func main() {
 					packetNum++
 					if packetNum > 1 {
 						sshPacket := parseSSHPacket(buf)
-						tryParse(sshPacket)
+						tryParse(notifyPrefix, sshPacket)
 					}
 					byteBuf := bytes.NewBuffer(buf[:n])
 					wroteN, err := byteBuf.WriteTo(os.Stdout)
