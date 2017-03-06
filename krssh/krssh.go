@@ -107,9 +107,11 @@ func startLogger(prefix chan string) {
 	}
 	var loggingPrefix string
 	go func() {
-		if krd.CheckIfUpdateAvailable(logger) {
-			os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it."))
-		}
+		go func() {
+			if krd.CheckIfUpdateAvailable(logger) {
+				os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it.\r\n"))
+			}
+		}()
 
 		for {
 			notification, err := r.Read()
