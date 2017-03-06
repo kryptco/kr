@@ -100,8 +100,11 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 					Signature: ssh.Marshal(sig.Signature),
 				}
 				notifyPrefix = "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]"
-				hostNames, err := hostForPublicKey(sig.PK)
+				hostNames, err := hostForPublicKey(a.log, sig.PK)
 				if err == nil {
+					if len(hostNames) == 0 {
+						a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
+					}
 					hostAuth.HostNames = hostNames
 				} else {
 					a.log.Error("error looking up hostname for public key: " + err.Error())
@@ -115,6 +118,10 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		a.mutex.Unlock()
 	} else {
 		a.log.Error("error parsing session from signature payload: " + err.Error())
+	}
+
+	if hostAuth == nil {
+		a.log.Warning("no hostname found for session " + base64.StdEncoding.EncodeToString(session))
 	}
 
 	var digest []byte

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/op/go-logging"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -64,10 +65,11 @@ func parseSessionFromSignaturePayload(data []byte) (session []byte, err error) {
 	return
 }
 
-func hostForPublicKey(pk ssh.PublicKey) (hosts []string, err error) {
+func hostForPublicKey(log *logging.Logger, pk ssh.PublicKey) (hosts []string, err error) {
 	marshaledPk := pk.Marshal()
 	knownHostsBytes, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
 	if err != nil {
+		log.Error("error reading known hosts file: " + err.Error())
 		return
 	}
 	var rest []byte
