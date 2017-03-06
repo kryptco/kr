@@ -50,10 +50,6 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	cachedProfile := a.client.GetCachedMe()
 	keys = []*agent.Key{}
 
-	if CheckIfUpdateAvailable(a.log) {
-		a.notify(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it."))
-	}
-
 	if cachedProfile != nil {
 		pk, parseErr := ssh.ParsePublicKey(cachedProfile.SSHWirePublicKey)
 		if parseErr != nil {
@@ -93,6 +89,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 	session, err := parseSessionFromSignaturePayload(data)
 	var hostAuth *kr.HostAuth
+	notifyPrefix := ""
 	if err == nil {
 		a.log.Notice("session: " + base64.StdEncoding.EncodeToString(session))
 		a.mutex.Lock()
@@ -102,6 +99,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 					HostKey:   sig.PK.Marshal(),
 					Signature: ssh.Marshal(sig.Signature),
 				}
+				notifyPrefix = "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]"
 				hostNames, err := hostForPublicKey(sig.PK)
 				if err == nil {
 					hostAuth.HostNames = hostNames
@@ -136,7 +134,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		return
 	}
 
-	a.notify(kr.Cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
+	a.notify(notifyPrefix + kr.Cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
 
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
@@ -149,10 +147,10 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		a.log.Error(err.Error())
 		switch err {
 		case ErrNotPaired:
-			a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
+			a.notify(notifyPrefix + kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()))
 		case ErrTimeout:
-			a.notify(kr.Red("Kryptonite ▶ " + kr.ErrTimedOut.Error()))
-			a.notify(kr.Yellow("Kryptonite ▶ Falling back to local keys."))
+			a.notify(notifyPrefix + kr.Red("Kryptonite ▶ "+kr.ErrTimedOut.Error()))
+			a.notify(notifyPrefix + kr.Yellow("Kryptonite ▶ Falling back to local keys."))
 		}
 		return
 	}
@@ -161,28 +159,32 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		err = errors.New(*signResponse.Error)
 		a.log.Error(err.Error())
 		if *signResponse.Error == "rejected" {
-			a.notify(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error()))
+			a.notify(notifyPrefix + kr.Red("Kryptonite ▶ "+kr.ErrRejected.Error()))
 		} else {
-			a.notify(kr.Red("Kryptonite ▶ " + kr.ErrSigning.Error()))
+			a.notify(notifyPrefix + kr.Red("Kryptonite ▶ "+kr.ErrSigning.Error()))
 		}
+		a.notify(notifyPrefix + "STOP")
 		return
 	}
 	if signResponse == nil {
 		err = errors.New("nil response")
 		a.log.Error(err.Error())
+		a.notify(notifyPrefix + "STOP")
 		return
 	}
 	if signResponse.Signature == nil {
 		err = errors.New("no signature in response")
 		a.log.Error(err.Error())
+		a.notify(notifyPrefix + "STOP")
 		return
 	}
-	a.notify(kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
+	a.notify(notifyPrefix + kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
 	signature := *signResponse.Signature
 	sshSignature = &ssh.Signature{
 		Format: key.Type(),
 		Blob:   signature,
 	}
+	a.notify(notifyPrefix + "STOP")
 	return
 }
 
