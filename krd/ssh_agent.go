@@ -170,19 +170,25 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		} else {
 			a.notify(notifyPrefix + kr.Red("Kryptonite ▶ "+kr.ErrSigning.Error()))
 		}
-		a.notify(notifyPrefix + "STOP")
+		if notifyPrefix != "" {
+			a.notify(notifyPrefix + "STOP")
+		}
 		return
 	}
 	if signResponse == nil {
 		err = errors.New("nil response")
 		a.log.Error(err.Error())
-		a.notify(notifyPrefix + "STOP")
+		if notifyPrefix != "" {
+			a.notify(notifyPrefix + "STOP")
+		}
 		return
 	}
 	if signResponse.Signature == nil {
 		err = errors.New("no signature in response")
 		a.log.Error(err.Error())
-		a.notify(notifyPrefix + "STOP")
+		if notifyPrefix != "" {
+			a.notify(notifyPrefix + "STOP")
+		}
 		return
 	}
 	a.notify(notifyPrefix + kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
@@ -191,7 +197,9 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		Format: key.Type(),
 		Blob:   signature,
 	}
-	a.notify(notifyPrefix + "STOP")
+	if notifyPrefix != "" {
+		a.notify(notifyPrefix + "STOP")
+	}
 	return
 }
 
