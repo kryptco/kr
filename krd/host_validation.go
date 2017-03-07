@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/op/go-logging"
 	"golang.org/x/crypto/ssh"
@@ -75,9 +76,9 @@ func hostForPublicKey(log *logging.Logger, pk ssh.PublicKey) (hosts []string, er
 	var rest []byte
 	rest = knownHostsBytes
 	for {
-		_, hosts, hostPubkey, _, knownHostsBytes, err := ssh.ParseKnownHosts(rest)
+		_, newHosts, hostPubkey, _, knownHostsBytes, err := ssh.ParseKnownHosts(rest)
 		if hostPubkey != nil && bytes.Equal(hostPubkey.Marshal(), marshaledPk) {
-			return hosts, nil
+			hosts = append(hosts, newHosts...)
 		}
 		rest = knownHostsBytes
 		if err == io.EOF {
@@ -86,6 +87,18 @@ func hostForPublicKey(log *logging.Logger, pk ssh.PublicKey) (hosts []string, er
 		if err != nil {
 			continue
 		}
+	}
+
+	//	prioritize first domain name over IP addresses
+	var domainIdx *int
+	for idx, host := range hosts {
+		if strings.ContainsAny(strings.ToLower(host), "abcdefghijklmnopqrstuvwxyz") {
+			domainIdx = &idx
+			break
+		}
+	}
+	if domainIdx != nil {
+		hosts[0], hosts[*domainIdx] = hosts[*domainIdx], hosts[0]
 	}
 	return
 }
