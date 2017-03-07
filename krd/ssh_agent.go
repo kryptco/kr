@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
+	"github.com/hashicorp/golang-lru"
 	"github.com/kryptco/kr"
 	"github.com/op/go-logging"
 	"golang.org/x/crypto/ssh"
@@ -34,13 +36,16 @@ type sessionIDSig struct {
 	Signature *ssh.Signature
 }
 
+type hostAuthCallback chan *kr.HostAuth
+
 type Agent struct {
 	mutex    sync.Mutex
 	client   EnclaveClientI
 	notifier kr.Notifier
 	fallback agent.Agent
 
-	recentSessionIDSignatures []sessionIDSig
+	recentSessionIDSignatures    []sessionIDSig
+	hostAuthCallbacksBySessionID *lru.Cache
 
 	log *logging.Logger
 }
@@ -92,35 +97,14 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	notifyPrefix := ""
 	if err == nil {
 		a.log.Notice("session: " + base64.StdEncoding.EncodeToString(session))
-		a.mutex.Lock()
-		for _, sig := range a.recentSessionIDSignatures {
-			if err := sig.PK.Verify(session, sig.Signature); err == nil {
-				hostAuth = &kr.HostAuth{
-					HostKey:   sig.PK.Marshal(),
-					Signature: ssh.Marshal(sig.Signature),
-				}
-				notifyPrefix = "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]"
-				hostNames, err := hostForPublicKey(a.log, sig.PK)
-				if err == nil {
-					if len(hostNames) == 0 {
-						a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
-					}
-					hostAuth.HostNames = hostNames
-				} else {
-					a.log.Error("error looking up hostname for public key: " + err.Error())
-				}
-				a.log.Notice("found remote signature for session, host auth: " + fmt.Sprintf("%+v", hostAuth))
-				a.log.Notice("pubkey " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
-				a.log.Notice("sig " + base64.StdEncoding.EncodeToString(hostAuth.Signature))
-				break
-			}
-		}
-		a.mutex.Unlock()
 	} else {
 		a.log.Error("error parsing session from signature payload: " + err.Error())
 	}
 
-	if hostAuth == nil {
+	hostAuth = a.awaitHostAuthFor(base64.StdEncoding.EncodeToString(session))
+	if hostAuth != nil {
+		notifyPrefix = "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]"
+	} else {
 		a.log.Warning("no hostname found for session " + base64.StdEncoding.EncodeToString(session))
 	}
 
@@ -239,6 +223,55 @@ func (a *Agent) notify(body string) {
 	}
 }
 
+func (a *Agent) checkForHostAuth(session string) (hostAuth *kr.HostAuth) {
+	a.mutex.Lock()
+	sessionBytes, err := base64.StdEncoding.DecodeString(session)
+	if err != nil {
+		return nil
+	}
+	for _, sig := range a.recentSessionIDSignatures {
+		if err := sig.PK.Verify(sessionBytes, sig.Signature); err == nil {
+			hostAuth = &kr.HostAuth{
+				HostKey:   sig.PK.Marshal(),
+				Signature: ssh.Marshal(sig.Signature),
+			}
+			hostNames, err := hostForPublicKey(a.log, sig.PK)
+			if err == nil {
+				if len(hostNames) == 0 {
+					a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
+				}
+				hostAuth.HostNames = hostNames
+			} else {
+				a.log.Error("error looking up hostname for public key: " + err.Error())
+			}
+			a.log.Notice("found remote signature for session, host auth: " + fmt.Sprintf("%+v", hostAuth))
+			a.log.Notice("pubkey " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
+			a.log.Notice("sig " + base64.StdEncoding.EncodeToString(hostAuth.Signature))
+			break
+		}
+	}
+	a.mutex.Unlock()
+	return
+}
+
+func (a *Agent) awaitHostAuthFor(session string) *kr.HostAuth {
+	if hostAuth := a.checkForHostAuth(session); hostAuth != nil {
+		return hostAuth
+	}
+
+	a.mutex.Lock()
+	cb := make(chan *kr.HostAuth, 5)
+	a.hostAuthCallbacksBySessionID.Add(session, cb)
+	a.mutex.Unlock()
+
+	select {
+	case hostAuth := <-cb:
+		return hostAuth
+	case <-time.After(5 * time.Second):
+	}
+	return nil
+}
+
 func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 	sshPK, err := ssh.ParsePublicKey(hostAuth.HostKey)
 	if err != nil {
@@ -261,14 +294,53 @@ func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	a.recentSessionIDSignatures = append([]sessionIDSig{sig}, a.recentSessionIDSignatures...)
-	if len(a.recentSessionIDSignatures) > 16 {
-		a.recentSessionIDSignatures = a.recentSessionIDSignatures[:16]
+	if len(a.recentSessionIDSignatures) > 50 {
+		a.recentSessionIDSignatures = a.recentSessionIDSignatures[:50]
 	}
 	a.log.Notice("received hostAuth " + fmt.Sprintf("%+v", hostAuth))
+
+	for _, session := range a.hostAuthCallbacksBySessionID.Keys() {
+		sessionBytes, err := base64.StdEncoding.DecodeString(session.(string))
+		if err != nil {
+			continue
+		}
+		if err := sig.PK.Verify(sessionBytes, sig.Signature); err == nil {
+			hostAuth := &kr.HostAuth{
+				HostKey:   sig.PK.Marshal(),
+				Signature: ssh.Marshal(sig.Signature),
+			}
+			hostNames, err := hostForPublicKey(a.log, sig.PK)
+			if err == nil {
+				if len(hostNames) == 0 {
+					a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
+				}
+				hostAuth.HostNames = hostNames
+			} else {
+				a.log.Error("error looking up hostname for public key: " + err.Error())
+			}
+			if cb, found := a.hostAuthCallbacksBySessionID.Get(session); found {
+				cb.(hostAuthCallback) <- hostAuth
+				a.hostAuthCallbacksBySessionID.Remove(session)
+			}
+			break
+		}
+	}
 }
 
 func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net.Listener, hostAuthListener net.Listener, log *logging.Logger) (err error) {
-	krAgent := &Agent{sync.Mutex{}, enclaveClient, n, agent.NewKeyring(), []sessionIDSig{}, log}
+	hostAuthCallbacksBySessionID, err := lru.New(128)
+	if err != nil {
+		return
+	}
+	krAgent := &Agent{
+		sync.Mutex{},
+		enclaveClient,
+		n,
+		agent.NewKeyring(),
+		[]sessionIDSig{},
+		hostAuthCallbacksBySessionID,
+		log,
+	}
 	go func() {
 		for {
 			conn, err := hostAuthListener.Accept()
