@@ -3,12 +3,14 @@ package kr
 import (
 	"bufio"
 	"os"
+	"sync"
 )
 
 const NOTIFY_LOG_FILE_NAME = "krd-notify.log"
 
 type Notifier struct {
 	*os.File
+	*sync.Mutex
 }
 
 func OpenNotifier() (n Notifier, err error) {
@@ -20,11 +22,14 @@ func OpenNotifier() (n Notifier, err error) {
 	if err != nil {
 		return
 	}
-	n = Notifier{file}
+	n = Notifier{file, &sync.Mutex{}}
 	return
 }
 
 func (n Notifier) Notify(body []byte) (err error) {
+	n.Lock()
+	defer n.Unlock()
+
 	_, err = n.Write(body)
 	if err != nil {
 		return
