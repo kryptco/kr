@@ -55,7 +55,7 @@ func sendHostAuth(hostAuth kr.HostAuth) {
 	json.NewEncoder(conn).Encode(hostAuth)
 }
 
-func tryParse(onHostPrefix chan string, buf []byte) (err error) {
+func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error) {
 	kexDHReplyTemplate := kexDHReplyMsg{}
 	kexECDHReplyTemplate := kexECDHReplyMsg{}
 	err = ssh.Unmarshal(buf, &kexDHReplyTemplate)
@@ -63,6 +63,7 @@ func tryParse(onHostPrefix chan string, buf []byte) (err error) {
 		hostAuth := kr.HostAuth{
 			HostKey:   kexDHReplyTemplate.HostKey,
 			Signature: kexDHReplyTemplate.Signature,
+			HostNames: []string{hostname},
 		}
 		select {
 		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]":
@@ -75,6 +76,7 @@ func tryParse(onHostPrefix chan string, buf []byte) (err error) {
 		hostAuth := kr.HostAuth{
 			HostKey:   kexECDHReplyTemplate.HostKey,
 			Signature: kexECDHReplyTemplate.Signature,
+			HostNames: []string{hostname},
 		}
 		select {
 		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]":
@@ -181,7 +183,7 @@ func main() {
 					packetNum++
 					if packetNum > 1 {
 						sshPacket := parseSSHPacket(buf)
-						tryParse(notifyPrefix, sshPacket)
+						tryParse(host, notifyPrefix, sshPacket)
 					}
 					byteBuf := bytes.NewBuffer(buf[:n])
 					wroteN, err := byteBuf.WriteTo(os.Stdout)
