@@ -1,14 +1,6 @@
 package krd
 
 import (
-	"bytes"
-	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-
-	"github.com/op/go-logging"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -63,42 +55,5 @@ func parseSessionFromSignaturePayload(data []byte) (session []byte, err error) {
 		return
 	}
 	session = signedDataFormat.Session
-	return
-}
-
-func hostForPublicKey(log *logging.Logger, pk ssh.PublicKey) (hosts []string, err error) {
-	marshaledPk := pk.Marshal()
-	knownHostsBytes, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
-	if err != nil {
-		log.Error("error reading known hosts file: " + err.Error())
-		return
-	}
-	var rest []byte
-	rest = knownHostsBytes
-	for {
-		_, newHosts, hostPubkey, _, knownHostsBytes, err := ssh.ParseKnownHosts(rest)
-		if hostPubkey != nil && bytes.Equal(hostPubkey.Marshal(), marshaledPk) {
-			hosts = append(hosts, newHosts...)
-		}
-		rest = knownHostsBytes
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			continue
-		}
-	}
-
-	//	prioritize first domain name over IP addresses
-	var domainIdx *int
-	for idx, host := range hosts {
-		if strings.ContainsAny(strings.ToLower(host), "abcdefghijklmnopqrstuvwxyz") {
-			domainIdx = &idx
-			break
-		}
-	}
-	if domainIdx != nil {
-		hosts[0], hosts[*domainIdx] = hosts[*domainIdx], hosts[0]
-	}
 	return
 }

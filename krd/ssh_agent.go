@@ -32,6 +32,7 @@ var hashPrefixes = map[crypto.Hash][]byte{
 }
 
 type sessionIDSig struct {
+	HostName  string
 	PK        ssh.PublicKey
 	Signature *ssh.Signature
 }
@@ -277,6 +278,10 @@ func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 		Signature: &sshSig,
 	}
 
+	if len(hostAuth.HostNames) > 0 {
+		sig.HostName = hostAuth.HostNames[0]
+	}
+
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	a.recentSessionIDSignatures = append([]sessionIDSig{sig}, a.recentSessionIDSignatures...)
@@ -305,15 +310,7 @@ func (a *Agent) tryHostAuth(sig *sessionIDSig, session []byte) *kr.HostAuth {
 		hostAuth := &kr.HostAuth{
 			HostKey:   sig.PK.Marshal(),
 			Signature: ssh.Marshal(sig.Signature),
-		}
-		hostNames, err := hostForPublicKey(a.log, sig.PK)
-		if err == nil {
-			if len(hostNames) == 0 {
-				a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
-			}
-			hostAuth.HostNames = hostNames
-		} else {
-			a.log.Error("error looking up hostname for public key: " + err.Error())
+			HostNames: []string{sig.HostName},
 		}
 		return hostAuth
 	}
