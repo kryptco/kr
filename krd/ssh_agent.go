@@ -230,23 +230,8 @@ func (a *Agent) checkForHostAuth(session string) (hostAuth *kr.HostAuth) {
 		return nil
 	}
 	for _, sig := range a.recentSessionIDSignatures {
-		if err := sig.PK.Verify(sessionBytes, sig.Signature); err == nil {
-			hostAuth = &kr.HostAuth{
-				HostKey:   sig.PK.Marshal(),
-				Signature: ssh.Marshal(sig.Signature),
-			}
-			hostNames, err := hostForPublicKey(a.log, sig.PK)
-			if err == nil {
-				if len(hostNames) == 0 {
-					a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
-				}
-				hostAuth.HostNames = hostNames
-			} else {
-				a.log.Error("error looking up hostname for public key: " + err.Error())
-			}
-			a.log.Notice("found remote signature for session, host auth: " + fmt.Sprintf("%+v", hostAuth))
-			a.log.Notice("pubkey " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
-			a.log.Notice("sig " + base64.StdEncoding.EncodeToString(hostAuth.Signature))
+		hostAuth = a.tryHostAuth(&sig, sessionBytes)
+		if hostAuth != nil {
 			break
 		}
 	}
@@ -304,20 +289,7 @@ func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 		if err != nil {
 			continue
 		}
-		if err := sig.PK.Verify(sessionBytes, sig.Signature); err == nil {
-			hostAuth := &kr.HostAuth{
-				HostKey:   sig.PK.Marshal(),
-				Signature: ssh.Marshal(sig.Signature),
-			}
-			hostNames, err := hostForPublicKey(a.log, sig.PK)
-			if err == nil {
-				if len(hostNames) == 0 {
-					a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
-				}
-				hostAuth.HostNames = hostNames
-			} else {
-				a.log.Error("error looking up hostname for public key: " + err.Error())
-			}
+		if hostAuth := a.tryHostAuth(&sig, sessionBytes); hostAuth != nil {
 			if cb, found := a.hostAuthCallbacksBySessionID.Get(session); found {
 				cb.(hostAuthCallback) <- hostAuth
 				a.hostAuthCallbacksBySessionID.Remove(session)
@@ -325,6 +297,26 @@ func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 			break
 		}
 	}
+}
+
+func (a *Agent) tryHostAuth(sig *sessionIDSig, session []byte) *kr.HostAuth {
+	if err := sig.PK.Verify(session, sig.Signature); err == nil {
+		hostAuth := &kr.HostAuth{
+			HostKey:   sig.PK.Marshal(),
+			Signature: ssh.Marshal(sig.Signature),
+		}
+		hostNames, err := hostForPublicKey(a.log, sig.PK)
+		if err == nil {
+			if len(hostNames) == 0 {
+				a.log.Warning("no hostname found for public key " + base64.StdEncoding.EncodeToString(hostAuth.HostKey))
+			}
+			hostAuth.HostNames = hostNames
+		} else {
+			a.log.Error("error looking up hostname for public key: " + err.Error())
+		}
+		return hostAuth
+	}
+	return nil
 }
 
 func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net.Listener, hostAuthListener net.Listener, log *logging.Logger) (err error) {
@@ -348,14 +340,16 @@ func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net
 				log.Error("hostAuth accept error: ", err.Error())
 				continue
 			}
-			defer conn.Close()
-			var hostAuth kr.HostAuth
-			err = json.NewDecoder(conn).Decode(&hostAuth)
-			if err != nil {
-				log.Error("hostAuth decode error: ", err.Error())
-				continue
-			}
-			krAgent.onHostAuth(hostAuth)
+			go func() {
+				defer conn.Close()
+				var hostAuth kr.HostAuth
+				err = json.NewDecoder(conn).Decode(&hostAuth)
+				if err != nil {
+					log.Error("hostAuth decode error: ", err.Error())
+					return
+				}
+				krAgent.onHostAuth(hostAuth)
+			}()
 		}
 	}()
 
