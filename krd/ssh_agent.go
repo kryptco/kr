@@ -132,7 +132,9 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		Digest:               digest,
 		HostAuth:             hostAuth,
 	}
-	signResponse, err := a.client.RequestSignature(signRequest)
+	signResponse, err := a.client.RequestSignature(signRequest, func() {
+		a.notify(notifyPrefix + kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
+	})
 	if err != nil {
 		a.log.Error(err.Error())
 		switch err {

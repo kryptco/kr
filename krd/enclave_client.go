@@ -64,7 +64,7 @@ type EnclaveClientI interface {
 	Stop() (err error)
 	RequestMe(isPairing bool) (*kr.MeResponse, error)
 	GetCachedMe() *kr.Profile
-	RequestSignature(kr.SignRequest) (*kr.SignResponse, error)
+	RequestSignature(kr.SignRequest, func()) (*kr.SignResponse, error)
 	RequestNoOp() error
 }
 
@@ -314,7 +314,7 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 	if isPairing {
 		timeout = client.Timeouts.Pair.Fail
 	}
-	callback, err := client.tryRequest(meRequest, timeout, client.Timeouts.Me.Alert, "Incoming kr me request. Open Kryptonite to continue.")
+	callback, err := client.tryRequest(meRequest, timeout, client.Timeouts.Me.Alert, "Incoming kr me request. Open Kryptonite to continue.", nil)
 	if err != nil {
 		client.log.Error(err)
 		return
@@ -335,7 +335,7 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 	return
 }
 
-func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signResponse *kr.SignResponse, err error) {
+func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest, onACK func()) (signResponse *kr.SignResponse, err error) {
 	start := time.Now()
 	request, err := kr.NewRequest()
 	if err != nil {
@@ -348,7 +348,7 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest) (signR
 	if ps != nil {
 		alertText = "Request from " + ps.DisplayName()
 	}
-	callback, err := client.tryRequest(request, client.Timeouts.Sign.Fail, client.Timeouts.Sign.Alert, alertText)
+	callback, err := client.tryRequest(request, client.Timeouts.Sign.Fail, client.Timeouts.Sign.Alert, alertText, onACK)
 	if err != nil {
 		if err == ErrTimeout {
 			client.postEvent("signature", "timeout", nil, nil)
@@ -395,7 +395,7 @@ type callbackT struct {
 	medium   string
 }
 
-func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string) (callback *callbackT, err error) {
+func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duration, alertTimeout time.Duration, alertText string, onACK func()) (callback *callbackT, err error) {
 	if timeout == alertTimeout {
 		client.log.Warning("timeout == alertTimeout, alert may not fire")
 	}
@@ -419,6 +419,9 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 			select {
 			case callback = <-cb:
 				if callback != nil && callback.response.AckResponse != nil {
+					if onACK != nil {
+						onACK()
+					}
 					ack = true
 					client.log.Notice("request", callback.response.RequestID, "ACKed")
 					timeoutChan = time.After(client.Timeouts.ACKDelay)
