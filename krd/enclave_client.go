@@ -422,6 +422,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 					if onACK != nil {
 						onACK()
 					}
+					onACK = nil
 					ack = true
 					client.log.Notice("request", callback.response.RequestID, "ACKed")
 					timeoutChan = time.After(client.Timeouts.ACKDelay)
