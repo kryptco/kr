@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"sync"
+	"time"
 )
 
 const NOTIFY_LOG_FILE_NAME = "krd-notify.log"
@@ -35,6 +36,8 @@ func (n Notifier) Notify(body []byte) (err error) {
 		return
 	}
 	err = n.Sync()
+	//	FIXME: workaround to ensure success logged to stderr before signature returned to SSH
+	<-time.After(50 * time.Millisecond)
 	return
 }
 
