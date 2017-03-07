@@ -1,9 +1,9 @@
 all:
 	-mkdir -p bin
 	cd kr; go build -o ../bin/kr
-	cd krd; go build -o ../bin/krd
+	cd krd/main; go build -o ../../bin/krd
 	cd pkcs11shim; make; cp target/release/kr-pkcs11.so ../bin/
-	cd krssh/main; go build -o ../bin/krssh
+	cd krssh; go build -o ../bin/krssh
 
 
 check:
