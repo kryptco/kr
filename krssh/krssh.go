@@ -171,8 +171,10 @@ func main() {
 			packetNum := 0
 			for {
 				n, err := remoteConn.Read(buf)
-				if err != nil && err != io.EOF {
-					log.Println("remote write err:", err.Error())
+				if err != nil {
+					if err != io.EOF {
+						log.Println("remote write err:", err.Error())
+					}
 					return
 				}
 				if n > 0 {
@@ -227,21 +229,18 @@ func main() {
 
 	stopSignal := make(chan os.Signal, 1)
 	signal.Notify(stopSignal, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
-	var localDone, remoteDone bool
 	for {
 		select {
 		case <-stopSignal:
 			return
 		case <-localDoneChan:
-			localDone = true
-			if remoteDone {
-				return
-			}
+			os.Stdout.Sync()
+			<-time.After(500 * time.Millisecond)
+			return
 		case <-remoteDoneChan:
-			remoteDone = true
-			if localDone {
-				return
-			}
+			os.Stdout.Sync()
+			<-time.After(500 * time.Millisecond)
+			return
 		}
 	}
 }
