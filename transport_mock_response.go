@@ -62,7 +62,7 @@ func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte, ackSen
 			if !bytes.Equal(request.SignRequest.PublicKeyFingerprint, fp[:]) {
 				t.Fatal("wrong public key")
 			}
-			sig, err := sk.Sign(rand.Reader, request.SignRequest.Digest, crypto.SHA256)
+			sig, err := sk.Sign(rand.Reader, request.SignRequest.Data, crypto.SHA256)
 			if err != nil {
 				t.T.Fatal(err)
 			}

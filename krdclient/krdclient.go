@@ -92,7 +92,7 @@ func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byt
 	}
 	signRequest.SignRequest = &kr.SignRequest{
 		PublicKeyFingerprint: pkFingerprint,
-		Digest:               data,
+		Data:                 data,
 		Command:              currentCommand(),
 	}
 

@@ -109,7 +109,6 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		a.log.Warning("no hostname found for session " + base64.StdEncoding.EncodeToString(session))
 	}
 
-	var digest []byte
 	switch key.Type() {
 	case ssh.KeyAlgoRSA, ssh.KeyAlgoED25519:
 		var dataWithoutPubkey []byte
@@ -119,7 +118,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 			a.log.Error(err.Error())
 			return
 		}
-		digest = dataWithoutPubkey
+		data = dataWithoutPubkey
 	default:
 		err = errors.New("unsupported key type: " + key.Type())
 		a.log.Error(err.Error())
@@ -130,7 +129,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
-		Digest:               digest,
+		Data:                 data,
 		HostAuth:             hostAuth,
 	}
 	signResponse, err := a.client.RequestSignature(signRequest, func() {
