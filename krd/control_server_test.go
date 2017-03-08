@@ -158,10 +158,10 @@ func TestControlServerSign(t *testing.T) {
 	}
 
 	me, _, _ := kr.TestMe(t)
-	digest, err := kr.RandNBytes(32)
+	data, err := kr.RandNBytes(32)
 	request.SignRequest = &kr.SignRequest{
 		PublicKeyFingerprint: me.PublicKeyFingerprint(),
-		Digest:               digest,
+		Data:                 data,
 	}
 
 	signRequest, err := request.HTTPRequest()
