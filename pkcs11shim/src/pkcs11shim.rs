@@ -36,6 +36,10 @@ pub extern "C" fn CK_C_GetFunctionList(function_list: *mut *mut _CK_FUNCTION_LIS
     C_GetFunctionList(function_list)
 }
 
+/// Symlink original $SSH_AUTH_SOCK to ~/.kr/original-agent.sock
+/// Set $SSH_AUTH_SOCK to krd ssh-agent socket
+/// Temporarily redirect STDERR to /dev/null to prevent "no keys" error message on older OpenSSH
+/// clients
 #[allow(unused_must_use)]
 extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     notice!("CK_C_Initialize");
