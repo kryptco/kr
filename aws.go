@@ -78,7 +78,6 @@ func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err
 				"alert":             "",
 				"sound":             "",
 				"content-available": 1,
-				"mutable-content":   1,
 				"queue":             sqsQueueName,
 				"c":                 requestCiphertext,
 			},
