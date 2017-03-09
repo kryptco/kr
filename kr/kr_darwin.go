@@ -25,6 +25,22 @@ func openBrowser(url string) {
 	exec.Command("open", url).Run()
 }
 
+var oldSSHConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so"
+var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null || which nc\\` \\%%h \\%%p"
+
+func cleanSSHConfigString(sshConfig string) string {
+	return fmt.Sprintf("s/\\s*%s//g", sshConfig)
+}
+
+func cleanSSHConfigCommand(sshConfig string) []string {
+	return []string{"perl", "-0777", "-pi", "-e", cleanSSHConfigString(sshConfig), os.Getenv("HOME") + "/.ssh/config"}
+}
+
+func cleanSSHConfig(sshConfig string) {
+	command := cleanSSHConfigCommand(sshConfig)
+	exec.Command(command[0], command[1:]...).Run()
+}
+
 func uninstallCommand(c *cli.Context) (err error) {
 	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation?")
 	exec.Command("brew", "uninstall", "kr").Run()
@@ -35,7 +51,8 @@ func uninstallCommand(c *cli.Context) (err error) {
 	os.Remove("/usr/local/share/kr")
 	exec.Command("launchctl", "unload", plist).Run()
 	os.Remove(plist)
-	exec.Command(cleanSSHConfigCommand[0], cleanSSHConfigCommand[1:]...).Run()
+	cleanSSHConfig(sshConfigString)
+	cleanSSHConfig(oldSSHConfigString)
 	PrintErr(os.Stderr, "Kryptonite uninstalled.")
 	return
 }

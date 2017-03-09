@@ -25,10 +25,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tIdentityAgent ~\\/.kr\\/krd-agent.sock\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so"
-var cleanSSHConfigString = fmt.Sprintf("s/\\s*%s//g", sshConfigString)
-var cleanSSHConfigCommand = []string{"perl", "-0777", "-pi", "-e", cleanSSHConfigString, os.Getenv("HOME") + "/.ssh/config"}
-
 func PrintFatal(stderr io.ReadWriter, msg string, args ...interface{}) {
 	if len(args) == 0 {
 		PrintErr(stderr, msg)
