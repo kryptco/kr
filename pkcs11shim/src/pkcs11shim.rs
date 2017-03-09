@@ -36,8 +36,28 @@ pub extern "C" fn CK_C_GetFunctionList(function_list: *mut *mut _CK_FUNCTION_LIS
     C_GetFunctionList(function_list)
 }
 
+#[allow(unused_must_use)]
 extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     notice!("CK_C_Initialize");
+
+    if let Ok(original_auth_sock) = env::var("SSH_AUTH_SOCK") {
+        notice!("found backup auth_sock {}", original_auth_sock);
+        if let Some(mut backup_agent) = env::home_dir() {
+            use std::os::unix::fs::symlink;
+            use std::fs;
+
+            backup_agent.push(".kr/original-agent.sock");
+            fs::remove_file(backup_agent.clone());
+            match symlink(original_auth_sock, backup_agent) {
+            Err(e) => {
+                error!("error linking backup agent: {:?}", e);
+            },
+            _ => {},
+            };
+        }
+    } else {
+        notice!("backup auth_sock");
+    }
 
     if let Some(mut home_dir) = env::home_dir() {
         home_dir.push(".kr/krd-agent.sock");
