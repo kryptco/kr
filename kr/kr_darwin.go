@@ -26,10 +26,10 @@ func openBrowser(url string) {
 }
 
 var oldSSHConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so"
-var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null || which nc\\` \\%%h \\%%p\\n\\tIdentityFile kryptonite"
+var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null \\|\\| which nc\\` \\%h \\%p\\n\\tIdentityFile kryptonite"
 
 func cleanSSHConfigString(sshConfig string) string {
-	return fmt.Sprintf("s/\\s*%s//g", sshConfig)
+	return "s/\\s*" + sshConfig + "//g"
 }
 
 func cleanSSHConfigCommand(sshConfig string) []string {
@@ -46,6 +46,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	exec.Command("brew", "uninstall", "kr").Run()
 	exec.Command("npm", "uninstall", "-g", "krd").Run()
 	os.Remove("/usr/local/bin/kr")
+	os.Remove("/usr/local/bin/krssh")
 	os.Remove("/usr/local/bin/krd")
 	os.Remove("/usr/local/lib/kr-pkcs11.so")
 	os.Remove("/usr/local/share/kr")
