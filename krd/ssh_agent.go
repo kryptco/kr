@@ -39,11 +39,22 @@ type sessionIDSig struct {
 
 type hostAuthCallback chan *kr.HostAuth
 
+func getOriginalAgent() (originalAgent agent.Agent, err error) {
+	originalAgentSock, err := kr.KrDirFile("original-agent.sock")
+	if err != nil {
+		return
+	}
+	conn, err := net.Dial("unix", originalAgentSock)
+	if err != nil {
+		return
+	}
+	return agent.NewClient(conn), nil
+}
+
 type Agent struct {
 	mutex    sync.Mutex
 	client   EnclaveClientI
 	notifier kr.Notifier
-	fallback agent.Agent
 
 	recentSessionIDSignatures    []sessionIDSig
 	hostAuthCallbacksBySessionID *lru.Cache
@@ -72,10 +83,17 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	} else {
 		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
 	}
-	fallbackKeys, err := a.fallback.List()
-	if err == nil {
-		keys = append(keys, fallbackKeys...)
+
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		a.log.Error("error connecting to fallbackAgent: " + err.Error())
+	} else {
+		fallbackKeys, err := fallbackAgent.List()
+		if err == nil {
+			keys = append(keys, fallbackKeys...)
+		}
 	}
+
 	return
 }
 
@@ -84,11 +102,16 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
 	keyFingerprint := sha256.Sum256(key.Marshal())
 
-	keyringKeys, err := a.fallback.List()
-	if err == nil {
-		for _, keyringKey := range keyringKeys {
-			if bytes.Equal(keyringKey.Marshal(), key.Marshal()) {
-				return a.fallback.Sign(key, data)
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		a.log.Error("error connecting to fallbackAgent: " + err.Error())
+	} else {
+		fallbackKeys, err := fallbackAgent.List()
+		if err == nil {
+			for _, fallbackKey := range fallbackKeys {
+				if bytes.Equal(fallbackKey.Marshal(), key.Marshal()) {
+					return fallbackAgent.Sign(key, data)
+				}
 			}
 		}
 	}
@@ -190,32 +213,80 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 // Add adds a private key to the agent.
 func (a *Agent) Add(key agent.AddedKey) (err error) {
-	return a.fallback.Add(key)
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
+		a.log.Error(err.Error())
+		return
+	} else {
+		return fallbackAgent.Add(key)
+	}
+	return
 }
 
 // Remove removes all identities with the given public key.
 func (a *Agent) Remove(key ssh.PublicKey) (err error) {
-	return a.fallback.Remove(key)
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
+		a.log.Error(err.Error())
+		return
+	} else {
+		return fallbackAgent.Remove(key)
+	}
+	return
 }
 
 // RemoveAll removes all identities.
 func (a *Agent) RemoveAll() (err error) {
-	return a.fallback.RemoveAll()
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
+		a.log.Error(err.Error())
+		return
+	} else {
+		return fallbackAgent.RemoveAll()
+	}
+	return
 }
 
 // Lock locks the agent. Sign and Remove will fail, and List will empty an empty list.
 func (a *Agent) Lock(passphrase []byte) (err error) {
-	return a.fallback.Lock(passphrase)
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
+		a.log.Error(err.Error())
+		return
+	} else {
+		return fallbackAgent.Lock(passphrase)
+	}
+	return
 }
 
 // Unlock undoes the effect of Lock
 func (a *Agent) Unlock(passphrase []byte) (err error) {
-	return a.fallback.Unlock(passphrase)
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
+		a.log.Error(err.Error())
+		return
+	} else {
+		return fallbackAgent.Unlock(passphrase)
+	}
+	return
 }
 
 // Signers returns signers for all the known keys.
 func (a *Agent) Signers() (signers []ssh.Signer, err error) {
-	return a.fallback.Signers()
+	fallbackAgent, err := getOriginalAgent()
+	if err != nil {
+		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
+		a.log.Error(err.Error())
+		return
+	} else {
+		return fallbackAgent.Signers()
+	}
+	return
 }
 
 func (a *Agent) notify(body string) {
@@ -325,7 +396,6 @@ func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net
 		sync.Mutex{},
 		enclaveClient,
 		n,
-		agent.NewKeyring(),
 		[]sessionIDSig{},
 		hostAuthCallbacksBySessionID,
 		log,
