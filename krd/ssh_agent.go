@@ -76,9 +76,10 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 		}
 		keys = append(keys,
 			&agent.Key{
-				Format:  pk.Type(),
-				Blob:    pk.Marshal(),
-				Comment: cachedProfile.Email,
+				Format: pk.Type(),
+				Blob:   pk.Marshal(),
+				//	hard-code to kryptonite to match ssh_config IdentityFile line so it is prioritized first
+				Comment: "kryptonite",
 			})
 	} else {
 		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
@@ -87,6 +88,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 	fallbackAgent, err := getOriginalAgent()
 	if err != nil {
 		a.log.Error("error connecting to fallbackAgent: " + err.Error())
+		err = nil
 	} else {
 		fallbackKeys, err := fallbackAgent.List()
 		if err == nil {
@@ -105,6 +107,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	fallbackAgent, err := getOriginalAgent()
 	if err != nil {
 		a.log.Error("error connecting to fallbackAgent: " + err.Error())
+		err = nil
 	} else {
 		fallbackKeys, err := fallbackAgent.List()
 		if err == nil {
