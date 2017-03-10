@@ -26,7 +26,7 @@ func openBrowser(url string) {
 }
 
 var oldSSHConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so"
-var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null || which nc\\` \\%%h \\%%p"
+var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null || which nc\\` \\%%h \\%%p\\n\\tIdentityFile kryptonite"
 
 func cleanSSHConfigString(sshConfig string) string {
 	return fmt.Sprintf("s/\\s*%s//g", sshConfig)
