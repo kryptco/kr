@@ -76,10 +76,9 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 		}
 		keys = append(keys,
 			&agent.Key{
-				Format: pk.Type(),
-				Blob:   pk.Marshal(),
-				//	hard-code to kryptonite to match ssh_config IdentityFile line so it is prioritized first
-				Comment: "kryptonite",
+				Format:  pk.Type(),
+				Blob:    pk.Marshal(),
+				Comment: cachedProfile.Email,
 			})
 	} else {
 		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
