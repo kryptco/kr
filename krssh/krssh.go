@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"math/big"
 	"net"
 	"os"
 	"os/signal"
@@ -22,6 +21,11 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+func fatal(msg string) {
+	os.Stderr.WriteString(msg + "\r\n")
+	os.Exit(1)
+}
+
 func useSyslog() bool {
 	env := os.Getenv("KR_LOG_SYSLOG")
 	if env != "" {
@@ -33,12 +37,6 @@ func useSyslog() bool {
 var logger *logging.Logger = kr.SetupLogging("krssh", logging.INFO, useSyslog())
 
 //	from https://github.com/golang/crypto/blob/master/ssh/messages.go#L98-L102
-type kexDHReplyMsg struct {
-	HostKey   []byte `sshtype:"31"`
-	Y         *big.Int
-	Signature []byte
-}
-
 type kexECDHReplyMsg struct {
 	HostKey         []byte `sshtype:"31"`
 	EphemeralPubKey []byte
@@ -48,7 +46,7 @@ type kexECDHReplyMsg struct {
 func sendHostAuth(hostAuth kr.HostAuth) {
 	conn, err := kr.HostAuthDial()
 	if err != nil {
-		log.Println(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\"."))
+		os.Stderr.WriteString(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".\r\n"))
 		return
 	}
 	defer conn.Close()
@@ -56,21 +54,7 @@ func sendHostAuth(hostAuth kr.HostAuth) {
 }
 
 func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error) {
-	kexDHReplyTemplate := kexDHReplyMsg{}
 	kexECDHReplyTemplate := kexECDHReplyMsg{}
-	err = ssh.Unmarshal(buf, &kexDHReplyTemplate)
-	if err == nil {
-		hostAuth := kr.HostAuth{
-			HostKey:   kexDHReplyTemplate.HostKey,
-			Signature: kexDHReplyTemplate.Signature,
-			HostNames: []string{hostname},
-		}
-		select {
-		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]":
-		default:
-		}
-		sendHostAuth(hostAuth)
-	}
 	err = ssh.Unmarshal(buf, &kexECDHReplyTemplate)
 	if err == nil {
 		hostAuth := kr.HostAuth{
@@ -94,7 +78,7 @@ func parseSSHPacket(b []byte) (packet []byte) {
 	packetLen := binary.BigEndian.Uint32(b[:4])
 	paddingLen := b[4]
 	payloadLen := packetLen - uint32(paddingLen) - 1
-	if len(b) <= int(5+payloadLen) {
+	if payloadLen > (1<<18) || payloadLen < 1 || len(b) <= int(5+payloadLen) {
 		return
 	}
 	packet = make([]byte, payloadLen)
@@ -147,7 +131,7 @@ func startLogger(prefix chan string) {
 func main() {
 	log.SetFlags(0)
 	if len(os.Args) < 2 {
-		log.Fatal("not enough arguments")
+		fatal("not enough arguments")
 	}
 	var host, port string
 	host = os.Args[1]
@@ -162,7 +146,7 @@ func main() {
 
 	remoteConn, err := net.Dial("tcp", host+":"+port)
 	if err != nil {
-		log.Fatal(kr.Red("could not connect to remote: " + err.Error()))
+		fatal(kr.Red("could not connect to remote: " + err.Error()))
 	}
 
 	remoteDoneChan := make(chan bool)
@@ -174,9 +158,6 @@ func main() {
 			for {
 				n, err := remoteConn.Read(buf)
 				if err != nil {
-					if err != io.EOF {
-						log.Println("remote write err:", err.Error())
-					}
 					return
 				}
 				if n > 0 {
@@ -186,12 +167,8 @@ func main() {
 						tryParse(host, notifyPrefix, sshPacket)
 					}
 					byteBuf := bytes.NewBuffer(buf[:n])
-					wroteN, err := byteBuf.WriteTo(os.Stdout)
-					if wroteN != int64(n) {
-						log.Println("not all bytes written to stdout")
-					}
+					_, err := byteBuf.WriteTo(os.Stdout)
 					if err != nil {
-						log.Println("err writing remote to stdout", err.Error())
 						return
 					}
 				}
@@ -208,19 +185,12 @@ func main() {
 			for {
 				n, err := os.Stdin.Read(buf)
 				if err != nil {
-					if err != io.EOF {
-						log.Println("stdin read err:", err.Error())
-					}
 					return
 				}
 				if n > 0 {
 					byteBuf := bytes.NewBuffer(buf[:n])
-					wroteN, err := byteBuf.WriteTo(remoteConn)
-					if wroteN != int64(n) {
-						log.Println("not all bytes written to remote")
-					}
+					_, err := byteBuf.WriteTo(remoteConn)
 					if err != nil {
-						log.Println("err writing stdin to remote", err.Error())
 						return
 					}
 				}
