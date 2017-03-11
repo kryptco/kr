@@ -7,11 +7,6 @@ use std::env;
 use std::fs::OpenOptions;
 use std::os::unix::io::AsRawFd;
 
-extern crate syslog;
-extern crate hyper;
-extern crate rand;
-extern crate base64;
-extern crate libloading as dlib;
 extern crate libc;
 
 use pkcs11_unused::*;
