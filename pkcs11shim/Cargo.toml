@@ -4,12 +4,8 @@ name = "pkcs11shim"
 version = "0.1.0"
 
 [dependencies]
-base64 = "*"
-hyper = "*"
 lazy_static = "*"
 libc = "*"
-libloading = "*"
-rand = "*"
 syslog = "*"
 
 [lib]
