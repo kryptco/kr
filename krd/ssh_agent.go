@@ -51,6 +51,23 @@ func getOriginalAgent() (originalAgent agent.Agent, err error) {
 	return agent.NewClient(conn), nil
 }
 
+func (a *Agent) withOriginalAgent(do func(agent.Agent)) error {
+	originalAgentSock, err := kr.KrDirFile("original-agent.sock")
+	if err != nil {
+		a.log.Error("error connecting to fallbackAgent: " + err.Error())
+		return err
+	}
+	conn, err := net.Dial("unix", originalAgentSock)
+	if err != nil {
+		a.log.Error("error connecting to fallbackAgent: " + err.Error())
+		return err
+	}
+	defer conn.Close()
+	originalAgent := agent.NewClient(conn)
+	do(originalAgent)
+	return nil
+}
+
 type Agent struct {
 	mutex    sync.Mutex
 	client   EnclaveClientI
@@ -84,16 +101,12 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
 	}
 
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		a.log.Error("error connecting to fallbackAgent: " + err.Error())
-		err = nil
-	} else {
+	a.withOriginalAgent(func(fallbackAgent agent.Agent) {
 		fallbackKeys, err := fallbackAgent.List()
 		if err == nil {
 			keys = append(keys, fallbackKeys...)
 		}
-	}
+	})
 
 	return
 }
@@ -103,19 +116,19 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
 	keyFingerprint := sha256.Sum256(key.Marshal())
 
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		a.log.Error("error connecting to fallbackAgent: " + err.Error())
-		err = nil
-	} else {
-		fallbackKeys, err := fallbackAgent.List()
-		if err == nil {
+	a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+		fallbackKeys, fallbackErr := fallbackAgent.List()
+		if fallbackErr == nil {
 			for _, fallbackKey := range fallbackKeys {
 				if bytes.Equal(fallbackKey.Marshal(), key.Marshal()) {
-					return fallbackAgent.Sign(key, data)
+					sshSignature, err = fallbackAgent.Sign(key, data)
+					return
 				}
 			}
 		}
+	})
+	if sshSignature != nil {
+		return
 	}
 
 	session, err := parseSessionFromSignaturePayload(data)
@@ -215,78 +228,66 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 // Add adds a private key to the agent.
 func (a *Agent) Add(key agent.AddedKey) (err error) {
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
-		a.log.Error(err.Error())
-		return
-	} else {
-		return fallbackAgent.Add(key)
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+		err = fallbackAgent.Add(key)
+	})
+	if connErr != nil {
+		err = connErr
 	}
 	return
 }
 
 // Remove removes all identities with the given public key.
 func (a *Agent) Remove(key ssh.PublicKey) (err error) {
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
-		a.log.Error(err.Error())
-		return
-	} else {
-		return fallbackAgent.Remove(key)
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+		err = fallbackAgent.Remove(key)
+	})
+	if connErr != nil {
+		err = connErr
 	}
 	return
 }
 
 // RemoveAll removes all identities.
 func (a *Agent) RemoveAll() (err error) {
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
-		a.log.Error(err.Error())
-		return
-	} else {
-		return fallbackAgent.RemoveAll()
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+		err = fallbackAgent.RemoveAll()
+	})
+	if connErr != nil {
+		err = connErr
 	}
 	return
 }
 
 // Lock locks the agent. Sign and Remove will fail, and List will empty an empty list.
 func (a *Agent) Lock(passphrase []byte) (err error) {
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
-		a.log.Error(err.Error())
-		return
-	} else {
-		return fallbackAgent.Lock(passphrase)
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+		err = fallbackAgent.Lock(passphrase)
+	})
+	if connErr != nil {
+		err = connErr
 	}
 	return
 }
 
 // Unlock undoes the effect of Lock
 func (a *Agent) Unlock(passphrase []byte) (err error) {
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
-		a.log.Error(err.Error())
-		return
-	} else {
-		return fallbackAgent.Unlock(passphrase)
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+		err = fallbackAgent.Unlock(passphrase)
+	})
+	if connErr != nil {
+		err = connErr
 	}
 	return
 }
 
 // Signers returns signers for all the known keys.
 func (a *Agent) Signers() (signers []ssh.Signer, err error) {
-	fallbackAgent, err := getOriginalAgent()
-	if err != nil {
-		err = fmt.Errorf("error connecting to fallbackAgent: " + err.Error())
-		a.log.Error(err.Error())
-		return
-	} else {
-		return fallbackAgent.Signers()
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+		signers, err = fallbackAgent.Signers()
+	})
+	if connErr != nil {
+		err = connErr
 	}
 	return
 }
