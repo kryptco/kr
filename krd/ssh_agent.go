@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"sync"
 	"time"
 
@@ -79,7 +80,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 				Format: pk.Type(),
 				Blob:   pk.Marshal(),
 				//	hard-code to kryptonite to match ssh_config IdentityFile line so it is prioritized first
-				Comment: "kryptonite",
+				Comment: os.Getenv("HOME") + "/.ssh/id_kryptonite",
 			})
 	} else {
 		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
