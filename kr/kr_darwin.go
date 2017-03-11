@@ -26,18 +26,18 @@ func openBrowser(url string) {
 }
 
 var oldSSHConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so"
-var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null \\|\\| which nc\\` \\%h \\%p\\n\\tIdentityFile kryptonite\\n\\tIdentityFile ~\\/.ssh\\/id_ed25519\\n\\tIdentityFile ~\\/.ssh\\/id_rsa\\n\\tIdentityFile ~\\/.ssh\\/id_ecdsa\\n\\tIdentityFile ~\\/.ssh\\/id_dsa"
+var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null \\|\\| which nc\\` \\%h \\%p\\n\\tIdentityFile ~\\/.ssh\\/id_kryptonite\\n\\tIdentityFile ~\\/.ssh\\/id_ed25519\\n\\tIdentityFile ~\\/.ssh\\/id_rsa\\n\\tIdentityFile ~\\/.ssh\\/id_ecdsa\\n\\tIdentityFile ~\\/.ssh\\/id_dsa"
 
 func cleanSSHConfigString(sshConfig string) string {
 	return "s/\\s*" + sshConfig + "//g"
 }
 
-func cleanSSHConfigCommand(sshConfig string) []string {
-	return []string{"perl", "-0777", "-pi", "-e", cleanSSHConfigString(sshConfig), os.Getenv("HOME") + "/.ssh/config"}
+func cleanSSHConfigCommand(sshConfig string, backupExtension string) []string {
+	return []string{"perl", "-0777", "-p", "-i" + backupExtension, "-e", cleanSSHConfigString(sshConfig), os.Getenv("HOME") + "/.ssh/config"}
 }
 
-func cleanSSHConfig(sshConfig string) {
-	command := cleanSSHConfigCommand(sshConfig)
+func cleanSSHConfig(sshConfig string, backupExtension string) {
+	command := cleanSSHConfigCommand(sshConfig, backupExtension)
 	exec.Command(command[0], command[1:]...).Run()
 }
 
@@ -52,8 +52,8 @@ func uninstallCommand(c *cli.Context) (err error) {
 	os.Remove("/usr/local/share/kr")
 	exec.Command("launchctl", "unload", plist).Run()
 	os.Remove(plist)
-	cleanSSHConfig(sshConfigString)
-	cleanSSHConfig(oldSSHConfigString)
+	cleanSSHConfig(sshConfigString, ".bak3")
+	cleanSSHConfig(oldSSHConfigString, ".bak4")
 	PrintErr(os.Stderr, "Kryptonite uninstalled.")
 	return
 }
