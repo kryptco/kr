@@ -80,7 +80,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 				Format: pk.Type(),
 				Blob:   pk.Marshal(),
 				//	hard-code to kryptonite to match ssh_config IdentityFile line so it is prioritized first
-				Comment: os.Getenv("HOME") + "/.ssh/id_kryptonite",
+				Comment: "kryptonite",
 			})
 	} else {
 		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
