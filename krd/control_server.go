@@ -15,7 +15,7 @@ type ControlServer struct {
 	log           *logging.Logger
 }
 
-func NewControlServer(log *logging.Logger) (cs *ControlServer, err error) {
+func NewControlServer(log *logging.Logger, notifier *kr.Notifier) (cs *ControlServer, err error) {
 	krdir, err := kr.KrDir()
 	if err != nil {
 		return
@@ -28,6 +28,7 @@ func NewControlServer(log *logging.Logger) (cs *ControlServer, err error) {
 		},
 		nil,
 		log,
+		notifier,
 	),
 		log,
 	}
