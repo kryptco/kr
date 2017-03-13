@@ -99,6 +99,7 @@ func startLogger(prefix chan string) {
 			}
 		}()
 
+		printedNotifications := map[string]bool{}
 		for {
 			notification, err := r.Read()
 			select {
@@ -108,6 +109,9 @@ func startLogger(prefix chan string) {
 			switch err {
 			case nil:
 				notificationStr := string(notification)
+				if _, ok := printedNotifications[notificationStr]; ok {
+					continue
+				}
 				if strings.HasPrefix(notificationStr, "[") {
 					if loggingPrefix != "" && strings.HasPrefix(notificationStr, loggingPrefix) {
 						trimmed := strings.TrimPrefix(notificationStr, loggingPrefix)
@@ -117,8 +121,9 @@ func startLogger(prefix chan string) {
 						os.Stderr.WriteString(trimmed)
 					}
 				} else {
-					os.Stderr.Write(notification)
+					os.Stderr.WriteString(notificationStr)
 				}
+				printedNotifications[notificationStr] = true
 			case io.EOF:
 				<-time.After(50 * time.Millisecond)
 			default:
