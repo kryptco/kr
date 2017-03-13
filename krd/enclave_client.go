@@ -81,6 +81,7 @@ type EnclaveClient struct {
 	cachedMe                    *kr.Profile
 	bt                          BluetoothDriverI
 	log                         *logging.Logger
+	notifier                    *kr.Notifier
 }
 
 func (ec *EnclaveClient) Pair() (pairingSecret *kr.PairingSecret, err error) {
@@ -284,7 +285,7 @@ func (ec *EnclaveClient) postEvent(category string, action string, label *string
 	}
 }
 
-func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeoutsOverride *Timeouts, log *logging.Logger) EnclaveClientI {
+func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeoutsOverride *Timeouts, log *logging.Logger, notifier *kr.Notifier) EnclaveClientI {
 	var timeouts = DefaultTimeouts()
 	if timeoutsOverride != nil {
 		timeouts = *timeoutsOverride
@@ -296,6 +297,7 @@ func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeo
 		requestCallbacksByRequestID: lru.New(128),
 		ackedRequestIDs:             lru.New(128),
 		log:                         log,
+		notifier:                    notifier,
 	}
 }
 
@@ -540,6 +542,9 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 	}
 	unwrappedCiphertext, didUnwrapKey, err := pairingSecret.UnwrapKeyIfPresent(ciphertext)
 	if err != nil {
+		if err == kr.ErrWrappedKeyUnsupported && client.notifier != nil {
+			client.notifier.Notify(append([]byte(kr.Red("You are running an old version of the Kryponite app. Please upgrade Kryponite on your mobile phone before pairing.")), '\r', '\n'))
+		}
 		err = &ProtoError{err}
 		return
 	}

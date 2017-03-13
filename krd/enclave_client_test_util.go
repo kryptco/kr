@@ -17,6 +17,7 @@ func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {
 		&kr.MemoryPersister{},
 		nil,
 		kr.SetupLogging("test", logging.INFO, false),
+		nil,
 	)
 }
 
@@ -42,6 +43,7 @@ func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
 		&kr.MemoryPersister{},
 		&shortTimeouts,
 		kr.SetupLogging("test", logging.INFO, false),
+		nil,
 	)
 	return ec
 }

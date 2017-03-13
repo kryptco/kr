@@ -13,6 +13,7 @@ import (
 )
 
 var ErrWaitingForKey = fmt.Errorf("Pairing in progress, waiting for symmetric key")
+var ErrWrappedKeyUnsupported = fmt.Errorf("WRAPPED_KEY unsupported")
 
 //	TODO: Indicate whether bluetooth support enabled
 type PairingSecret struct {
@@ -93,7 +94,7 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		remainingCiphertext = &ctxt
 		return
 	case HEADER_WRAPPED_KEY:
-		err = fmt.Errorf("WRAPPED_KEY unsupported")
+		err = ErrWrappedKeyUnsupported
 		return
 	case HEADER_WRAPPED_PUBLIC_KEY:
 		if ps.EnclavePublicKey != nil {

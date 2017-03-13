@@ -56,7 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	controlServer, err := krd.NewControlServer(log)
+	controlServer, err := krd.NewControlServer(log, &notifier)
 	if err != nil {
 		log.Fatal(err)
 	}
