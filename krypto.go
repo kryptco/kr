@@ -67,8 +67,8 @@ func sodiumBoxOpen(nonceAndCiphertext, pk, sk []byte) (m []byte, err error) {
 
 func sodiumBoxSealOpen(c, pk, sk []byte) (m []byte, err error) {
 	//	protect against bindings panicking
-	if len(c) == 0 || len(pk) == 0 || len(sk) == 0 {
-		err = fmt.Errorf("empty argument passed to sodium")
+	if len(c) < cryptobox.CryptoBoxSealBytes() || len(pk) == 0 || len(sk) == 0 {
+		err = fmt.Errorf("invalid argument passed to sodium")
 		return
 	}
 	m, ret := cryptobox.CryptoBoxSealOpen(c, pk, sk)

@@ -407,12 +407,12 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 		err = ErrNotPaired
 		return
 	}
-	go func() {
+	go kr.RecoverToLog(func() {
 		err := client.sendRequestAndReceiveResponses(pairingSecret, request, cb, timeout)
 		if err != nil {
 			client.log.Error("error sendRequestAndReceiveResponses: ", err.Error())
 		}
-	}()
+	}, client.log)
 	timeoutChan := time.After(timeout)
 	sendAlertChan := time.After(alertTimeout)
 	func() {
