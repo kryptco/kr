@@ -1,0 +1,19 @@
+[package]
+
+name = "syslog"
+version = "3.2.0"
+authors = [ "contact@geoffroycouprie.com" ]
+description = "Send log messages to syslog"
+license = "MIT"
+repository = "https://github.com/Geal/rust-syslog"
+documentation = "http://rust.unhandledexpression.com/syslog/"
+keywords = ["syslog", "logs", "logging"]
+
+[dependencies]
+unix_socket = "~0.5"
+libc        = "~0.2"
+time        = "~0.1"
+log         = "~0.3.5"
+
+[features]
+nightly = []
