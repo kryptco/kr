@@ -1,0 +1,17 @@
+[package]
+name = "unix_socket"
+version = "0.5.0"
+authors = ["Steven Fackler <sfackler@gmail.com>"]
+license = "MIT/Apache-2.0"
+description = "Unix domain socket bindings"
+repository = "https://github.com/rust-lang-nursery/unix-socket"
+documentation = "https://doc.rust-lang.org/unix-socket/doc/v0.5.0/unix_socket"
+readme = "README.md"
+keywords = ["posix", "unix", "socket", "domain"]
+
+[dependencies]
+libc = "0.2.1"
+cfg-if = "0.1"
+
+[dev-dependencies]
+tempdir = "0.3"
