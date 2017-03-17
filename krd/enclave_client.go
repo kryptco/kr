@@ -543,7 +543,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 	unwrappedCiphertext, didUnwrapKey, err := pairingSecret.UnwrapKeyIfPresent(ciphertext)
 	if err != nil {
 		if err == kr.ErrWrappedKeyUnsupported && client.notifier != nil {
-			client.notifier.Notify(append([]byte(kr.Red("You are running an old version of the Kryponite app. Please upgrade Kryponite on your mobile phone before pairing.")), '\r', '\n'))
+			client.notifier.Notify(append([]byte(kr.Red("You are running an old version of the Kryptonite app. Please upgrade Kryptonite on your mobile phone before pairing by visiting get.krypt.co.")), '\r', '\n'))
 		}
 		err = &ProtoError{err}
 		return
