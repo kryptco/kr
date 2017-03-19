@@ -1,0 +1,9 @@
+[Unit]
+Description=Kryptonite daemon
+
+[Service]
+ExecStart=/usr/bin/krd
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
