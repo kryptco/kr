@@ -25,6 +25,7 @@ make
 ```sh
 make install
 make start
+kr pair
 ```
 
 # Security Disclosure Policy
