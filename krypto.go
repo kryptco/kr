@@ -12,7 +12,6 @@ import (
 const (
 	HEADER_CIPHERTEXT = iota
 	HEADER_WRAPPED_KEY
-	//	TODO: verify that encrypting with a sodium public key does not reveal the public key
 	HEADER_WRAPPED_PUBLIC_KEY
 )
 
