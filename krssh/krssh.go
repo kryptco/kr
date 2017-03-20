@@ -38,7 +38,7 @@ var logger *logging.Logger = kr.SetupLogging("krssh", logging.INFO, useSyslog())
 
 //	from https://github.com/golang/crypto/blob/master/ssh/messages.go#L98-L102
 type kexECDHReplyMsg struct {
-	HostKey         []byte `sshtype:"31"`
+	HostKey         []byte `sshtype:"31|33"` //	handle SSH2_MSG_KEX_DH_GEX_REPLY as well
 	EphemeralPubKey []byte
 	Signature       []byte
 }
