@@ -121,9 +121,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	session, err := parseSessionFromSignaturePayload(data)
 	var hostAuth *kr.HostAuth
 	notifyPrefix := ""
-	if err == nil {
-		a.log.Notice("session: " + base64.StdEncoding.EncodeToString(session))
-	} else {
+	if err != nil {
 		a.log.Error("error parsing session from signature payload: " + err.Error())
 	}
 
@@ -131,7 +129,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	if hostAuth != nil {
 		notifyPrefix = "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]"
 	} else {
-		a.log.Warning("no hostname found for session " + base64.StdEncoding.EncodeToString(session))
+		a.log.Warning("no hostname found for session")
 	}
 
 	switch key.Type() {
