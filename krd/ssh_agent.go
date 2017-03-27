@@ -419,6 +419,7 @@ func ServeKRAgent(enclaveClient EnclaveClientI, agentListener net.Listener, host
 		conn, err := agentListener.Accept()
 		if err != nil {
 			log.Error("accept error: ", err.Error())
+			continue
 		}
 		go func() {
 			defer conn.Close()
