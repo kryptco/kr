@@ -54,7 +54,7 @@ func pairCommand(c *cli.Context) (err error) {
 func pairOver(unixFile string, forceUnpair bool, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
 	//	Listen for incompatible enclave notifications
 	go func() {
-		r, err := kr.OpenNotificationReader()
+		r, err := kr.OpenNotificationReader("")
 		if err != nil {
 			os.Stderr.WriteString("error connection to notificationr reader: " + err.Error())
 			return

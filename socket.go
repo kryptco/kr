@@ -38,6 +38,25 @@ func KrDir() (krPath string, err error) {
 	return
 }
 
+func NotifyDir() (krPath string, err error) {
+	home := UnsudoedHomeDir()
+	if err != nil {
+		return
+	}
+	krPath = filepath.Join(home, ".kr", "notify")
+	err = os.MkdirAll(krPath, os.FileMode(0700))
+	return
+}
+
+func NotifyDirFile(file string) (fullPath string, err error) {
+	notifyPath, err := NotifyDir()
+	if err != nil {
+		return
+	}
+	fullPath = filepath.Join(notifyPath, file)
+	return
+}
+
 func KrDirFile(file string) (fullPath string, err error) {
 	krPath, err := KrDir()
 	if err != nil {

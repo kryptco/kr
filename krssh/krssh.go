@@ -88,13 +88,16 @@ func parseSSHPacket(b []byte) (packet []byte) {
 	return
 }
 
-func startLogger(prefix chan string) {
-	r, err := kr.OpenNotificationReader()
+func startLogger(prefix string) (r kr.NotificationReader, err error) {
+	r, err = kr.OpenNotificationReader(prefix)
 	if err != nil {
 		return
 	}
-	var loggingPrefix string
 	go func() {
+		if prefix != "" {
+			defer os.Remove(r.Name())
+		}
+
 		go func() {
 			if krd.CheckIfUpdateAvailable(logger) {
 				os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it.\r\n"))
@@ -104,10 +107,6 @@ func startLogger(prefix chan string) {
 		printedNotifications := map[string]bool{}
 		for {
 			notification, err := r.Read()
-			select {
-			case loggingPrefix = <-prefix:
-			default:
-			}
 			switch err {
 			case nil:
 				notificationStr := string(notification)
@@ -115,8 +114,8 @@ func startLogger(prefix chan string) {
 					continue
 				}
 				if strings.HasPrefix(notificationStr, "[") {
-					if loggingPrefix != "" && strings.HasPrefix(notificationStr, loggingPrefix) {
-						trimmed := strings.TrimPrefix(notificationStr, loggingPrefix)
+					if prefix != "" && strings.HasPrefix(notificationStr, prefix) {
+						trimmed := strings.TrimPrefix(notificationStr, prefix)
 						if strings.HasPrefix(trimmed, "STOP") {
 							return
 						}
@@ -137,6 +136,7 @@ func startLogger(prefix chan string) {
 			}
 		}
 	}()
+	return
 }
 
 func main() {
@@ -153,7 +153,11 @@ func main() {
 	}
 
 	notifyPrefix := make(chan string, 1)
-	startLogger(notifyPrefix)
+	startLogger("")
+	go func() {
+		prefix := <-notifyPrefix
+		startLogger(prefix)
+	}()
 
 	remoteConn, err := net.Dial("tcp", host+":"+port)
 	if err != nil {
