@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"io"
@@ -18,6 +17,7 @@ import (
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krd"
 
+	"github.com/keybase/saltpack/encoding/basex"
 	"github.com/op/go-logging"
 	"golang.org/x/crypto/ssh"
 )
@@ -65,7 +65,7 @@ func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error)
 		}
 		sigHash := sha256.Sum256(hostAuth.Signature)
 		select {
-		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(sigHash[:]) + "]":
+		case onHostPrefix <- "[" + basex.Base62StdEncoding.EncodeToString(sigHash[:]) + "]":
 		default:
 		}
 		sendHostAuth(hostAuth)
