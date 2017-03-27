@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
@@ -62,8 +63,9 @@ func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error)
 			Signature: kexECDHReplyTemplate.Signature,
 			HostNames: []string{hostname},
 		}
+		sigHash := sha256.Sum256(hostAuth.Signature)
 		select {
-		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]":
+		case onHostPrefix <- "[" + base64.StdEncoding.EncodeToString(sigHash[:]) + "]":
 		default:
 		}
 		sendHostAuth(hostAuth)
@@ -121,6 +123,10 @@ func startLogger(prefix chan string) {
 						os.Stderr.WriteString(trimmed)
 					}
 				} else {
+					if strings.Contains(notificationStr, "]") {
+						//	skip malformed notification
+						continue
+					}
 					os.Stderr.WriteString(notificationStr)
 				}
 				printedNotifications[notificationStr] = true
