@@ -14,8 +14,8 @@ type Notifier struct {
 	*sync.Mutex
 }
 
-func OpenNotifier() (n Notifier, err error) {
-	filePath, err := KrDirFile(NOTIFY_LOG_FILE_NAME)
+func OpenNotifier(id string) (n Notifier, err error) {
+	filePath, err := NotifyDirFile(NOTIFY_LOG_FILE_NAME + "-" + id)
 	if err != nil {
 		return
 	}
@@ -46,8 +46,8 @@ type NotificationReader struct {
 	lineReader *bufio.Reader
 }
 
-func OpenNotificationReader() (r NotificationReader, err error) {
-	filePath, err := KrDirFile(NOTIFY_LOG_FILE_NAME)
+func OpenNotificationReader(id string) (r NotificationReader, err error) {
+	filePath, err := NotifyDirFile(NOTIFY_LOG_FILE_NAME + "-" + id)
 	if err != nil {
 		return
 	}

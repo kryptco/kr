@@ -33,7 +33,7 @@ func main() {
 		}
 	}()
 
-	notifier, err := kr.OpenNotifier()
+	notifier, err := kr.OpenNotifier("")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func main() {
 	}()
 
 	go func() {
-		err := krd.ServeKRAgent(controlServer.EnclaveClient(), notifier, agentSocket, hostAuthSocket, log)
+		err := krd.ServeKRAgent(controlServer.EnclaveClient(), agentSocket, hostAuthSocket, log)
 		if err != nil {
 			log.Error("agent return:", err)
 		}

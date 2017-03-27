@@ -56,9 +56,8 @@ func (a *Agent) withOriginalAgent(do func(agent.Agent)) error {
 }
 
 type Agent struct {
-	mutex    sync.Mutex
-	client   EnclaveClientI
-	notifier kr.Notifier
+	mutex  sync.Mutex
+	client EnclaveClientI
 
 	recentSessionIDSignatures    []sessionIDSig
 	hostAuthCallbacksBySessionID *lru.Cache
@@ -85,7 +84,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 				Comment: cachedProfile.Email,
 			})
 	} else {
-		a.notify(kr.Yellow("Kryptonite ▶ " + kr.ErrNotPaired.Error()))
+		a.notify("", kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()))
 	}
 
 	a.withOriginalAgent(func(fallbackAgent agent.Agent) {
@@ -149,7 +148,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		return
 	}
 
-	a.notify(notifyPrefix + kr.Cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
+	a.notify(notifyPrefix, notifyPrefix+kr.Cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
 
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
@@ -157,16 +156,16 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		HostAuth:             hostAuth,
 	}
 	signResponse, err := a.client.RequestSignature(signRequest, func() {
-		a.notify(notifyPrefix + kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
+		a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
 	})
 	if err != nil {
 		a.log.Error(err.Error())
 		switch err {
 		case ErrNotPaired:
-			a.notify(notifyPrefix + kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()))
+			a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()))
 		case ErrTimeout:
-			a.notify(notifyPrefix + kr.Red("Kryptonite ▶ "+kr.ErrTimedOut.Error()))
-			a.notify(notifyPrefix + kr.Yellow("Kryptonite ▶ Falling back to local keys."))
+			a.notify(notifyPrefix, notifyPrefix+kr.Red("Kryptonite ▶ "+kr.ErrTimedOut.Error()))
+			a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Kryptonite ▶ Falling back to local keys."))
 		}
 		return
 	}
@@ -174,7 +173,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		err = errors.New("no signature response")
 		a.log.Error(err.Error())
 		if notifyPrefix != "" {
-			a.notify(notifyPrefix + "STOP")
+			a.notify(notifyPrefix, notifyPrefix+"STOP")
 		}
 		return
 	}
@@ -183,12 +182,12 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		err = errors.New(*signResponse.Error)
 		a.log.Error(err.Error())
 		if *signResponse.Error == "rejected" {
-			a.notify(notifyPrefix + kr.Red("Kryptonite ▶ "+kr.ErrRejected.Error()))
+			a.notify(notifyPrefix, notifyPrefix+kr.Red("Kryptonite ▶ "+kr.ErrRejected.Error()))
 		} else {
-			a.notify(notifyPrefix + kr.Red("Kryptonite ▶ "+kr.ErrSigning.Error()))
+			a.notify(notifyPrefix, notifyPrefix+kr.Red("Kryptonite ▶ "+kr.ErrSigning.Error()))
 		}
 		if notifyPrefix != "" {
-			a.notify(notifyPrefix + "STOP")
+			a.notify(notifyPrefix, notifyPrefix+"STOP")
 		}
 		return
 	}
@@ -196,18 +195,18 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		err = errors.New("no signature in response")
 		a.log.Error(err.Error())
 		if notifyPrefix != "" {
-			a.notify(notifyPrefix + "STOP")
+			a.notify(notifyPrefix, notifyPrefix+"STOP")
 		}
 		return
 	}
-	a.notify(notifyPrefix + kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
+	a.notify(notifyPrefix, notifyPrefix+kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
 	signature := *signResponse.Signature
 	sshSignature = &ssh.Signature{
 		Format: key.Type(),
 		Blob:   signature,
 	}
 	if notifyPrefix != "" {
-		a.notify(notifyPrefix + "STOP")
+		a.notify(notifyPrefix, notifyPrefix+"STOP")
 	}
 	return
 }
@@ -278,9 +277,17 @@ func (a *Agent) Signers() (signers []ssh.Signer, err error) {
 	return
 }
 
-func (a *Agent) notify(body string) {
-	if err := a.notifier.Notify(append([]byte(body), '\r', '\n')); err != nil {
+func (a *Agent) notify(prefix, body string) {
+	n, err := kr.OpenNotifier(prefix)
+	if err != nil {
 		a.log.Error("error writing notification: " + err.Error())
+		return
+	}
+	defer n.Close()
+	err = n.Notify(append([]byte(body), '\r', '\n'))
+	if err != nil {
+		a.log.Error("error writing notification: " + err.Error())
+		return
 	}
 }
 
@@ -376,7 +383,7 @@ func (a *Agent) tryHostAuth(sig *sessionIDSig, session []byte) *kr.HostAuth {
 	return nil
 }
 
-func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net.Listener, hostAuthListener net.Listener, log *logging.Logger) (err error) {
+func ServeKRAgent(enclaveClient EnclaveClientI, agentListener net.Listener, hostAuthListener net.Listener, log *logging.Logger) (err error) {
 	hostAuthCallbacksBySessionID, err := lru.New(128)
 	if err != nil {
 		return
@@ -384,7 +391,6 @@ func ServeKRAgent(enclaveClient EnclaveClientI, n kr.Notifier, agentListener net
 	krAgent := &Agent{
 		sync.Mutex{},
 		enclaveClient,
-		n,
 		[]sessionIDSig{},
 		hostAuthCallbacksBySessionID,
 		log,
