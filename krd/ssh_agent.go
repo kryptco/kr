@@ -127,7 +127,8 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 	hostAuth = a.awaitHostAuthFor(base64.StdEncoding.EncodeToString(session))
 	if hostAuth != nil {
-		notifyPrefix = "[" + base64.StdEncoding.EncodeToString(hostAuth.Signature) + "]"
+		sigHash := sha256.Sum256(hostAuth.Signature)
+		notifyPrefix = "[" + base64.StdEncoding.EncodeToString(sigHash[:]) + "]"
 	} else {
 		a.log.Warning("no hostname found for session")
 	}
