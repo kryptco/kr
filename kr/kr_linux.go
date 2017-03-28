@@ -8,6 +8,7 @@ import (
 )
 
 func restartCommand(c *cli.Context) (err error) {
+	exec.Command("systemctl", "--user", "daemon-reload").Run()
 	exec.Command("systemctl", "--user", "disable", "kr").Run()
 	exec.Command("systemctl", "--user", "stop", "kr").Run()
 	exec.Command("systemctl", "--user", "enable", "kr").Run()
