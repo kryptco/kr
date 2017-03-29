@@ -392,7 +392,7 @@ func (client *EnclaveClient) RequestNoOp() (err error) {
 	}
 	ps := client.getPairingSecret()
 	if ps != nil {
-		client.sendMessage(ps, requestJson, false)
+		client.sendMessage(ps, requestJson, false, false)
 	}
 	return
 }
@@ -479,7 +479,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
 	client.Unlock()
 
-	err = client.sendMessage(pairingSecret, requestJson, true)
+	err = client.sendMessage(pairingSecret, requestJson, true, true)
 
 	if err != nil {
 		switch err.(type) {
@@ -565,7 +565,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 		}
 
 		for _, queuedMessage := range queue {
-			err = client.sendMessage(pairingSecret, queuedMessage, true)
+			err = client.sendMessage(pairingSecret, queuedMessage, true, true)
 			if err != nil {
 				client.log.Error("error sending queued message:", err.Error())
 			}
@@ -591,7 +591,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 	return
 }
 
-func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, message []byte, queue bool) (err error) {
+func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, message []byte, queue bool, alertAllowed bool) (err error) {
 	ciphertext, err := pairingSecret.EncryptMessage(message)
 	if err != nil {
 		if err == kr.ErrWaitingForKey {
@@ -622,6 +622,7 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 			alertFirst = true
 		}
 	}
+	alertFirst &= alertAllowed
 	client.Unlock()
 
 	go func() {
