@@ -611,7 +611,11 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 	client.Lock()
 	if lastSQSActivity, ok := client.lastActivityByMedium[SQS]; ok {
 		if lastBluetoothActivity, ok := client.lastActivityByMedium[BLUETOOTH]; ok {
-			if lastSQSActivity.Sub(lastBluetoothActivity) > 0 {
+			activityDiff := lastSQSActivity.Sub(lastBluetoothActivity)
+			if activityDiff < 0 {
+				activityDiff = -activityDiff
+			}
+			if activityDiff > 5*time.Second {
 				alertFirst = true
 			}
 		} else {
