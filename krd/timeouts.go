@@ -27,7 +27,7 @@ func DefaultTimeouts() Timeouts {
 			Fail:  90 * time.Second,
 		},
 		Sign: TimeoutPhases{
-			Alert: 3 * time.Second,
+			Alert: 2 * time.Second,
 			Fail:  30 * time.Second,
 		},
 		ACKDelay: 60 * time.Second,
