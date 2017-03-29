@@ -176,7 +176,7 @@ func (ec *EnclaveClient) unpair(pairingSecret *kr.PairingSecret, sendUnpairReque
 				ec.log.Error("error creating request:", err)
 				return
 			}
-			go ec.sendMessage(pairingSecret, unpairJson, false)
+			go ec.sendMessage(pairingSecret, unpairJson, false, false, false)
 		}()
 	}
 	return
@@ -392,7 +392,7 @@ func (client *EnclaveClient) RequestNoOp() (err error) {
 	}
 	ps := client.getPairingSecret()
 	if ps != nil {
-		client.sendMessage(ps, requestJson, false, false)
+		client.sendMessage(ps, requestJson, false, false, client.shouldSendAlertFirst())
 	}
 	return
 }
@@ -412,14 +412,18 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 		err = ErrNotPaired
 		return
 	}
+	alertImmediate := client.shouldSendAlertFirst()
 	go kr.RecoverToLog(func() {
-		err := client.sendRequestAndReceiveResponses(pairingSecret, request, cb, timeout)
+		err := client.sendRequestAndReceiveResponses(pairingSecret, request, cb, timeout, alertImmediate)
 		if err != nil {
 			client.log.Error("error sendRequestAndReceiveResponses: ", err.Error())
 		}
 	}, client.log)
 	timeoutChan := time.After(timeout)
 	sendAlertChan := time.After(alertTimeout)
+	if alertImmediate {
+		sendAlertChan = nil
+	}
 	func() {
 		var ack bool
 		for {
@@ -466,7 +470,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 
 //	Send one request and receive pending responses, not necessarily associated
 //	with this request
-func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.PairingSecret, request kr.Request, cb chan *callbackT, timeout time.Duration) (err error) {
+func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.PairingSecret, request kr.Request, cb chan *callbackT, timeout time.Duration, alertFirst bool) (err error) {
 	requestJson, err := json.Marshal(request)
 	if err != nil {
 		err = &ProtoError{err}
@@ -479,7 +483,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 	client.requestCallbacksByRequestID.Add(request.RequestID, cb)
 	client.Unlock()
 
-	err = client.sendMessage(pairingSecret, requestJson, true, true)
+	err = client.sendMessage(pairingSecret, requestJson, true, true, alertFirst)
 
 	if err != nil {
 		switch err.(type) {
@@ -565,7 +569,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 		}
 
 		for _, queuedMessage := range queue {
-			err = client.sendMessage(pairingSecret, queuedMessage, true, true)
+			err = client.sendMessage(pairingSecret, queuedMessage, true, true, client.shouldSendAlertFirst())
 			if err != nil {
 				client.log.Error("error sending queued message:", err.Error())
 			}
@@ -591,7 +595,26 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 	return
 }
 
-func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, message []byte, queue bool, alertAllowed bool) (err error) {
+func (client *EnclaveClient) shouldSendAlertFirst() bool {
+	client.Lock()
+	defer client.Unlock()
+	if lastSQSActivity, ok := client.lastActivityByMedium[SQS]; ok {
+		if lastBluetoothActivity, ok := client.lastActivityByMedium[BLUETOOTH]; ok {
+			activityDiff := lastSQSActivity.Sub(lastBluetoothActivity)
+			if activityDiff < 0 {
+				activityDiff = -activityDiff
+			}
+			if activityDiff > 5*time.Second {
+				return true
+			}
+		} else {
+			return true
+		}
+	}
+	return false
+}
+
+func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, message []byte, queue bool, alertAllowed bool, alertFirst bool) (err error) {
 	ciphertext, err := pairingSecret.EncryptMessage(message)
 	if err != nil {
 		if err == kr.ErrWaitingForKey {
@@ -607,24 +630,6 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		return
 	}
 
-	var alertFirst bool
-	client.Lock()
-	if lastSQSActivity, ok := client.lastActivityByMedium[SQS]; ok {
-		if lastBluetoothActivity, ok := client.lastActivityByMedium[BLUETOOTH]; ok {
-			activityDiff := lastSQSActivity.Sub(lastBluetoothActivity)
-			if activityDiff < 0 {
-				activityDiff = -activityDiff
-			}
-			if activityDiff > 5*time.Second {
-				alertFirst = true
-			}
-		} else {
-			alertFirst = true
-		}
-	}
-	alertFirst &= alertAllowed
-	client.Unlock()
-
 	go func() {
 		if client.bt == nil {
 			return
@@ -635,7 +640,7 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		}
 	}()
 
-	if alertFirst {
+	if alertFirst && alertAllowed {
 		err = client.Transport.PushAlert(pairingSecret, "Kryptonite Request", message)
 		if err != nil {
 			err = &SendError{err}

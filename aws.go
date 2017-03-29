@@ -66,7 +66,14 @@ func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueN
 				"category":          "authorize_identifier",
 			},
 		})
-	err = pushToSNS(endpointARN, apnsPayload, []byte{})
+	gcmPayload, _ := json.Marshal(
+		map[string]interface{}{
+			"data": map[string]interface{}{
+				"message": requestCiphertext,
+				"queue":   sqsQueueName,
+			},
+		})
+	err = pushToSNS(endpointARN, apnsPayload, gcmPayload)
 	return
 }
 
