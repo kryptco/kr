@@ -82,7 +82,11 @@ type EnclaveClient struct {
 	bt                          BluetoothDriverI
 	log                         *logging.Logger
 	notifier                    *kr.Notifier
+	lastActivityByMedium        map[string]time.Time
 }
+
+const BLUETOOTH = "bluetooth"
+const SQS = "sqs"
 
 func (ec *EnclaveClient) Pair() (pairingSecret *kr.PairingSecret, err error) {
 	ec.Lock()
@@ -249,7 +253,7 @@ func (ec *EnclaveClient) Start() (err error) {
 				return
 			}
 			for ciphertext := range readChan {
-				err = ec.handleCiphertext(ciphertext, "bluetooth")
+				err = ec.handleCiphertext(ciphertext, BLUETOOTH)
 				if err != nil {
 					ec.log.Error("error reading bluetooth channel:", err)
 				}
@@ -298,6 +302,7 @@ func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeo
 		ackedRequestIDs:             lru.New(128),
 		log:                         log,
 		notifier:                    notifier,
+		lastActivityByMedium:        map[string]time.Time{},
 	}
 }
 
@@ -494,7 +499,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 		}
 
 		for _, ctxt := range ciphertexts {
-			ctxtErr := client.handleCiphertext(ctxt, "sqs")
+			ctxtErr := client.handleCiphertext(ctxt, SQS)
 			switch ctxtErr {
 			case kr.ErrWaitingForKey:
 			default:
@@ -601,7 +606,24 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		}
 		return
 	}
+
+	var alertFirst bool
+	client.Lock()
+	if lastSQSActivity, ok := client.lastActivityByMedium[SQS]; ok {
+		if lastBluetoothActivity, ok := client.lastActivityByMedium[BLUETOOTH]; ok {
+			if lastSQSActivity.Sub(lastBluetoothActivity) > 0 {
+				alertFirst = true
+			}
+		} else {
+			alertFirst = true
+		}
+	}
+	client.Unlock()
+
 	go func() {
+		if alertFirst {
+			<-time.After(250 * time.Millisecond)
+		}
 		if client.bt == nil {
 			return
 		}
@@ -611,6 +633,14 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		}
 	}()
 
+	if alertFirst {
+		err = client.Transport.PushAlert(pairingSecret, "Kryptonite Request", message)
+		if err != nil {
+			err = &SendError{err}
+			return
+		}
+		<-time.After(250 * time.Millisecond)
+	}
 	err = client.Transport.SendMessage(pairingSecret, message)
 	if err != nil {
 		err = &SendError{err}
@@ -627,6 +657,7 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 	}
 	client.Lock()
 	defer client.Unlock()
+	client.lastActivityByMedium[medium] = time.Now()
 
 	if response.UnpairResponse != nil {
 		client.log.Notice("Received unpair command from phone.")
