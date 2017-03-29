@@ -625,9 +625,6 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 	client.Unlock()
 
 	go func() {
-		if alertFirst {
-			<-time.After(250 * time.Millisecond)
-		}
 		if client.bt == nil {
 			return
 		}
@@ -643,12 +640,12 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 			err = &SendError{err}
 			return
 		}
-		<-time.After(250 * time.Millisecond)
-	}
-	err = client.Transport.SendMessage(pairingSecret, message)
-	if err != nil {
-		err = &SendError{err}
-		return
+	} else {
+		err = client.Transport.SendMessage(pairingSecret, message)
+		if err != nil {
+			err = &SendError{err}
+			return
+		}
 	}
 	return
 }
