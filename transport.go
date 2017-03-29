@@ -40,6 +40,11 @@ func (t AWSTransport) PushAlert(ps *PairingSecret, alertText string, message []b
 			}
 		}
 	}()
+
+	err = SendToQueue(ps.SQSSendQueueName(), ctxtString)
+	if err != nil {
+		return
+	}
 	return
 }
 func (t AWSTransport) SendMessage(ps *PairingSecret, message []byte) (err error) {
