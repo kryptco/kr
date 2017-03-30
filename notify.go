@@ -3,6 +3,8 @@ package kr
 import (
 	"bufio"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -64,4 +66,35 @@ func OpenNotificationReader(id string) (r NotificationReader, err error) {
 
 func (r NotificationReader) Read() (body []byte, err error) {
 	return r.lineReader.ReadBytes('\n')
+}
+
+func StartNotifyCleanup() {
+	go func() {
+		for {
+			notifyDir, err := NotifyDir()
+			if err == nil {
+				notifyDirFile, err := os.Open(notifyDir)
+				if err == nil {
+					names, err := notifyDirFile.Readdirnames(0)
+					if err == nil {
+						for _, name := range names {
+							if strings.HasSuffix(name, "]") {
+								logFilePath := filepath.Join(notifyDir, name)
+								logFile, err := os.Open(logFilePath)
+								if err == nil {
+									info, err := logFile.Stat()
+									if err == nil {
+										if time.Now().Sub(info.ModTime()) >= time.Hour {
+											_ = os.Remove(logFilePath)
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			<-time.After(1 * time.Hour)
+		}
+	}()
 }
