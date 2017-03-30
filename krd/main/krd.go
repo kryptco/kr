@@ -39,6 +39,8 @@ func main() {
 	}
 	defer notifier.Close()
 
+	kr.StartNotifyCleanup()
+
 	daemonSocket, err := kr.DaemonListen()
 	if err != nil {
 		log.Fatal(err)
