@@ -321,7 +321,7 @@ func (a *Agent) awaitHostAuthFor(session string) *kr.HostAuth {
 	select {
 	case hostAuth := <-cb:
 		return hostAuth
-	case <-time.After(2 * time.Second):
+	case <-time.After(time.Second):
 	}
 	return nil
 }
