@@ -272,7 +272,7 @@ func addCommand(c *cli.Context) (err error) {
 	PrintErr(os.Stderr, "Adding your SSH public key to %s", server)
 
 	authorizedKeyReader := bytes.NewReader(authorizedKey)
-	sshCommand := exec.Command("ssh", server, "read keys; mkdir -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys")
+	sshCommand := exec.Command("ssh", server, "read keys; mkdir -m 700 -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys")
 	sshCommand.Stdin = authorizedKeyReader
 	output, err := sshCommand.CombinedOutput()
 	if err != nil {
