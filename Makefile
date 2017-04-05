@@ -12,6 +12,9 @@ check:
 	go test $(GOBUILDFLAGS) github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh
 	cd pkcs11shim; cargo test
 
+vet:
+	go vet github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh
+
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	PREFIX ?= /usr
