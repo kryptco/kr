@@ -114,7 +114,6 @@ func (ps *PairingSecret) UnwrapKeyIfPresent(ciphertext []byte) (remainingCiphert
 		err = fmt.Errorf("unknown header")
 		return
 	}
-	return
 }
 
 func (ps *PairingSecret) DecryptMessage(ciphertext []byte) (message *[]byte, err error) {

@@ -427,5 +427,4 @@ func ServeKRAgent(enclaveClient EnclaveClientI, agentListener net.Listener, host
 			agent.ServeAgent(krAgent, conn)
 		}()
 	}
-	return
 }
