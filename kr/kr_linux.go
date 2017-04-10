@@ -13,6 +13,11 @@ func restartCommand(c *cli.Context) (err error) {
 	exec.Command("systemctl", "--user", "stop", "kr").Run()
 	exec.Command("systemctl", "--user", "enable", "kr").Run()
 	exec.Command("systemctl", "--user", "start", "kr").Run()
+	exec.Command("systemctl", "daemon-reload").Run()
+	exec.Command("systemctl", "disable", "kr").Run()
+	exec.Command("systemctl", "stop", "kr").Run()
+	exec.Command("systemctl", "enable", "kr").Run()
+	exec.Command("systemctl", "start", "kr").Run()
 	PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
 	return
 }
