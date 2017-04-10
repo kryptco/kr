@@ -34,8 +34,9 @@ install: all
 	$(SUDO) ln -sf $(SRCBIN)/krd $(DSTBIN)/krd
 	$(SUDO) ln -sf $(SRCBIN)/krssh $(DSTBIN)/krssh
 	$(SUDO) ln -sf $(SRCBIN)/kr-pkcs11.so $(DSTLIB)/kr-pkcs11.so
-	mkdir -p ~/.ssh
+	mkdir -m 700 -p ~/.ssh
 	touch ~/.ssh/config
+	chmod 0600 ~/.ssh/config
 ifeq ($(UNAME_S),Darwin)
 	perl -0777 -ne '/# Added by Kryptonite\nHost \*\n\tPKCS11Provider \/usr\/local\/lib\/kr-pkcs11.so\n\tProxyCommand `find \/usr\/local\/bin\/krssh 2>\/dev\/null \|\| which nc` %h %p\n\tIdentityFile ~\/.ssh\/id_kryptonite\n\tIdentityFile ~\/.ssh\/id_ed25519\n\tIdentityFile ~\/.ssh\/id_rsa\n\tIdentityFile ~\/.ssh\/id_ecdsa\n\tIdentityFile ~\/.ssh\/id_dsa/ || exit(1)' ~/.ssh/config || echo '\n# Added by Kryptonite\nHost *\n\tPKCS11Provider /usr/local/lib/kr-pkcs11.so\n\tProxyCommand `find /usr/local/bin/krssh 2>/dev/null || which nc` %h %p\n\tIdentityFile ~/.ssh/id_kryptonite\n\tIdentityFile ~/.ssh/id_ed25519\n\tIdentityFile ~/.ssh/id_rsa\n\tIdentityFile ~/.ssh/id_ecdsa\n\tIdentityFile ~/.ssh/id_dsa' >> ~/.ssh/config
 endif
@@ -45,18 +46,22 @@ endif
 
 start:
 ifeq ($(OS),redhat)
-	sudo ./install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service
-else ifeq ($(OS),Fedora)
-	sudo ./install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service
-else ifeq ($(OS),CentOS)
-	sudo ./install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service
+	sudo sh -c './install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service'
+	sudo kr restart
+else ifeq ($(OS),fedora)
+	sudo sh -c './install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service'
+	sudo kr restart
+else ifeq ($(OS),centos)
+	sudo sh -c './install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service'
+	sudo kr restart
 else ifeq ($(UNAME_S),Linux)
 	sudo cp share/kr.service /etc/systemd/user/default.target.wants/kr.service
+	kr restart
 else ifeq ($(UNAME_S),Darwin)
 	mkdir -p ~/Library/LaunchAgents
 	cp share/co.krypt.krd.plist ~/Library/LaunchAgents/co.krypt.krd.plist
-endif
 	kr restart
+endif
 
 uninstall:
 	kr uninstall
