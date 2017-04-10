@@ -3,10 +3,8 @@ package kr
 import (
 	"crypto/rand"
 	"fmt"
-	//	anonymous box
-	"github.com/GoKillers/libsodium-go/cryptobox"
-	//	authenticated box
 	"golang.org/x/crypto/nacl/box"
+	"github.com/kryptco/go-crypto/blake2b"
 )
 
 const (
@@ -55,7 +53,7 @@ func sodiumBoxOpen(nonceAndCiphertext, pk, sk []byte) (m []byte, err error) {
 	copy(skArr[:], sk)
 
 	var ret bool
-	c := nonceAndCiphertext[cryptobox.CryptoBoxNonceBytes():]
+	c := nonceAndCiphertext[24:]
 	m, ret = box.Open(m, c, &n, &pkArr, &skArr)
 	if !ret {
 		err = fmt.Errorf("Open failed")
@@ -65,30 +63,46 @@ func sodiumBoxOpen(nonceAndCiphertext, pk, sk []byte) (m []byte, err error) {
 }
 
 func sodiumBoxSealOpen(c, pk, sk []byte) (m []byte, err error) {
-	//	protect against bindings panicking
-	if len(c) < cryptobox.CryptoBoxSealBytes() || len(pk) == 0 || len(sk) == 0 {
+	if len(c) < 32 || len(pk) != 32 || len(sk) != 32 {
 		err = fmt.Errorf("invalid argument passed to sodium")
 		return
 	}
-	m, ret := cryptobox.CryptoBoxSealOpen(c, pk, sk)
-	if ret != 0 {
-		err = fmt.Errorf("nonzero sodium return status: %d", ret)
+	var ephemeralPk [32]byte
+	copy(ephemeralPk[:], c[:32])
+
+	var skArr [32]byte
+	copy(skArr[:], sk)
+	
+	noncePreimage := append(ephemeralPk[:], pk...)
+	n := blake2b.Sum192(noncePreimage)
+
+	m, ok := box.Open(m, c[32:], &n, &ephemeralPk, &skArr)
+	if !ok {
+		err = fmt.Errorf("verify failed")
 		return
 	}
 	return
 }
 
+//	https://download.libsodium.org/doc/public-key_cryptography/sealed_boxes.html
 func sodiumBoxSeal(m, pk []byte) (c []byte, err error) {
 	//	protect against bindings panicking
 	if len(m) == 0 || len(pk) == 0 {
 		err = fmt.Errorf("empty argument passed to sodium")
 		return
 	}
-	c, ret := cryptobox.CryptoBoxSeal(m, pk)
-	if ret != 0 {
-		err = fmt.Errorf("nonzero sodium return status: %d", ret)
+	ephemeralPk, ephemeralSk, err := box.GenerateKey(rand.Reader)
+	if err != nil {
 		return
 	}
+	noncePreimage := append(ephemeralPk[:], pk...)
+	n := blake2b.Sum192(noncePreimage)
+
+	var pkArr [32]byte
+	copy(pkArr[:], pk)
+
+	c = box.Seal(c, m, &n, &pkArr, ephemeralSk)
+	c = append(ephemeralPk[:], c...)
 	return
 }
 
@@ -111,11 +125,11 @@ func WrapKey(pkToWrap, pk []byte) (c []byte, err error) {
 }
 
 func GenKeyPair() (pk []byte, sk []byte, err error) {
-	var ret int
-	sk, pk, ret = cryptobox.CryptoBoxKeyPair()
-	if ret != 0 {
-		err = fmt.Errorf("nonzero sodium return status: %d", ret)
+	pkArr, skArr, err := box.GenerateKey(rand.Reader)
+	if err != nil {
 		return
 	}
+	pk = pkArr[:]
+	sk = skArr[:]
 	return
 }

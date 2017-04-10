@@ -3,12 +3,6 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "WIFeS/tU39uZV9m+aJHuo2i7BZA=",
-			"path": "github.com/GoKillers/libsodium-go/cryptobox",
-			"revision": "21fce0a96ee834a8481d6d273691a2b32a26bb18",
-			"revisionTime": "2016-07-13T06:31:29Z"
-		},
-		{
 			"checksumSHA1": "AvzjR+CmAbvkZInayqyZDW8Xxzc=",
 			"path": "github.com/GoKillers/libsodium-go/support",
 			"revision": "b5f80f3d0206a8426af1ab8e0044704c35951dec",
@@ -219,6 +213,12 @@
 			"path": "github.com/kryptco/gf256",
 			"revision": "bbd714a0764d8cb2ea9f6b9e78363b7510394a86",
 			"revisionTime": "2016-04-13T18:01:33Z"
+		},
+		{
+			"checksumSHA1": "czipMwxVJCjnOJk482unkRs5VCM=",
+			"path": "github.com/kryptco/go-crypto/blake2b",
+			"revision": "4dd74302dce656561273d45beb4ae61575f5326a",
+			"revisionTime": "2017-04-10T21:23:53Z"
 		},
 		{
 			"checksumSHA1": "1FNUYeTxvldrwoTRD7mLx9Zi1M4=",

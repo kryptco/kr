@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/GoKillers/libsodium-go/cryptobox"
 	"github.com/satori/go.uuid"
 )
 
@@ -54,11 +53,9 @@ func (ps *PairingSecret) SQSBaseQueueName() string {
 }
 
 func GeneratePairingSecret() (ps *PairingSecret, err error) {
-	ret := 0
 	ps = new(PairingSecret)
-	ps.workstationSecretKey, ps.WorkstationPublicKey, ret = cryptobox.CryptoBoxKeyPair()
-	if ret != 0 {
-		err = fmt.Errorf("nonzero CryptoBoxKeyPair exit status: %d", ret)
+	ps.WorkstationPublicKey, ps.workstationSecretKey, err = GenKeyPair()
+	if err != nil  {
 		return
 	}
 	ps.WorkstationName = MachineName()
