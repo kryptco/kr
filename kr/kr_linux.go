@@ -7,17 +7,23 @@ import (
 	"github.com/urfave/cli"
 )
 
+func runCommandWithUserInteraction(name string, arg ...string) {
+	cmd := exec.Command(name, arg...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+}
+
 func restartCommand(c *cli.Context) (err error) {
 	exec.Command("systemctl", "--user", "daemon-reload").Run()
 	exec.Command("systemctl", "--user", "disable", "kr").Run()
 	exec.Command("systemctl", "--user", "stop", "kr").Run()
 	exec.Command("systemctl", "--user", "enable", "kr").Run()
-	exec.Command("systemctl", "--user", "start", "kr").Run()
-	exec.Command("systemctl", "daemon-reload").Run()
-	exec.Command("systemctl", "disable", "kr").Run()
-	exec.Command("systemctl", "stop", "kr").Run()
-	exec.Command("systemctl", "enable", "kr").Run()
-	exec.Command("systemctl", "start", "kr").Run()
+	if err := exec.Command("systemctl", "--user", "start", "kr").Run(); err != nil {
+		//	fall back to system-level daemon
+		runCommandWithUserInteraction("systemctl", "restart", "kr")
+	}
 	PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
 	return
 }
