@@ -9,6 +9,9 @@ all:
 	cd pkcs11shim; make; cp target/release/kr-pkcs11.so ../bin/
 	cd krssh; go build $(GOBUILDFLAGS) -o ../bin/krssh
 
+clean:
+	rm -rf bin/
+
 
 check:
 	go test $(GOBUILDFLAGS) github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh
