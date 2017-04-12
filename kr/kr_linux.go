@@ -33,15 +33,26 @@ func openBrowser(url string) {
 }
 
 func uninstallCommand(c *cli.Context) (err error) {
-	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation? (same as sudo apt-get remove kr)")
+	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation? (same as sudo apt-get/yum remove kr)")
 
 	exec.Command("systemctl", "--user", "disable", "kr").Run()
-	exec.Command("systemctl", "--user", "stop", "kr").Run()
+	if err := exec.Command("systemctl", "--user", "stop", "kr").Run(); err != nil {
+		runCommandWithUserInteraction("systemctl", "stop", "kr")
+	}
 
-	uninstallCmd := exec.Command("sudo", "apt-get", "remove", "kr", "-y")
-	uninstallCmd.Stdout = os.Stdout
-	uninstallCmd.Stderr = os.Stderr
-	uninstallCmd.Run()
+	if aptGetErr := exec.Command("which", "apt-get").Run(); aptGetErr == nil {
+		uninstallCmd := exec.Command("sudo", "apt-get", "remove", "kr", "-y")
+		uninstallCmd.Stdout = os.Stdout
+		uninstallCmd.Stderr = os.Stderr
+		uninstallCmd.Run()
+	}
+
+	if yumErr := exec.Command("which", "yum").Run(); yumErr == nil {
+		uninstallCmd := exec.Command("sudo", "yum", "remove", "kr", "-y")
+		uninstallCmd.Stdout = os.Stdout
+		uninstallCmd.Stderr = os.Stderr
+		uninstallCmd.Run()
+	}
 
 	PrintErr(os.Stderr, "Kryptonite uninstalled.")
 	return
