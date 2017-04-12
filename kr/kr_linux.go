@@ -37,7 +37,8 @@ func uninstallCommand(c *cli.Context) (err error) {
 
 	exec.Command("systemctl", "--user", "disable", "kr").Run()
 	if err := exec.Command("systemctl", "--user", "stop", "kr").Run(); err != nil {
-		runCommandWithUserInteraction("systemctl", "stop", "kr")
+		exec.Command("sudo", "systemctl", "disable", "kr").Run()
+		exec.Command("sudo", "systemctl", "stop", "kr").Run()
 	}
 
 	if aptGetErr := exec.Command("which", "apt-get").Run(); aptGetErr == nil {
