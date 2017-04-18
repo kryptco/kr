@@ -291,6 +291,16 @@ func githubCommand(c *cli.Context) (err error) {
 	return
 }
 
+func gitlabCommand(c *cli.Context) (err error) {
+	copyKey()
+	PrintErr(os.Stderr, "Public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitLab. Then paste your public key and click \"Add key.\"")
+	os.Stdin.Read([]byte{0})
+	openBrowser("https://gitlab.com/profile/keys")
+	return
+}
+
 func bitbucketCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
@@ -377,6 +387,11 @@ func main() {
 			Name:   "github",
 			Usage:  "Upload your public key to GitHub. Copies your public key to the clipboard and opens GitHub settings.",
 			Action: githubCommand,
+		},
+		cli.Command{
+			Name:   "gitlab",
+			Usage:  "Upload your public key to GitLab. Copies your public key to the clipboard and opens your GitLab profile.",
+			Action: gitlabCommand,
 		},
 		cli.Command{
 			Name:   "bitbucket",
