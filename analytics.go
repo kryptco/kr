@@ -22,6 +22,7 @@ func (Analytics) post(clientID string, params url.Values) {
 		"ua":  []string{analytics_user_agent},
 		"cd1": []string{CURRENT_VERSION.String()},
 		"cd2": []string{analytics_os},
+		"cd7": []string{clientID},
 	}
 	if osVersion := getAnalyticsOSVersion(); osVersion != nil {
 		defaultParams["cd3"] = []string{*osVersion}
