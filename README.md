@@ -3,7 +3,7 @@ __kr__ enables SSH to authenticate with a key stored in a __Kryptonite__
 ([iOS](https://github.com/kryptco/kryptonite-ios) or
 [Android](https://github.com/kryptco/kryptonite-android)) mobile app. __kr__
 runs as an SSH agent, called __krd__. When a __Kryptonite__ private key
-operation is needed for authentcation, __krd__ routes this request to the
+operation is needed for authentication, __krd__ routes this request to the
 paired mobile phone, where the user decides whether to allow the operation or
 not. _The private key never leaves the phone._
 
