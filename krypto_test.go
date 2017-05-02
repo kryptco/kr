@@ -29,7 +29,7 @@ func TestSealOpen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bytes.Compare(openedMsg, msg) != 0 {
+	if !bytes.Equal(openedMsg, msg) {
 		t.Fatalf("decryption does not match, \n%v \n!= \n%v\n", openedMsg, msg)
 	}
 }
