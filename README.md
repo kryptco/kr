@@ -1,6 +1,6 @@
 # kr
 __kr__ enables SSH to authenticate with a key stored in a __Kryptonite__
-([iOS](https://github.com/kryptonite-ios) or
+([iOS](https://github.com/kryptco/kryptonite-ios) or
 [Android](https://github.com/kryptco/kryptonite-android)) mobile app. __kr__
 runs as an SSH agent, called __krd__. When a __Kryptonite__ private key
 operation is needed for authentcation, __krd__ routes this request to the
