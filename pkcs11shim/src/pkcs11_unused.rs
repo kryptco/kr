@@ -10,7 +10,6 @@ pub use syslog::{Facility, Severity};
 lazy_static! {
     pub static ref logger : Option<Box<syslog::Logger>> = {
         get_logger().or_else(|e| {
-            writeln!(&mut stderr(), "error connecting to syslog: {}", e);
             Err(e)
         }).ok()
     };
@@ -19,7 +18,6 @@ lazy_static! {
 fn get_logger() -> Result<Box<syslog::Logger>, Error> {
     let logger_result = syslog::unix(Facility::LOG_USER);
     logger_result.map_err(|e| {
-        writeln!(&mut stderr(), "failed to connect to syslog {}", e);
         e
     })
 }
