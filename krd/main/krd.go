@@ -57,6 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer hostAuthSocket.Close()
 
 	controlServer, err := krd.NewControlServer(log, &notifier)
 	if err != nil {
