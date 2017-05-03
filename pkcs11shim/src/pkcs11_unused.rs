@@ -1,15 +1,16 @@
 #![allow(dead_code, non_snake_case, unused_variables, non_upper_case_globals)]
 use pkcs11::*;
 
-use std::io::Error;
+use std::io::{stderr, Write, Error};
 
 use syslog;
 pub use syslog::{Facility, Severity};
 
+
 lazy_static! {
     pub static ref logger : Option<Box<syslog::Logger>> = {
         get_logger().or_else(|e| {
-            println!("error connecting to syslog: {}", e);
+            writeln!(&mut stderr(), "error connecting to syslog: {}", e);
             Err(e)
         }).ok()
     };
@@ -18,7 +19,7 @@ lazy_static! {
 fn get_logger() -> Result<Box<syslog::Logger>, Error> {
     let logger_result = syslog::unix(Facility::LOG_USER);
     logger_result.map_err(|e| {
-        println!("failed to connect to syslog {}", e);
+        writeln!(&mut stderr(), "failed to connect to syslog {}", e);
         e
     })
 }
@@ -26,7 +27,7 @@ fn get_logger() -> Result<Box<syslog::Logger>, Error> {
 macro_rules! error {
     ( $ ( $ arg : expr ), * ) => { 
         logger.as_ref().map(|l| l.err(&format!($($arg),*)).map_err(|e| {
-            println!("error logging: {:?}", e);
+            writeln!(&mut stderr(), "error logging: {:?}", e);
         }));
     };
 }
@@ -34,15 +35,16 @@ macro_rules! error {
 macro_rules! warning {
     ( $ ( $ arg : expr ), * ) => { 
         logger.as_ref().map(|l| l.warn(&format!($($arg),*)).map_err(|e| {
-            println!("error logging: {:?}", e);
+            writeln!(&mut stderr(), "error logging: {:?}", e);
         }));
     };
 }
 
 macro_rules! notice {
     ( $ ( $ arg : expr ), * ) => { 
+        use std::io::{stderr, Write};
         logger.as_ref().map(|l| l.notice(&format!($($arg),*)).map_err(|e| {
-            println!("error logging: {:?}", e);
+            writeln!(&mut stderr(), "error logging: {:?}", e);
         }));
     };
 }
