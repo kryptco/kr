@@ -48,23 +48,11 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 start:
-ifeq ($(OS),redhat)
-	sudo sh -c './install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service'
-	sudo kr restart
-else ifeq ($(OS),fedora)
-	sudo sh -c './install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service'
-	sudo kr restart
-else ifeq ($(OS),centos)
-	sudo sh -c './install/systemd-service-as-current-user.sh > /etc/systemd/system/default.target.wants/kr.service'
-	sudo kr restart
-else ifeq ($(UNAME_S),Linux)
-	sudo cp share/kr.service /etc/systemd/user/default.target.wants/kr.service
-	kr restart
-else ifeq ($(UNAME_S),Darwin)
+ifeq ($(UNAME_S),Darwin)
 	mkdir -p ~/Library/LaunchAgents
 	cp share/co.krypt.krd.plist ~/Library/LaunchAgents/co.krypt.krd.plist
-	kr restart
 endif
+	kr restart
 
 uninstall:
 	kr uninstall

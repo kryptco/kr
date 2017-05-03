@@ -110,7 +110,7 @@ func HostAuthDial() (conn net.Conn, err error) {
 	if err != nil {
 		return
 	}
-	conn, err = net.Dial("unix", socketPath)
+	conn, err = DaemonDial(socketPath)
 	return
 }
 

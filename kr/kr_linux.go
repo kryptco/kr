@@ -16,14 +16,8 @@ func runCommandWithUserInteraction(name string, arg ...string) {
 }
 
 func restartCommand(c *cli.Context) (err error) {
-	exec.Command("systemctl", "--user", "daemon-reload").Run()
-	exec.Command("systemctl", "--user", "disable", "kr").Run()
-	exec.Command("systemctl", "--user", "stop", "kr").Run()
-	exec.Command("systemctl", "--user", "enable", "kr").Run()
-	if err := exec.Command("systemctl", "--user", "start", "kr").Run(); err != nil {
-		//	fall back to system-level daemon
-		runCommandWithUserInteraction("systemctl", "restart", "kr")
-	}
+	exec.Command("pkill", "krd").Run()
+	exec.Command("nohup", "/usr/bin/krd", "&").Start()
 	PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
 	return
 }
@@ -43,11 +37,7 @@ func hasYum() bool {
 func uninstallCommand(c *cli.Context) (err error) {
 	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation? (same as sudo apt-get/yum remove kr)")
 
-	exec.Command("systemctl", "--user", "disable", "kr").Run()
-	if err := exec.Command("systemctl", "--user", "stop", "kr").Run(); err != nil {
-		exec.Command("sudo", "systemctl", "disable", "kr").Run()
-		exec.Command("sudo", "systemctl", "stop", "kr").Run()
-	}
+	exec.Command("pkill", "krd").Run()
 
 	if hasAptGet() {
 		uninstallCmd := exec.Command("sudo", "apt-get", "remove", "kr", "-y")
