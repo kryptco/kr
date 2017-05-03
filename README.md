@@ -13,10 +13,12 @@ __kr__ currently supports MacOS (10.10+) and Linux (Debian, RHEL, CentOS, Fedora
 # Easy Install
 `curl https://krypt.co/kr | sh`
 
-# Build Instructions
+# Build Dependencies / Instructions
 - [Install Go 1.5+](https://golang.org/doc/install)
-- [Install Rust 1.15+](https://www.rustup.rs)
+- [Install Rust 1.15+ and cargo](https://www.rustup.rs)
 ```sh
+go get github.com/kryptco/kr # or clone into $GOPATH/src/github.com/kryptco/
+cd $GOPATH/src/github.com/kryptco/kr
 make
 ```
 
