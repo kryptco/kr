@@ -33,8 +33,24 @@ func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) 
 
 	}
 	if backend == nil {
-		backend = logging.NewLogBackend(os.Stderr, prefix, 0)
-		logging.SetFormatter(stderrFormat)
+		var err error
+		var file *os.File
+		logName := prefix
+		if logName == "" {
+			logName = "kr"
+		}
+		logName += ".log"
+		path, err := KrDirFile(logName)
+		if err != nil {
+			file = os.Stderr
+		} else {
+			file, err = os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+			if err != nil {
+				file = os.Stderr
+			}
+		}
+		backend = logging.NewLogBackend(file, prefix, 0)
+		backend = logging.NewBackendFormatter(backend, stderrFormat)
 	}
 	leveled := logging.AddModuleLevel(backend)
 	switch os.Getenv("KR_LOG_LEVEL") {
