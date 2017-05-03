@@ -2,6 +2,7 @@ package kr
 
 import (
 	"bufio"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -57,6 +58,8 @@ func OpenNotificationReader(id string) (r NotificationReader, err error) {
 	if err != nil {
 		return
 	}
+	//	some systems don't truncate correctly
+	file.Seek(0, io.SeekEnd)
 	r = NotificationReader{
 		File:       file,
 		lineReader: bufio.NewReader(file),
