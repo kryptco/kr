@@ -35,7 +35,7 @@ func useSyslog() bool {
 	return true
 }
 
-var logger *logging.Logger = kr.SetupLogging("krssh", logging.INFO, useSyslog())
+var logger *logging.Logger = kr.SetupLogging("krssh", logging.WARNING, useSyslog())
 
 //	from https://github.com/golang/crypto/blob/master/ssh/messages.go#L98-L102
 type kexECDHReplyMsg struct {
