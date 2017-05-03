@@ -384,24 +384,32 @@ func main() {
 			Action: copyCommand,
 		},
 		cli.Command{
+			Name:  "aws,bitbucket,digitalocean,gcloud,github,gitlab,heroku",
+			Usage: "Upload your public key to this site. Copies your public key to the clipboard and opens the site's settings page.",
+		},
+		cli.Command{
 			Name:   "github",
 			Usage:  "Upload your public key to GitHub. Copies your public key to the clipboard and opens GitHub settings.",
 			Action: githubCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "gitlab",
 			Usage:  "Upload your public key to GitLab. Copies your public key to the clipboard and opens your GitLab profile.",
 			Action: gitlabCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "bitbucket",
 			Usage:  "Upload your public key to BitBucket. Copies your public key to the clipboard and opens BitBucket settings.",
 			Action: bitbucketCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "digitalocean",
 			Usage:  "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings.",
 			Action: digitaloceanCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "digital-ocean",
@@ -413,16 +421,19 @@ func main() {
 			Name:   "heroku",
 			Usage:  "Upload your public key to Heroku. Copies your public key to the clipboard and opens Heroku settings.",
 			Action: herokuCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "aws",
 			Usage:  "Upload your public key to Amazon Web Services. Copies your public key to the clipboard and opens the AWS Console.",
 			Action: awsCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "gcloud",
 			Usage:  "Upload your public key to Google Cloud. Copies your public key to the clipboard and opens the Google Cloud Console.",
 			Action: gcloudCommand,
+			Hidden: true,
 		},
 		cli.Command{
 			Name:   "add",
