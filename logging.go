@@ -26,7 +26,6 @@ func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) 
 			//	direct panic output to syslog as well
 			if syslogBackend, ok := backend.(*logging.SyslogBackend); ok {
 				stdlog.SetOutput(syslogBackend.Writer)
-				stdlog.Println("test")
 			}
 		} else {
 			backend = nil
