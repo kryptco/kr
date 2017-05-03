@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -19,7 +20,7 @@ func (p Profile) AuthorizedKeyString() (authString string, err error) {
 	if err != nil {
 		return
 	}
-	authString = pk.Type() + " " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey) + " " + p.Email
+	authString = pk.Type() + " " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey) + " " + strings.Replace(p.Email, " ", "", -1)
 	return
 }
 
