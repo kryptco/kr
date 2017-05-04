@@ -11,7 +11,14 @@ import (
 
 var plist = os.Getenv("HOME") + "/Library/LaunchAgents/co.krypt.krd.plist"
 
+func copyEnvToLaunchctl(varName string) {
+	exec.Command("launchctl", "setenv", varName, os.Getenv(varName)).Run()
+}
+
 func restartCommand(c *cli.Context) (err error) {
+	for _, proxyVar := range []string{"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"} {
+		copyEnvToLaunchctl(proxyVar)
+	}
 	exec.Command("launchctl", "unload", plist).Run()
 	err = exec.Command("launchctl", "load", plist).Run()
 	if err != nil {
