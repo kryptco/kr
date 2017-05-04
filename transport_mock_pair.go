@@ -49,7 +49,7 @@ type MultiPairTransport struct {
 func (t *MultiPairTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
 	t.Lock()
 	defer t.Unlock()
-	for _ = range []int{1, 2, 3} {
+	for range []int{1, 2, 3} {
 		if !t.paired {
 			t.SymKey, err = RandNBytes(32)
 			if err != nil {
