@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -78,7 +77,7 @@ func pairOver(unixFile string, forceUnpair bool, stdout io.ReadWriter, stderr io
 		}
 	}()
 	if !forceUnpair {
-		meConn, err := net.Dial("unix", unixFile)
+		meConn, err := kr.DaemonDialWithTimeout(unixFile)
 		if err != nil {
 			PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
 		}
