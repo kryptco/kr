@@ -8,6 +8,10 @@ use std::fs::OpenOptions;
 use std::os::unix::io::AsRawFd;
 
 extern crate libc;
+extern crate users;
+
+use self::users::get_user_by_name;
+use self::users::os::unix::UserExt;
 
 use pkcs11_unused::*;
 use pkcs11::*;
@@ -58,9 +62,14 @@ extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
         notice!("backup auth_sock");
     }
 
-    if let Some(mut home_dir) = env::home_dir() {
-        home_dir.push(".kr/krd-agent.sock");
-        env::set_var("SSH_AUTH_SOCK", home_dir);
+    let mut unsudoed_home = if let Ok(sudo_user) = env::var("SUDO_USER") {
+        get_user_by_name(&sudo_user).map(|u| u.home_dir().to_path_buf())
+    } else {
+        env::home_dir()
+    };
+    if let Some(mut unsudoed_home) = unsudoed_home {
+        unsudoed_home.push(".kr/krd-agent.sock");
+        env::set_var("SSH_AUTH_SOCK", unsudoed_home);
     }
 
     if let Ok(dev_null) = OpenOptions::new()
