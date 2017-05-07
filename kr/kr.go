@@ -459,6 +459,11 @@ func main() {
 			Usage:  "Uninstall Kryptonite from this workstation.",
 			Action: uninstallCommand,
 		},
+		cli.Command{
+			Name:   "debugaws",
+			Usage:  "Check connectivity to AWS SQS.",
+			Action: debugAWSCommand,
+		},
 	}
 	app.Run(os.Args)
 }
