@@ -40,12 +40,7 @@ install: all
 	mkdir -m 700 -p ~/.ssh
 	touch ~/.ssh/config
 	chmod 0600 ~/.ssh/config
-ifeq ($(UNAME_S),Darwin)
-	perl -0777 -ne '/# Added by Kryptonite\nHost \*\n\tPKCS11Provider $(subst /,\/,$(PREFIX))\/lib\/kr-pkcs11.so\n\tProxyCommand $(subst /,\/,$(PREFIX))\/bin\/krssh %h %p\n\tIdentityFile ~\/.ssh\/id_kryptonite\n\tIdentityFile ~\/.ssh\/id_ed25519\n\tIdentityFile ~\/.ssh\/id_rsa\n\tIdentityFile ~\/.ssh\/id_ecdsa\n\tIdentityFile ~\/.ssh\/id_dsa/ || exit(1)' ~/.ssh/config || echo '\n# Added by Kryptonite\nHost *\n\tPKCS11Provider $(PREFIX)/lib/kr-pkcs11.so\n\tProxyCommand $(PREFIX)/bin/krssh %h %p\n\tIdentityFile ~/.ssh/id_kryptonite\n\tIdentityFile ~/.ssh/id_ed25519\n\tIdentityFile ~/.ssh/id_rsa\n\tIdentityFile ~/.ssh/id_ecdsa\n\tIdentityFile ~/.ssh/id_dsa' >> ~/.ssh/config
-endif
-ifeq ($(UNAME_S),Linux)
-	perl -0777 -ne '/# Added by Kryptonite\nHost \*\n\tPKCS11Provider $(subst /,\/,$(PREFIX))\/lib\/kr-pkcs11.so\n\tProxyCommand `find $(subst /,\/,$(PREFIX))\/bin\/krssh 2>\/dev\/null \|\| which nc` %h %p\n\tIdentityFile ~\/.ssh\/id_kryptonite\n\tIdentityFile ~\/.ssh\/id_ed25519\n\tIdentityFile ~\/.ssh\/id_rsa\n\tIdentityFile ~\/.ssh\/id_ecdsa\n\tIdentityFile ~\/.ssh\/id_dsa/ || exit(1)' ~/.ssh/config || printf '\n# Added by Kryptonite\nHost *\n\tPKCS11Provider $(PREFIX)/lib/kr-pkcs11.so\n\tProxyCommand $(PREFIX)/bin/krssh %%h %%p\n\tIdentityFile ~/.ssh/id_kryptonite\n\tIdentityFile ~/.ssh/id_ed25519\n\tIdentityFile ~/.ssh/id_rsa\n\tIdentityFile ~/.ssh/id_ecdsa\n\tIdentityFile ~/.ssh/id_dsa' >> ~/.ssh/config
-endif
+	perl -0777 -ne '/# Added by Kryptonite\nHost \*\n\tPKCS11Provider $(subst /,\/,$(PREFIX))\/lib\/kr-pkcs11.so\n\tProxyCommand $(subst /,\/,$(PREFIX))\/bin\/krssh %h %p\n\tIdentityFile ~\/.ssh\/id_kryptonite\n\tIdentityFile ~\/.ssh\/id_ed25519\n\tIdentityFile ~\/.ssh\/id_rsa\n\tIdentityFile ~\/.ssh\/id_ecdsa\n\tIdentityFile ~\/.ssh\/id_dsa/ || exit(1)' ~/.ssh/config || printf '\n# Added by Kryptonite\nHost *\n\tPKCS11Provider $(PREFIX)/lib/kr-pkcs11.so\n\tProxyCommand $(PREFIX)/bin/krssh %%h %%p\n\tIdentityFile ~/.ssh/id_kryptonite\n\tIdentityFile ~/.ssh/id_ed25519\n\tIdentityFile ~/.ssh/id_rsa\n\tIdentityFile ~/.ssh/id_ecdsa\n\tIdentityFile ~/.ssh/id_dsa' >> ~/.ssh/config
 
 start:
 ifeq ($(UNAME_S),Darwin)
