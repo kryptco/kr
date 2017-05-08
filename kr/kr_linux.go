@@ -17,7 +17,7 @@ func runCommandWithUserInteraction(name string, arg ...string) {
 
 func restartCommand(c *cli.Context) (err error) {
 	exec.Command("pkill", "krd").Run()
-	exec.Command("nohup", "/usr/bin/krd", "&").Start()
+	exec.Command("nohup", "krd").Start()
 	PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
 	return
 }

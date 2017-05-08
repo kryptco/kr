@@ -11,7 +11,7 @@ import (
 func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	if runningErr := exec.Command("pgrep", "krd").Run(); runningErr != nil {
 		os.Stderr.WriteString(Yellow("Kryptonite ▶ Restarting krd...\r\n"))
-		exec.Command("nohup", "/usr/bin/krd", "&").Start()
+		exec.Command("nohup", "krd").Start()
 		<-time.After(250*time.Millisecond)
 	}
 	conn, err = net.Dial("unix", unixFile)
@@ -19,7 +19,7 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 		//	restart then try again
 		os.Stderr.WriteString(Yellow("Kryptonite ▶ Restarting krd...\r\n"))
 		exec.Command("pkill", "krd").Start()
-		exec.Command("nohup", "/usr/bin/krd", "&").Run()
+		exec.Command("nohup", "krd").Run()
 		<-time.After(250*time.Millisecond)
 		conn, err = net.Dial("unix", unixFile)
 	}
