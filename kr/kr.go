@@ -234,8 +234,8 @@ func copyCommand(c *cli.Context) (err error) {
 	return
 }
 
-func copyKey() (err error) {
-	me, err := krdclient.RequestMe()
+func copyKey() (me kr.Profile, err error) {
+	me, err = krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
@@ -351,7 +351,18 @@ func gcloudCommand(c *cli.Context) (err error) {
 }
 
 func awsCommand(c *cli.Context) (err error) {
-	copyKey()
+	me, err := copyKey()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	sshPk, err := me.SSHPublicKey()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	if sshPk.Type() != "ssh-rsa" {
+		PrintFatal(os.Stderr, fmt.Sprintf("Unsupported key type: %s, AWS only supports ssh-rsa keys", sshPk.Type()))
+	}
+
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to Amazon Web Services. Then click \"Import Key Pair\" and paste your public key.")
