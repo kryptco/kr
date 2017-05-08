@@ -257,6 +257,8 @@ func addCommand(c *cli.Context) (err error) {
 	}
 	server := c.Args()[0]
 
+	portFlag := c.String("port")
+
 	me, err := krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
@@ -271,12 +273,16 @@ func addCommand(c *cli.Context) (err error) {
 	PrintErr(os.Stderr, "Adding your SSH public key to %s", server)
 
 	authorizedKeyReader := bytes.NewReader(authorizedKey)
-	sshCommand := exec.Command("ssh", server, "read keys; mkdir -m 700 -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys")
-	sshCommand.Stdin = authorizedKeyReader
-	output, err := sshCommand.CombinedOutput()
-	if err != nil {
-		PrintFatal(os.Stderr, strings.TrimSpace(string(output)))
+	args := []string{server}
+	if portFlag != "" {
+		args = append(args, "-p "+portFlag)
 	}
+	args = append(args, "read keys; mkdir -m 700 -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys")
+	sshCommand := exec.Command("ssh", args...)
+	sshCommand.Stdin = authorizedKeyReader
+	sshCommand.Stdout = os.Stdout
+	sshCommand.Stderr = os.Stderr
+	sshCommand.Run()
 	return
 }
 
@@ -438,6 +444,12 @@ func main() {
 			Name:   "add",
 			Usage:  "kr add <user@server or SSH alias> -- add your Kryptonite SSH public key to the server.",
 			Action: addCommand,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "port, p",
+					Usage: "Port of SSH server",
+				},
+			},
 		},
 		cli.Command{
 			Name:   "restart",
