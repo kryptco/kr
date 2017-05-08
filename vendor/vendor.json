@@ -335,10 +335,10 @@
 			"revisionTime": "2016-10-31T15:37:30Z"
 		},
 		{
-			"checksumSHA1": "og+2vKBP04LFRlrPYZT0odbB2wg=",
+			"checksumSHA1": "JH0oyDAICY3HL0FxI4i5eXUH4Mo=",
 			"path": "golang.org/x/crypto/ssh",
-			"revision": "b8a2a83acfe6e6770b75de42d5ff4c67596675c0",
-			"revisionTime": "2017-01-13T19:21:00Z"
+			"revision": "8bae8335e706c1208b27200797897563b66d391b",
+			"revisionTime": "2017-05-08T19:27:07Z"
 		},
 		{
 			"checksumSHA1": "SJ3Ma3Ozavxpbh1usZWBCnzMKIc=",
