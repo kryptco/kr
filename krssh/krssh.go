@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -119,6 +120,12 @@ func startLogger(prefix string) (r kr.NotificationReader, err error) {
 						if strings.HasPrefix(trimmed, "STOP") {
 							return
 						}
+						if strings.HasPrefix(trimmed, "HOST_KEY_MISMATCH") {
+							os.Stderr.WriteString(kr.Red(
+								fmt.Sprintf("Kryptonite ▶ Public key for %s does not match pinned key. If the host key has actually changed, remove the pinned key in Kryptonite.\r\n", host),
+							))
+							os.Exit(1)
+						}
 						os.Stderr.WriteString(trimmed)
 					}
 				} else {
@@ -139,12 +146,13 @@ func startLogger(prefix string) (r kr.NotificationReader, err error) {
 	return
 }
 
+var host, port string
+
 func main() {
 	log.SetFlags(0)
 	if len(os.Args) < 2 {
 		fatal("not enough arguments")
 	}
-	var host, port string
 	host = os.Args[1]
 	if len(os.Args) >= 3 {
 		port = os.Args[2]
