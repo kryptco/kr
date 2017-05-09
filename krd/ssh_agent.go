@@ -159,7 +159,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		Data:                 data,
 		HostAuth:             hostAuth,
 	}
-	signResponse, err := a.client.RequestSignature(signRequest, func() {
+	signResponse, enclaveVersion, err := a.client.RequestSignature(signRequest, func() {
 		a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
 	})
 	if err != nil {
@@ -205,8 +205,13 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	}
 	a.notify(notifyPrefix, notifyPrefix+kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
 	signature := *signResponse.Signature
+	format := algo
+	//	FIXME: sunset backwards compatibility
+	if enclaveVersion.LT(kr.ENCLAVE_VERSION_SUPPORTS_RSA_SHA2_256_512) {
+		format = key.Type()
+	}
 	sshSignature = &ssh.Signature{
-		Format: algo,
+		Format: format,
 		Blob:   signature,
 	}
 	if notifyPrefix != "" {

@@ -173,7 +173,7 @@ func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest k
 }
 
 func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest kr.Request) {
-	signResponse, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest, nil)
+	signResponse, _, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest, nil)
 	if err != nil {
 		cs.log.Error("signature request error:", err)
 		switch err {

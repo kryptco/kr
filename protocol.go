@@ -9,6 +9,9 @@ import (
 	"github.com/blang/semver"
 )
 
+//	Previous enclave versions assume SHA1 for all RSA keys regardless of the PubKeyAlgorithm specified in the signature payload
+var ENCLAVE_VERSION_SUPPORTS_RSA_SHA2_256_512 = semver.MustParse("2.1.0")
+
 type Request struct {
 	RequestID     string         `json:"request_id"`
 	UnixSeconds   int64          `json:"unix_seconds"`
