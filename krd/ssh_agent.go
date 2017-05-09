@@ -431,8 +431,10 @@ func ServeKRAgent(enclaveClient EnclaveClientI, agentListener net.Listener, host
 			continue
 		}
 		go func() {
-			defer conn.Close()
-			agent.ServeAgent(krAgent, conn)
+			kr.RecoverToLog(func() {
+				defer conn.Close()
+				agent.ServeAgent(krAgent, conn)
+			}, log)
 		}()
 	}
 }

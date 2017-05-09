@@ -367,7 +367,7 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest, onACK 
 		client.log.Error(err)
 		return
 	}
-	if callback != nil {
+	if callback != nil && callback.response.SignResponse != nil {
 		response := callback.response
 		signResponse = response.SignResponse
 		enclaveVersion = response.Version
