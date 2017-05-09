@@ -118,7 +118,10 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		return
 	}
 
-	session, err := parseSessionFromSignaturePayload(data)
+	session, algo, err := parseSessionAndAlgoFromSignaturePayload(data)
+
+	a.log.Notice("Using Public Key Signature Digest Algorithm: " + algo)
+
 	var hostAuth *kr.HostAuth
 	notifyPrefix := ""
 	if err != nil {
@@ -203,7 +206,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	a.notify(notifyPrefix, notifyPrefix+kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
 	signature := *signResponse.Signature
 	sshSignature = &ssh.Signature{
-		Format: key.Type(),
+		Format: algo,
 		Blob:   signature,
 	}
 	if notifyPrefix != "" {
