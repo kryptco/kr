@@ -3,8 +3,8 @@ package kr
 import (
 	"crypto/rand"
 	"fmt"
-	"golang.org/x/crypto/nacl/box"
 	"github.com/kryptco/go-crypto/blake2b"
+	"golang.org/x/crypto/nacl/box"
 )
 
 const (
@@ -72,7 +72,7 @@ func sodiumBoxSealOpen(c, pk, sk []byte) (m []byte, err error) {
 
 	var skArr [32]byte
 	copy(skArr[:], sk)
-	
+
 	noncePreimage := append(ephemeralPk[:], pk...)
 	n := blake2b.Sum192(noncePreimage)
 

@@ -55,7 +55,7 @@ func (ps *PairingSecret) SQSBaseQueueName() string {
 func GeneratePairingSecret() (ps *PairingSecret, err error) {
 	ps = new(PairingSecret)
 	ps.WorkstationPublicKey, ps.workstationSecretKey, err = GenKeyPair()
-	if err != nil  {
+	if err != nil {
 		return
 	}
 	ps.WorkstationName = MachineName()

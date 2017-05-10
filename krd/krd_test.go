@@ -1,10 +1,10 @@
 package krd
 
-import(
-	"testing"
-	"runtime"
+import (
 	"flag"
 	"os"
+	"runtime"
+	"testing"
 )
 
 func TestMain(m *testing.M) {

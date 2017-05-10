@@ -28,7 +28,7 @@ func openBrowser(url string) {
 }
 
 func hasAptGet() bool {
-	return exec.Command("which", "apt-get").Run() == nil 
+	return exec.Command("which", "apt-get").Run() == nil
 }
 
 func hasYum() bool {
@@ -81,6 +81,6 @@ func upgradeCommand(c *cli.Context) (err error) {
 	if hasYum() {
 		runCommandWithUserInteraction("sudo", "yum", "clean", "expire-cache")
 		runCommandWithUserInteraction("sudo", "yum", "upgrade", "kr", "-y")
-	}	
+	}
 	return
 }
