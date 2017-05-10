@@ -151,7 +151,7 @@ func testSignature(t *testing.T, ec EnclaveClientI) (resp *kr.SignResponse, dige
 
 	me, _, _ := kr.TestMe(t)
 	fp := me.PublicKeyFingerprint()
-	signResponse, err := ec.RequestSignature(kr.SignRequest{
+	signResponse, _, err := ec.RequestSignature(kr.SignRequest{
 		PublicKeyFingerprint: fp[:],
 		Data:                 digest[:],
 	},

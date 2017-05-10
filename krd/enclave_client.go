@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/golang/groupcache/lru"
 	"github.com/kryptco/kr"
 	"github.com/op/go-logging"
@@ -64,7 +65,7 @@ type EnclaveClientI interface {
 	Stop() (err error)
 	RequestMe(isPairing bool) (*kr.MeResponse, error)
 	GetCachedMe() *kr.Profile
-	RequestSignature(kr.SignRequest, func()) (*kr.SignResponse, error)
+	RequestSignature(kr.SignRequest, func()) (*kr.SignResponse, semver.Version, error)
 	RequestNoOp() error
 }
 
@@ -342,7 +343,7 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 	return
 }
 
-func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest, onACK func()) (signResponse *kr.SignResponse, err error) {
+func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest, onACK func()) (signResponse *kr.SignResponse, enclaveVersion semver.Version, err error) {
 	start := time.Now()
 	request, err := kr.NewRequest()
 	if err != nil {
@@ -366,9 +367,10 @@ func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest, onACK 
 		client.log.Error(err)
 		return
 	}
-	if callback != nil {
+	if callback != nil && callback.response.SignResponse != nil {
 		response := callback.response
 		signResponse = response.SignResponse
+		enclaveVersion = response.Version
 		millis := uint64(time.Since(start) / time.Millisecond)
 		client.log.Notice("Signature response took", millis, "ms")
 		client.postEvent("signature", "success", &callback.medium, &millis)

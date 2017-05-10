@@ -1,8 +1,6 @@
 package krd
 
-import (
-	"golang.org/x/crypto/ssh"
-)
+import "golang.org/x/crypto/ssh"
 
 //	from https://github.com/golang/crypto/blob/master/ssh/common.go#L243-L264
 type signaturePayload struct {
@@ -48,12 +46,15 @@ func stripPubkeyFromSignaturePayload(data []byte) (stripped []byte, err error) {
 	return
 }
 
-func parseSessionFromSignaturePayload(data []byte) (session []byte, err error) {
+func parseSessionAndAlgoFromSignaturePayload(data []byte) (session []byte, algo string, err error) {
 	signedDataFormat := signaturePayload{}
 	err = ssh.Unmarshal(data, &signedDataFormat)
 	if err != nil {
 		return
 	}
+
 	session = signedDataFormat.Session
+	algo = string(signedDataFormat.Algo)
+
 	return
 }
