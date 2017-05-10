@@ -47,6 +47,9 @@ func confirmOrFatal(stderr io.ReadWriter, message string) {
 }
 
 func pairCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "pair", nil, nil)
+	}()
 	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"), os.Stdout, os.Stderr)
 }
 
@@ -178,6 +181,7 @@ func pairOver(unixFile string, forceUnpair bool, stdout io.ReadWriter, stderr io
 }
 
 func unpairCommand(c *cli.Context) (err error) {
+	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "unpair", nil, nil)
 	return unpairOver(kr.DaemonSocketOrFatal(), os.Stdout, os.Stderr)
 }
 
@@ -225,12 +229,14 @@ func meCommand(c *cli.Context) (err error) {
 	}
 	fmt.Println(authorizedKey)
 	PrintErr(os.Stderr, "\r\nCopy this key to your clipboard using \"kr copy\" or add it to a service like Github using \"kr github\". Type \"kr\" to see all available commands.")
+	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "me", nil, nil)
 	return
 }
 
 func copyCommand(c *cli.Context) (err error) {
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
+	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "copy", nil, nil)
 	return
 }
 
@@ -251,6 +257,10 @@ func copyKey() (me kr.Profile, err error) {
 }
 
 func addCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "add", nil, nil)
+	}()
+	copyKey()
 	if len(c.Args()) < 1 {
 		PrintFatal(os.Stderr, "kr add <user@server or SSH alias>")
 		return
@@ -287,6 +297,9 @@ func addCommand(c *cli.Context) (err error) {
 }
 
 func githubCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "github", nil, nil)
+	}()
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
@@ -297,6 +310,9 @@ func githubCommand(c *cli.Context) (err error) {
 }
 
 func gitlabCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "gitlab", nil, nil)
+	}()
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
@@ -307,6 +323,9 @@ func gitlabCommand(c *cli.Context) (err error) {
 }
 
 func bitbucketCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "bitbucket", nil, nil)
+	}()
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
@@ -317,6 +336,9 @@ func bitbucketCommand(c *cli.Context) (err error) {
 }
 
 func digitaloceanCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "digitalocean", nil, nil)
+	}()
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
@@ -327,6 +349,9 @@ func digitaloceanCommand(c *cli.Context) (err error) {
 }
 
 func herokuCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "heroku", nil, nil)
+	}()
 	_, err = krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(os.Stderr, "Failed to retrieve your public key:", err)
@@ -341,6 +366,9 @@ func herokuCommand(c *cli.Context) (err error) {
 }
 
 func gcloudCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "gcloud", nil, nil)
+	}()
 	copyKey()
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
@@ -351,6 +379,9 @@ func gcloudCommand(c *cli.Context) (err error) {
 }
 
 func awsCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "aws", nil, nil)
+	}()
 	me, err := copyKey()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())

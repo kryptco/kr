@@ -16,6 +16,7 @@ func runCommandWithUserInteraction(name string, arg ...string) {
 }
 
 func restartCommand(c *cli.Context) (err error) {
+	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
 	exec.Command("pkill", "krd").Run()
 	exec.Command("nohup", "krd").Start()
 	PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
@@ -35,6 +36,9 @@ func hasYum() bool {
 }
 
 func uninstallCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "uninstall", nil, nil)
+	}()
 	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation? (same as sudo apt-get/yum remove kr)")
 
 	exec.Command("pkill", "krd").Run()
@@ -58,6 +62,9 @@ func uninstallCommand(c *cli.Context) (err error) {
 }
 
 func upgradeCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "upgrade", nil, nil)
+	}()
 	confirmOrFatal(os.Stderr, "Upgrade Kryptonite on this workstation?")
 	if hasAptGet() {
 		update := exec.Command("sudo", "apt-get", "update")

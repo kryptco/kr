@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/kryptco/kr"
 	"github.com/urfave/cli"
 )
 
@@ -16,6 +17,7 @@ func copyEnvToLaunchctl(varName string) {
 }
 
 func restartCommand(c *cli.Context) (err error) {
+	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
 	for _, proxyVar := range []string{"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"} {
 		copyEnvToLaunchctl(proxyVar)
 	}
@@ -49,6 +51,9 @@ func cleanSSHConfig(sshConfig string, backupExtension string) {
 }
 
 func uninstallCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "uninstall", nil, nil)
+	}()
 	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation?")
 	exec.Command("brew", "uninstall", "kr").Run()
 	exec.Command("npm", "uninstall", "-g", "krd").Run()
@@ -76,6 +81,9 @@ func installedWithNPM() bool {
 }
 
 func upgradeCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "upgrade", nil, nil)
+	}()
 	confirmOrFatal(os.Stderr, "Upgrade Kryptonite on this workstation?")
 	var cmd *exec.Cmd
 	if installedWithBrew() {

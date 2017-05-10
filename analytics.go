@@ -1,6 +1,7 @@
 package kr
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -53,4 +54,32 @@ func (Analytics) PostEvent(clientID string, category string, action string, labe
 		params["ev"] = []string{strconv.FormatUint(*value, 10)}
 	}
 	Analytics{}.post(clientID, params)
+}
+
+func readAnalyticsIDFromPersistedPairing() (id string, err error) {
+	krdir, err := KrDir()
+	if err != nil {
+		return
+	}
+	persister := FilePersister{
+		PairingDir: krdir,
+	}
+	pairing, err := persister.LoadPairing()
+	if err != nil {
+		return
+	}
+	if pairing.trackingID == nil {
+		err = errors.New("no tracking ID")
+		return
+	}
+	id = *pairing.trackingID
+	return
+}
+
+func (a Analytics) PostEventUsingPersistedTrackingID(category string, action string, label *string, value *uint64) {
+	id, err := readAnalyticsIDFromPersistedPairing()
+	if err != nil {
+		return
+	}
+	a.PostEvent(id, category, action, label, value)
 }

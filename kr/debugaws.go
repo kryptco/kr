@@ -17,6 +17,9 @@ func timeFunc(name string, f func()) {
 }
 
 func debugAWSCommand(c *cli.Context) (_ error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "debugaws", nil, nil)
+	}()
 	queueName, err := kr.Rand256Base62()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
