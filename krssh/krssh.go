@@ -5,11 +5,13 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -146,34 +148,12 @@ func startLogger(prefix string, checkForUpdate bool) (r kr.NotificationReader, e
 	return
 }
 
-var host, port string
+type StdIOReadWriter struct {
+	io.Reader
+	io.Writer
+}
 
-func main() {
-	log.SetFlags(0)
-	if len(os.Args) < 2 {
-		fatal("not enough arguments")
-	}
-	host = os.Args[1]
-	if len(os.Args) >= 3 {
-		port = os.Args[2]
-	} else {
-		port = "22"
-	}
-
-	notifyPrefix := make(chan string, 1)
-	startLogger("", true)
-	go func() {
-		prefix := <-notifyPrefix
-		startLogger(prefix, false)
-	}()
-
-	remoteConn, err := net.Dial("tcp", host+":"+port)
-	if err != nil {
-		fatal(kr.Red("could not connect to remote: " + err.Error()))
-	}
-
-	remoteDoneChan := make(chan bool)
-
+func startRemoteOutputParsing(remoteConn io.Reader, doneChan chan bool, notifyPrefixChan chan string) {
 	go func() {
 		func() {
 			buf := make([]byte, 1<<18)
@@ -187,7 +167,7 @@ func main() {
 					packetNum++
 					if packetNum > 1 {
 						sshPacket := parseSSHPacket(buf)
-						tryParse(host, notifyPrefix, sshPacket)
+						tryParse(host, notifyPrefixChan, sshPacket)
 					}
 					byteBuf := bytes.NewBuffer(buf[:n])
 					_, err := byteBuf.WriteTo(os.Stdout)
@@ -197,11 +177,11 @@ func main() {
 				}
 			}
 		}()
-		remoteDoneChan <- true
+		doneChan <- true
 	}()
+}
 
-	localDoneChan := make(chan bool)
-
+func startRemoteInputFowarding(remoteInput io.Writer, doneChan chan bool) {
 	go func() {
 		func() {
 			buf := make([]byte, 1<<18)
@@ -212,15 +192,80 @@ func main() {
 				}
 				if n > 0 {
 					byteBuf := bytes.NewBuffer(buf[:n])
-					_, err := byteBuf.WriteTo(remoteConn)
+					_, err := byteBuf.WriteTo(remoteInput)
 					if err != nil {
 						return
 					}
 				}
 			}
 		}()
-		localDoneChan <- true
+		doneChan <- true
 	}()
+}
+
+var host, port string
+
+func main() {
+	log.SetFlags(0)
+
+	proxyCommand := flag.String("p", "", "ssh proxy command")
+	proxyHost := flag.String("h", "", "ssh destination host")
+	flag.Parse()
+	if proxyCommand != nil && *proxyCommand == "" {
+		proxyCommand = nil
+	}
+
+	var remoteConn io.ReadWriter
+
+	if proxyCommand != nil {
+		if proxyHost == nil || *proxyHost == "" {
+			os.Stderr.WriteString(kr.Red("No proxy host specified. Please pass proxy host with the '-h' flag to krssh, i.e. 'ProxyCommand krssh -p \"ssh -W %h:%p destination\" -h %h'\r\n"))
+			os.Exit(1)
+		}
+		host = *proxyHost
+
+		toks := strings.Split(*proxyCommand, " ")
+		sshCommand := exec.Command(toks[0], toks[1:]...)
+
+		proxyStdinR, proxyStdinW := io.Pipe()
+		proxyStdoutR, proxyStdoutW := io.Pipe()
+
+		sshCommand.Stdin = proxyStdinR
+		sshCommand.Stdout = proxyStdoutW
+		sshCommand.Stderr = os.Stderr
+		sshCommand.Start()
+
+		remoteConn = StdIOReadWriter{
+			proxyStdoutR,
+			proxyStdinW,
+		}
+	} else {
+		host = os.Args[1]
+		if len(os.Args) >= 3 {
+			port = os.Args[2]
+		} else {
+			port = "22"
+		}
+
+		var err error
+		remoteConn, err = net.Dial("tcp", host+":"+port)
+		if err != nil {
+			fatal(kr.Red("could not connect to remote: " + err.Error()))
+		}
+	}
+
+	notifyPrefix := make(chan string, 1)
+	startLogger("", true)
+	go func() {
+		prefix := <-notifyPrefix
+		startLogger(prefix, false)
+	}()
+
+	remoteDoneChan := make(chan bool)
+	startRemoteOutputParsing(remoteConn, remoteDoneChan, notifyPrefix)
+
+	localDoneChan := make(chan bool)
+	startRemoteInputFowarding(remoteConn, localDoneChan)
 
 	stopSignal := make(chan os.Signal, 1)
 	signal.Notify(stopSignal, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
