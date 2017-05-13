@@ -187,8 +187,10 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		err = errors.New(*signResponse.Error)
 		a.log.Error(err.Error())
 		if *signResponse.Error == "rejected" {
-			a.notify(notifyPrefix, notifyPrefix+kr.Red("Kryptonite ▶ "+kr.ErrRejected.Error()))
-		} else if strings.HasPrefix(*signResponse.Error, "Host public key mismatched") {
+			//	signal krssh to kill session, allow 1 second to do so
+			a.notify(notifyPrefix, notifyPrefix+"REJECTED")
+			<-time.After(1 * time.Second)
+		} else if strings.HasPrefix(*signResponse.Error, "host public key mismatched") {
 			//	signal krssh to kill session, allow 1 second to do so
 			a.notify(notifyPrefix, notifyPrefix+"HOST_KEY_MISMATCH")
 			<-time.After(1 * time.Second)

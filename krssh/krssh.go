@@ -128,6 +128,10 @@ func startLogger(prefix string, checkForUpdate bool) (r kr.NotificationReader, e
 							))
 							os.Exit(1)
 						}
+						if strings.HasPrefix(trimmed, "REJECTED") {
+							os.Stderr.WriteString(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error() + "\r\n"))
+							os.Exit(1)
+						}
 						os.Stderr.WriteString(trimmed)
 					}
 				} else {
