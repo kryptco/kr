@@ -287,7 +287,7 @@ func addCommand(c *cli.Context) (err error) {
 	if portFlag != "" {
 		args = append(args, "-p "+portFlag)
 	}
-	args = append(args, "read keys; mkdir -m 700 -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys")
+	args = append(args, "sh -c 'read keys; mkdir -m 700 -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys'")
 	sshCommand := exec.Command("ssh", args...)
 	sshCommand.Stdin = authorizedKeyReader
 	sshCommand.Stdout = os.Stdout
