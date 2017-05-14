@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/kryptco/kr"
 	"github.com/urfave/cli"
 )
 
