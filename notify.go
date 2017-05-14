@@ -2,7 +2,6 @@ package kr
 
 import (
 	"bufio"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -59,7 +58,8 @@ func OpenNotificationReader(id string) (r NotificationReader, err error) {
 		return
 	}
 	//	some systems don't truncate correctly
-	file.Seek(0, io.SeekEnd)
+	//	2 = io.Seekend, but not added until Go 1.7
+	file.Seek(0, 2)
 	r = NotificationReader{
 		File:       file,
 		lineReader: bufio.NewReader(file),
