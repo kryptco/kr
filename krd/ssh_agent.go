@@ -121,8 +121,6 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 	session, algo, err := parseSessionAndAlgoFromSignaturePayload(data)
 
-	a.log.Notice("Using Public Key Signature Digest Algorithm: " + algo)
-
 	var hostAuth *kr.HostAuth
 	notifyPrefix := ""
 	if err != nil {
@@ -217,6 +215,8 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	if enclaveVersion.LT(kr.ENCLAVE_VERSION_SUPPORTS_RSA_SHA2_256_512) {
 		format = key.Type()
 	}
+	a.log.Notice("Using Public Key Signature Digest Algorithm: " + format)
+
 	sshSignature = &ssh.Signature{
 		Format: format,
 		Blob:   signature,
