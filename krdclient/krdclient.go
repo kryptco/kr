@@ -46,6 +46,42 @@ func RequestMe() (me kr.Profile, err error) {
 	return
 }
 
+func RequestGitSignatureOver(request kr.GitSignRequest, conn net.Conn) (gitSignResponse kr.GitSignResponse, err error) {
+	gitSignRequest, err := kr.NewRequest()
+	if err != nil {
+		return
+	}
+	gitSignRequest.GitSignRequest = &request
+
+	response, err := makeRequestWithJsonResponse(conn, gitSignRequest)
+	if err != nil {
+		return
+	}
+
+	if response.GitSignResponse != nil {
+		gitSignResponse = *response.GitSignResponse
+		return
+	}
+	err = fmt.Errorf("Response missing GitSignResponse")
+	return
+}
+
+func RequestGitSignature(request kr.GitSignRequest) (response kr.GitSignResponse, err error) {
+	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	defer daemonConn.Close()
+	response, err = RequestGitSignatureOver(request, daemonConn)
+	return
+}
+
 func makeRequestWithJsonResponse(conn net.Conn, request kr.Request) (response kr.Response, err error) {
 	httpRequest, err := request.HTTPRequest()
 	if err != nil {

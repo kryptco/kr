@@ -3,23 +3,26 @@ package kr
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/blang/semver"
+	"golang.org/x/crypto/openpgp/armor"
 )
 
 //	Previous enclave versions assume SHA1 for all RSA keys regardless of the PubKeyAlgorithm specified in the signature payload
 var ENCLAVE_VERSION_SUPPORTS_RSA_SHA2_256_512 = semver.MustParse("2.1.0")
 
 type Request struct {
-	RequestID     string         `json:"request_id"`
-	UnixSeconds   int64          `json:"unix_seconds"`
-	Version       semver.Version `json:"v"`
-	SendACK       bool           `json:"a"`
-	SignRequest   *SignRequest   `json:"sign_request"`
-	MeRequest     *MeRequest     `json:"me_request"`
-	UnpairRequest *UnpairRequest `json:"unpair_request"`
+	RequestID      string          `json:"request_id"`
+	UnixSeconds    int64           `json:"unix_seconds"`
+	Version        semver.Version  `json:"v"`
+	SendACK        bool            `json:"a"`
+	SignRequest    *SignRequest    `json:"sign_request"`
+	GitSignRequest *GitSignRequest `json:"git_sign_request"`
+	MeRequest      *MeRequest      `json:"me_request"`
+	UnpairRequest  *UnpairRequest  `json:"unpair_request"`
 }
 
 func NewRequest() (request Request, err error) {
@@ -37,15 +40,16 @@ func NewRequest() (request Request, err error) {
 }
 
 type Response struct {
-	RequestID      string          `json:"request_id"`
-	Version        semver.Version  `json:"v"`
-	SignResponse   *SignResponse   `json:"sign_response"`
-	MeResponse     *MeResponse     `json:"me_response"`
-	UnpairResponse *UnpairResponse `json:"unpair_response"`
-	AckResponse    *AckResponse    `json:"ack_response"`
-	SNSEndpointARN *string         `json:"sns_endpoint_arn"`
-	ApprovedUntil  *int64          `json:"approved_until"`
-	TrackingID     *string         `json:"tracking_id"`
+	RequestID       string           `json:"request_id"`
+	Version         semver.Version   `json:"v"`
+	SignResponse    *SignResponse    `json:"sign_response"`
+	GitSignResponse *GitSignResponse `json:"git_sign_response"`
+	MeResponse      *MeResponse      `json:"me_response"`
+	UnpairResponse  *UnpairResponse  `json:"unpair_response"`
+	AckResponse     *AckResponse     `json:"ack_response"`
+	SNSEndpointARN  *string          `json:"sns_endpoint_arn"`
+	ApprovedUntil   *int64           `json:"approved_until"`
+	TrackingID      *string          `json:"tracking_id"`
 }
 
 type SignRequest struct {
@@ -60,6 +64,47 @@ type SignRequest struct {
 type SignResponse struct {
 	Signature *[]byte `json:"signature"`
 	Error     *string `json:"error"`
+}
+
+type GitSignRequest struct {
+	Commit CommitInfo `json:"commit"`
+	//	SHA256 hash of AsciiArmor string
+	PublicKeyFingerprint []byte `json:"public_key_fingerprint"`
+}
+
+type GitSignResponse struct {
+	Signature *[]byte `json:"signature"`
+	Error     *string `json:"error"`
+}
+
+func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
+	if gsr.Signature == nil {
+		err = fmt.Errorf("no signature")
+		return
+	}
+	output := &bytes.Buffer{}
+	input, err := armor.Encode(output, "PGP SIGNATURE", map[string]string{"Comment": "Created With Kryptonite"})
+	if err != nil {
+		return
+	}
+	_, err = input.Write(*gsr.Signature)
+	if err != nil {
+		return
+	}
+	err = input.Close()
+	if err != nil {
+		return
+	}
+	s = string(output.Bytes())
+	return
+}
+
+type CommitInfo struct {
+	Tree      []byte `json:"tree"`
+	Parent    []byte `json:"parent"`
+	Author    []byte `json:"author"`
+	Committer []byte `json:"committer"`
+	Message   []byte `json:"message"`
 }
 
 type MeRequest struct{}

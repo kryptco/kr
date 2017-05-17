@@ -240,6 +240,13 @@ func meCommand(c *cli.Context) (err error) {
 		PrintFatal(os.Stderr, err.Error())
 	}
 	fmt.Println(authorizedKey)
+
+	pgp, err := me.AsciiArmorPGPPublicKey()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	fmt.Println(pgp)
+
 	PrintErr(os.Stderr, "\r\nCopy this key to your clipboard using \"kr copy\" or add it to a service like Github using \"kr github\". Type \"kr\" to see all available commands.")
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "me", nil, nil)
 	return
