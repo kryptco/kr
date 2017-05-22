@@ -68,8 +68,7 @@ type SignResponse struct {
 
 type GitSignRequest struct {
 	Commit CommitInfo `json:"commit"`
-	//	SHA256 hash of AsciiArmor string
-	PublicKeyFingerprint []byte `json:"public_key_fingerprint"`
+	UserId string     `json:"user_id"`
 }
 
 type GitSignResponse struct {
@@ -107,7 +106,9 @@ type CommitInfo struct {
 	Message   []byte `json:"message"`
 }
 
-type MeRequest struct{}
+type MeRequest struct {
+	PGPUserId *string `json:"pgp_user_id"`
+}
 
 type MeResponse struct {
 	Me Profile `json:"me"`

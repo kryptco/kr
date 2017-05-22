@@ -318,6 +318,13 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 		return
 	}
 	meRequest.MeRequest = &kr.MeRequest{}
+	gitUserId, err := kr.GlobalGitUserId()
+	if err == nil {
+		meRequest.MeRequest.PGPUserId = &gitUserId
+	} else {
+		client.log.Error("error reading git global user ID: " + err.Error())
+		err = nil
+	}
 	timeout := client.Timeouts.Me.Fail
 	if isPairing {
 		timeout = client.Timeouts.Pair.Fail
