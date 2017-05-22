@@ -37,4 +37,10 @@ commit.gpgSign
 
 - custom agent that falls back to old gpg agent, modify ~/.gnupg/gpg-agent.conf
 
-
+# Onboarding
+- change gitconfig gpg.program = krgpg
+- generate PGP public key for default git user ID
+- add PGP key to local gpg with ultimate trust
+- add key to github
+- ask user whether to enable automatic commit signing
+- prompt user to add `export GPG_TTY=$(tty)` to bashrc
