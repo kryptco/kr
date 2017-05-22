@@ -99,11 +99,11 @@ func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
 }
 
 type CommitInfo struct {
-	Tree      []byte `json:"tree"`
-	Parent    []byte `json:"parent"`
-	Author    []byte `json:"author"`
-	Committer []byte `json:"committer"`
-	Message   []byte `json:"message"`
+	Tree      []byte  `json:"tree"`
+	Parent    *[]byte `json:"parent"`
+	Author    []byte  `json:"author"`
+	Committer []byte  `json:"committer"`
+	Message   []byte  `json:"message"`
 }
 
 type MeRequest struct {

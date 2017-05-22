@@ -28,7 +28,7 @@ func setupTTY() {
 	}
 }
 
-func readLineIgnoringFirstToken(reader *bufio.Reader) (b []byte, err error) {
+func readLineSplittingFirstToken(reader *bufio.Reader) (firstToken string, b []byte, err error) {
 	line, err := reader.ReadString('\n')
 	if err != nil {
 		return
@@ -38,6 +38,7 @@ func readLineIgnoringFirstToken(reader *bufio.Reader) (b []byte, err error) {
 		err = fmt.Errorf("no tokens")
 		return
 	}
+	firstToken = toks[0]
 	b = []byte(strings.Join(toks[1:], " "))
 	return
 }
@@ -114,25 +115,41 @@ func signGitCommit() {
 	stdinBytes, _ := ioutil.ReadAll(os.Stdin)
 	stderr.WriteString(string(stdinBytes))
 	reader := bufio.NewReader(bytes.NewReader(stdinBytes))
-	tree, err := readLineIgnoringFirstToken(reader)
+	tag, tree, err := readLineSplittingFirstToken(reader)
 	if err != nil {
 		stderr.WriteString("error parsing commit tree")
 		stderr.WriteString(err.Error())
 		os.Exit(1)
 	}
-	parent, err := readLineIgnoringFirstToken(reader)
+	if tag != "tree" {
+		stderr.WriteString("error parsing commit tree, wrong tag")
+		os.Exit(1)
+	}
+	var parent *[]byte
+	var author []byte
+	secondTag, secondContents, err := readLineSplittingFirstToken(reader)
 	if err != nil {
-		stderr.WriteString("error parsing commit parent")
+		stderr.WriteString("error parsing commit second line")
 		stderr.WriteString(err.Error())
 		os.Exit(1)
 	}
-	author, err := readLineIgnoringFirstToken(reader)
-	if err != nil {
-		stderr.WriteString("error parsing commit author")
-		stderr.WriteString(err.Error())
+	switch secondTag {
+	case "parent":
+		parent = &secondContents
+		_, author, err = readLineSplittingFirstToken(reader)
+		if err != nil {
+			stderr.WriteString("error parsing commit author")
+			stderr.WriteString(err.Error())
+			os.Exit(1)
+		}
+	case "author":
+		author = secondContents
+	default:
+		stderr.WriteString("error parsing commit second line, wrong tag")
 		os.Exit(1)
 	}
-	committer, err := readLineIgnoringFirstToken(reader)
+
+	_, committer, err := readLineSplittingFirstToken(reader)
 	if err != nil {
 		stderr.WriteString("error parsing commit committer")
 		stderr.WriteString(err.Error())
