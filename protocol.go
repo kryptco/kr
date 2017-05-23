@@ -19,10 +19,10 @@ type Request struct {
 	UnixSeconds    int64           `json:"unix_seconds"`
 	Version        semver.Version  `json:"v"`
 	SendACK        bool            `json:"a"`
-	SignRequest    *SignRequest    `json:"sign_request"`
-	GitSignRequest *GitSignRequest `json:"git_sign_request"`
-	MeRequest      *MeRequest      `json:"me_request"`
-	UnpairRequest  *UnpairRequest  `json:"unpair_request"`
+	SignRequest    *SignRequest    `json:"sign_request,omitempty"`
+	GitSignRequest *GitSignRequest `json:"git_sign_request,omitempty"`
+	MeRequest      *MeRequest      `json:"me_request,omitempty"`
+	UnpairRequest  *UnpairRequest  `json:"unpair_request,omitempty"`
 }
 
 func NewRequest() (request Request, err error) {
@@ -42,14 +42,14 @@ func NewRequest() (request Request, err error) {
 type Response struct {
 	RequestID       string           `json:"request_id"`
 	Version         semver.Version   `json:"v"`
-	SignResponse    *SignResponse    `json:"sign_response"`
-	GitSignResponse *GitSignResponse `json:"git_sign_response"`
-	MeResponse      *MeResponse      `json:"me_response"`
-	UnpairResponse  *UnpairResponse  `json:"unpair_response"`
-	AckResponse     *AckResponse     `json:"ack_response"`
-	SNSEndpointARN  *string          `json:"sns_endpoint_arn"`
-	ApprovedUntil   *int64           `json:"approved_until"`
-	TrackingID      *string          `json:"tracking_id"`
+	SignResponse    *SignResponse    `json:"sign_response,omitempty"`
+	GitSignResponse *GitSignResponse `json:"git_sign_response,omitempty"`
+	MeResponse      *MeResponse      `json:"me_response,omitempty"`
+	UnpairResponse  *UnpairResponse  `json:"unpair_response,omitempty"`
+	AckResponse     *AckResponse     `json:"ack_response,omitempty"`
+	SNSEndpointARN  *string          `json:"sns_endpoint_arn,omitempty"`
+	ApprovedUntil   *int64           `json:"approved_until,omitempty"`
+	TrackingID      *string          `json:"tracking_id,omitempty"`
 }
 
 type SignRequest struct {
@@ -57,23 +57,24 @@ type SignRequest struct {
 	Data []byte `json:"data"`
 	//	SHA256 hash of SSH wire format
 	PublicKeyFingerprint []byte    `json:"public_key_fingerprint"`
-	Command              *string   `json:"command"`
-	HostAuth             *HostAuth `json:"host_auth"`
+	Command              *string   `json:"command,omitempty"`
+	HostAuth             *HostAuth `json:"host_auth,omitempty"`
 }
 
 type SignResponse struct {
-	Signature *[]byte `json:"signature"`
-	Error     *string `json:"error"`
+	Signature *[]byte `json:"signature,omitempty"`
+	Error     *string `json:"error,omitempty"`
 }
 
 type GitSignRequest struct {
-	Commit CommitInfo `json:"commit"`
-	UserId string     `json:"user_id"`
+	Commit *CommitInfo `json:"commit,omitempty"`
+	Tag    *TagInfo    `json:"tag,omitempty"`
+	UserId string      `json:"user_id"`
 }
 
 type GitSignResponse struct {
-	Signature *[]byte `json:"signature"`
-	Error     *string `json:"error"`
+	Signature *[]byte `json:"signature,omitempty"`
+	Error     *string `json:"error,omitempty"`
 }
 
 func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
@@ -99,15 +100,23 @@ func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
 }
 
 type CommitInfo struct {
-	Tree      []byte  `json:"tree"`
-	Parent    *[]byte `json:"parent"`
-	Author    []byte  `json:"author"`
-	Committer []byte  `json:"committer"`
+	Tree      string  `json:"tree"`
+	Parent    *string `json:"parent,omitempty"`
+	Author    string  `json:"author"`
+	Committer string  `json:"committer"`
 	Message   []byte  `json:"message"`
 }
 
+type TagInfo struct {
+	Object  string `json:"object"`
+	Type    string `json:"type"`
+	Tag     string `json:"tag"`
+	Tagger  string `json:"tagger"`
+	Message []byte `json:"message"`
+}
+
 type MeRequest struct {
-	PGPUserId *string `json:"pgp_user_id"`
+	PGPUserId *string `json:"pgp_user_id,omitempty"`
 }
 
 type MeResponse struct {
