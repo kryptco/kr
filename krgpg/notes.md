@@ -44,3 +44,4 @@ commit.gpgSign
 - add key to github
 - ask user whether to enable automatic commit signing
 - prompt user to add `export GPG_TTY=$(tty)` to bashrc
+- upload pk to key server?
