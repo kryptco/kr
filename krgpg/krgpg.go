@@ -2,12 +2,13 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/urfave/cli"
 
@@ -112,9 +113,7 @@ func redirectToGPG() {
 }
 
 func signGit() {
-	stdinBytes, _ := ioutil.ReadAll(os.Stdin)
-	stderr.WriteString(string(stdinBytes))
-	reader := bufio.NewReader(bytes.NewReader(stdinBytes))
+	reader := bufio.NewReader(os.Stdin)
 	tag, firstLine, err := readLineSplittingFirstToken(reader)
 	if err != nil {
 		stderr.WriteString("error parsing first line")
@@ -176,15 +175,18 @@ func signGitCommit(tree string, reader *bufio.Reader) {
 		Committer: committer,
 		Message:   message,
 	}
-	request := kr.GitSignRequest{
-		Commit: &commit,
-		UserId: os.Args[len(os.Args)-1],
-	}
-	response, err := krdclient.RequestGitSignature(request)
+	request, err := kr.NewRequest()
 	if err != nil {
 		stderr.WriteString(err.Error())
 		os.Exit(1)
 	}
+	startLogger(request.NotifyPrefix())
+	request.GitSignRequest = &kr.GitSignRequest{
+		Commit: &commit,
+		UserId: os.Args[len(os.Args)-1],
+	}
+	stderr.WriteString(kr.Cyan("Kryptonite ▶ Requesting git commit signature from phone") + "\r\n")
+	response := requestSignature(request)
 	sig, err := response.AsciiArmorSignature()
 	if err != nil {
 		stderr.WriteString(err.Error())
@@ -229,15 +231,18 @@ func signGitTag(object string, reader *bufio.Reader) {
 		Tagger:  tagger,
 		Message: message,
 	}
-	request := kr.GitSignRequest{
-		Tag:    &tagInfo,
-		UserId: os.Args[len(os.Args)-1],
-	}
-	response, err := krdclient.RequestGitSignature(request)
+	request, err := kr.NewRequest()
 	if err != nil {
 		stderr.WriteString(err.Error())
 		os.Exit(1)
 	}
+	startLogger(request.NotifyPrefix())
+	request.GitSignRequest = &kr.GitSignRequest{
+		Tag:    &tagInfo,
+		UserId: os.Args[len(os.Args)-1],
+	}
+	stderr.WriteString(kr.Cyan("Kryptonite ▶ Requesting git tag signature from phone") + "\r\n")
+	response := requestSignature(request)
 	sig, err := response.AsciiArmorSignature()
 	if err != nil {
 		stderr.WriteString(err.Error())
@@ -248,4 +253,61 @@ func signGitTag(object string, reader *bufio.Reader) {
 	os.Stdout.Close()
 	os.Stderr.WriteString("\n[GNUPG:] SIG_CREATED ")
 	os.Exit(0)
+}
+
+func requestSignature(request kr.Request) kr.GitSignResponse {
+	response, err := krdclient.RequestGitSignature(request)
+	if err != nil {
+		switch err {
+		case kr.ErrNotPaired:
+			stderr.WriteString(kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()) + "\r\n")
+			os.Exit(1)
+		case kr.ErrConnectingToDaemon:
+			stderr.WriteString(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\"\r\n"))
+			os.Exit(1)
+		default:
+			stderr.WriteString(kr.Red("Kryptonite ▶ Unknown error: " + err.Error() + "\r\n"))
+			os.Exit(1)
+		}
+	}
+	if response.Error != nil {
+		switch *response.Error {
+		case "rejected":
+			stderr.WriteString(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error() + "\r\n"))
+			os.Exit(1)
+		}
+	}
+	stderr.WriteString(kr.Green("Kryptonite ▶ Success. Request Allowed ✔") + "\r\n")
+	return response
+}
+
+func startLogger(prefix string) (r kr.NotificationReader, err error) {
+	r, err = kr.OpenNotificationReader(prefix)
+	if err != nil {
+		return
+	}
+	go func() {
+		if prefix != "" {
+			defer os.Remove(r.Name())
+		}
+
+		printedNotifications := map[string]bool{}
+		for {
+			notification, err := r.Read()
+			switch err {
+			case nil:
+				notificationStr := string(notification)
+				if _, ok := printedNotifications[notificationStr]; ok {
+					continue
+				}
+				stderr.WriteString(notificationStr)
+				printedNotifications[notificationStr] = true
+			case io.EOF:
+				<-time.After(50 * time.Millisecond)
+			default:
+				return
+			}
+		}
+	}()
+	return
 }

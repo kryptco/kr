@@ -39,6 +39,10 @@ func NewRequest() (request Request, err error) {
 	return
 }
 
+func (r Request) NotifyPrefix() string {
+	return fmt.Sprintf("[%s]", r.RequestID)
+}
+
 type Response struct {
 	RequestID       string           `json:"request_id"`
 	Version         semver.Version   `json:"v"`
