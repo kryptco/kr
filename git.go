@@ -3,6 +3,7 @@ package kr
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 )
 
 func GlobalGitUserId() (id string, err error) {
@@ -14,6 +15,6 @@ func GlobalGitUserId() (id string, err error) {
 	if err != nil {
 		return
 	}
-	id = fmt.Sprintf("%s <%s>", name, email)
+	id = fmt.Sprintf("%s <%s>", strings.TrimSpace(string(name)), strings.TrimSpace(string(email)))
 	return
 }
