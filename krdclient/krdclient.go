@@ -46,14 +46,8 @@ func RequestMe() (me kr.Profile, err error) {
 	return
 }
 
-func RequestGitSignatureOver(request kr.GitSignRequest, conn net.Conn) (gitSignResponse kr.GitSignResponse, err error) {
-	gitSignRequest, err := kr.NewRequest()
-	if err != nil {
-		return
-	}
-	gitSignRequest.GitSignRequest = &request
-
-	response, err := makeRequestWithJsonResponse(conn, gitSignRequest)
+func RequestGitSignatureOver(request kr.Request, conn net.Conn) (gitSignResponse kr.GitSignResponse, err error) {
+	response, err := makeRequestWithJsonResponse(conn, request)
 	if err != nil {
 		return
 	}
@@ -66,7 +60,7 @@ func RequestGitSignatureOver(request kr.GitSignRequest, conn net.Conn) (gitSignR
 	return
 }
 
-func RequestGitSignature(request kr.GitSignRequest) (response kr.GitSignResponse, err error) {
+func RequestGitSignature(request kr.Request) (response kr.GitSignResponse, err error) {
 	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
 	if err != nil {
 		err = kr.ErrConnectingToDaemon

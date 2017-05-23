@@ -210,9 +210,13 @@ func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest
 		w.WriteHeader(http.StatusNotFound)
 	}
 }
-
 func (cs *ControlServer) handleEnclaveGitSign(w http.ResponseWriter, enclaveRequest kr.Request) {
-	signResponse, _, err := cs.enclaveClient.RequestGitSignature(*enclaveRequest.GitSignRequest, nil)
+	signResponse, _, err := cs.enclaveClient.RequestGitSignature(
+		*enclaveRequest.GitSignRequest,
+		func() {
+			cs.notify(enclaveRequest.NotifyPrefix(), kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
+		})
+
 	if err != nil {
 		cs.log.Error("signature request error:", err)
 		switch err {
@@ -241,4 +245,18 @@ func (cs *ControlServer) handleEnclaveGitSign(w http.ResponseWriter, enclaveRequ
 
 func (cs *ControlServer) handlePing(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+}
+
+func (cs *ControlServer) notify(prefix, body string) {
+	n, err := kr.OpenNotifier(prefix)
+	if err != nil {
+		cs.log.Error("error writing notification: " + err.Error())
+		return
+	}
+	defer n.Close()
+	err = n.Notify(append([]byte(body), '\r', '\n'))
+	if err != nil {
+		cs.log.Error("error writing notification: " + err.Error())
+		return
+	}
 }
