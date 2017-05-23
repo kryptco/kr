@@ -241,21 +241,39 @@ func meCommand(c *cli.Context) (err error) {
 	}
 	fmt.Println(authorizedKey)
 
-	pgp, err := me.AsciiArmorPGPPublicKey()
-	if err != nil {
-		PrintFatal(os.Stderr, err.Error())
-	}
-	fmt.Println(pgp)
-
 	PrintErr(os.Stderr, "\r\nCopy this key to your clipboard using \"kr copy\" or add it to a service like Github using \"kr github\". Type \"kr\" to see all available commands.")
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "me", nil, nil)
 	return
 }
 
+func mePGPCommand(c *cli.Context) (err error) {
+	me, err := krdclient.RequestMe()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+
+	pgp, err := me.AsciiArmorPGPPublicKey()
+	if err != nil {
+		PrintFatal(os.Stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and that you have run "+kr.Cyan("kr codesign")+" successfully.")
+	}
+	fmt.Println(pgp)
+
+	PrintErr(os.Stderr, "\r\nCopy this key to your clipboard using "+kr.Cyan("kr copy pgp")+" or add it to Github using "+kr.Cyan("kr github pgp")+". Type "+kr.Cyan("kr")+" to see all available commands.")
+	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "me pgp", nil, nil)
+	return
+}
+
 func copyCommand(c *cli.Context) (err error) {
 	copyKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
+	PrintErr(os.Stderr, "SSH public key copied to clipboard.")
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "copy", nil, nil)
+	return
+}
+
+func copyPGPCommand(c *cli.Context) (err error) {
+	copyPGPKey()
+	PrintErr(os.Stderr, "PGP public key copied to clipboard.")
+	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "copy pgp", nil, nil)
 	return
 }
 
@@ -272,6 +290,27 @@ func copyKey() (me kr.Profile, err error) {
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
+	return
+}
+
+func copyPGPKey() (me kr.Profile, err error) {
+	me, err = copyPGPKeyNonFatalClipboard()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	return
+}
+
+func copyPGPKeyNonFatalClipboard() (me kr.Profile, err error) {
+	me, err = krdclient.RequestMe()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	pk, err := me.AsciiArmorPGPPublicKey()
+	if err != nil {
+		PrintFatal(os.Stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and that you have run "+kr.Cyan("kr codesign")+" successfully.")
+	}
+	err = clipboard.WriteAll(pk)
 	return
 }
 
@@ -323,6 +362,19 @@ func githubCommand(c *cli.Context) (err error) {
 	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitHub. Then click \"New SSH Key\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
+	openBrowser("https://github.com/settings/keys")
+	return
+}
+
+func githubPGPCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "github pgp", nil, nil)
+	}()
+	copyPGPKey()
+	PrintErr(os.Stderr, "PGP public key copied to clipboard.")
+	<-time.After(500 * time.Millisecond)
+	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitHub. Then click "+kr.Cyan("New GPG key")+" and paste your public key.")
 	os.Stdin.Read([]byte{0})
 	openBrowser("https://github.com/settings/keys")
 	return
@@ -421,6 +473,69 @@ func awsCommand(c *cli.Context) (err error) {
 	return
 }
 
+func codesignCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
+	}()
+	stderr := os.Stderr
+	err = exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+
+	getConn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+	defer getConn.Close()
+
+	//	explicitly ask phone, disregarding cached ME in case the phone did not support PGP when first paired
+	getPair, err := http.NewRequest("GET", "/pair", nil)
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+	err = getPair.Write(getConn)
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+
+	getReader := bufio.NewReader(getConn)
+	getResponse, err := http.ReadResponse(getReader, getPair)
+
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+	switch getResponse.StatusCode {
+	case http.StatusNotFound, http.StatusInternalServerError:
+		PrintFatal(stderr, "Failed to communicate with phone, ensure your phone and workstation are connected to the internet and try again.")
+	case http.StatusOK:
+	default:
+		PrintFatal(stderr, "Failed to communicate with phone, error %d", getResponse.StatusCode)
+	}
+	defer getResponse.Body.Close()
+	var me kr.Profile
+	err = json.NewDecoder(getResponse.Body).Decode(&me)
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+
+	pk, err := me.AsciiArmorPGPPublicKey()
+	if err != nil {
+		PrintFatal(stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and try again.")
+	}
+	os.Stderr.WriteString("Code signing uses a different type of public key than SSH, called a " + kr.Cyan("PGP public key") + "\r\n")
+
+	onboardGithub(pk)
+
+	os.Stderr.WriteString("You can print this key in the future by running " + kr.Cyan("kr me pgp") + " or copy it to your clipboard by running " + kr.Cyan("kr copy pgp") + "\r\n")
+
+	onboardAutoCommitSign()
+
+	onboardGPG_TTY()
+
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -447,11 +562,31 @@ func main() {
 			Name:   "me",
 			Usage:  "Print your SSH public key.",
 			Action: meCommand,
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "pgp",
+					Usage:  "Print your PGP public key.",
+					Action: mePGPCommand,
+				},
+			},
+		},
+		cli.Command{
+			Name:   "codesign",
+			Usage:  "Setup Kryptonite to sign git commits.",
+			Flags:  []cli.Flag{},
+			Action: codesignCommand,
 		},
 		cli.Command{
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard.",
 			Action: copyCommand,
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "pgp",
+					Usage:  "Copy your PGP public key to the clipboard.",
+					Action: copyPGPCommand,
+				},
+			},
 		},
 		cli.Command{
 			Name:  "aws,bitbucket,digitalocean,gcloud,github,gitlab,heroku",
@@ -462,6 +597,13 @@ func main() {
 			Usage:  "Upload your public key to GitHub. Copies your public key to the clipboard and opens GitHub settings.",
 			Action: githubCommand,
 			Hidden: true,
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "pgp",
+					Usage:  "Upload your PGP public key to GitHub. Copies your public key to the clipboard and opens GitHub settings.",
+					Action: githubPGPCommand,
+				},
+			},
 		},
 		cli.Command{
 			Name:   "gitlab",
