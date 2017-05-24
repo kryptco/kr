@@ -323,6 +323,18 @@
 			"revisionTime": "2017-05-24T20:39:50Z"
 		},
 		{
+			"checksumSHA1": "olOKkhrdkYQHZ0lf1orrFQPQrv4=",
+			"path": "golang.org/x/crypto/openpgp/armor",
+			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
+			"revisionTime": "2017-05-24T20:39:50Z"
+		},
+		{
+			"checksumSHA1": "EhXQZ5k3Kfs6JHsjpE0caHQO9bc=",
+			"path": "golang.org/x/crypto/openpgp/packet",
+			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
+			"revisionTime": "2017-05-24T20:39:50Z"
+		},
+		{
 			"checksumSHA1": "jyP8QOzvouqRy4o3MKNjBl/K3o8=",
 			"path": "golang.org/x/crypto/poly1305",
 			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
