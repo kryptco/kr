@@ -527,12 +527,15 @@ func codesignCommand(c *cli.Context) (err error) {
 
 	onboardGithub(pk)
 
-	os.Stderr.WriteString("You can print this key in the future by running " + kr.Cyan("kr me pgp") + " or copy it to your clipboard by running " + kr.Cyan("kr copy pgp") + "\r\n")
+	os.Stderr.WriteString("You can print this key in the future by running " + kr.Cyan("kr me pgp") + " or copy it to your clipboard by running " + kr.Cyan("kr copy pgp") + "\r\n\r\n")
 
 	onboardAutoCommitSign()
 
 	onboardGPG_TTY()
 
+	onboardKeyServerUpload(pk)
+
+	onboardLocalGPG(me)
 	return
 }
 
