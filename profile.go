@@ -5,10 +5,12 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"strings"
 
 	"golang.org/x/crypto/openpgp/armor"
+	"golang.org/x/crypto/openpgp/packet"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -50,7 +52,7 @@ func (p Profile) AsciiArmorPGPPublicKey() (s string, err error) {
 		return
 	}
 	output := &bytes.Buffer{}
-	input, err := armor.Encode(output, "PGP PUBLIC KEY BLOCK", map[string]string{"Created With": "Kryptonite"})
+	input, err := armor.Encode(output, "PGP PUBLIC KEY BLOCK", map[string]string{"Comment": "Created With Kryptonite"})
 	if err != nil {
 		return
 	}
@@ -63,5 +65,30 @@ func (p Profile) AsciiArmorPGPPublicKey() (s string, err error) {
 		return
 	}
 	s = string(output.Bytes())
+	return
+}
+
+func (p Profile) PGPPublicKeySHA1Fingerprint() (s string, err error) {
+	if p.PGPPublicKey == nil {
+		err = fmt.Errorf("no pgp public key")
+		return
+	}
+	reader := bytes.NewReader(*p.PGPPublicKey)
+	for {
+		var pkt packet.Packet
+		pkt, err = packet.Read(reader)
+		if err != nil {
+			return
+		}
+		switch pkt := pkt.(type) {
+		case *packet.PublicKey:
+			digest := pkt.Fingerprint[:]
+			s = hex.EncodeToString(digest)
+			return
+		default:
+			continue
+		}
+	}
+	err = fmt.Errorf("no pgp public key packet found")
 	return
 }
