@@ -474,6 +474,7 @@ func awsCommand(c *cli.Context) (err error) {
 }
 
 func codesignCommand(c *cli.Context) (err error) {
+	interactive := c.Bool("interactive")
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
 	}()
@@ -529,13 +530,13 @@ func codesignCommand(c *cli.Context) (err error) {
 
 	os.Stderr.WriteString("You can print this key in the future by running " + kr.Cyan("kr me pgp") + " or copy it to your clipboard by running " + kr.Cyan("kr copy pgp") + "\r\n\r\n")
 
-	onboardAutoCommitSign()
+	onboardAutoCommitSign(interactive)
 
-	onboardGPG_TTY()
+	onboardGPG_TTY(interactive)
 
-	onboardKeyServerUpload(pk)
+	onboardKeyServerUpload(interactive, pk)
 
-	onboardLocalGPG(me)
+	onboardLocalGPG(interactive, me)
 	return
 }
 
@@ -574,9 +575,14 @@ func main() {
 			},
 		},
 		cli.Command{
-			Name:   "codesign",
-			Usage:  "Setup Kryptonite to sign git commits.",
-			Flags:  []cli.Flag{},
+			Name:  "codesign",
+			Usage: "Setup Kryptonite to sign git commits.",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "interactive,i",
+					Usage: "Prompt before each step.",
+				},
+			},
 			Action: codesignCommand,
 		},
 		cli.Command{
