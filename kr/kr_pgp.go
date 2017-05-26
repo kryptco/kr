@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -62,19 +63,46 @@ func shellRCFileAndGPG_TTYExport() (file string, export string) {
 		return filepath.Join(os.Getenv("HOME"), ".zshrc"), "export GPG_TTY=$(tty)"
 	} else if strings.Contains(shell, "bash") {
 		return filepath.Join(os.Getenv("HOME"), ".bashrc"), "export GPG_TTY=$(tty)"
+	} else if strings.Contains(shell, "ksh") {
+		return filepath.Join(os.Getenv("HOME"), ".kshrc"), "export GPG_TTY=$(tty)"
+	} else if strings.Contains(shell, "csh") {
+		return filepath.Join(os.Getenv("HOME"), ".cshrc"), "setenv GPG_TTY `tty`"
 	} else if strings.Contains(shell, "fish") {
-		return filepath.Join(os.Getenv("HOME"), ".bashrc"), "export GPG_TTY=(tty)"
+		return filepath.Join(os.Getenv("HOME"), ".config", "fish", "config.fish"), "set -x GPG_TTY (tty)"
 	} else {
 		return filepath.Join(os.Getenv("HOME"), "/.profile"), "export GPG_TTY=$(tty)"
 	}
 }
 
+func addGPG_TTYExportToCurrentShellIfNotPresent() {
+	path, cmd := shellRCFileAndGPG_TTYExport()
+	rcContents, err := ioutil.ReadFile(path)
+	if err == nil {
+		if strings.Contains(string(rcContents), cmd) {
+			return
+		}
+	}
+	rcFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		return
+	}
+	//	seek to end
+	rcFile.Seek(0, 2)
+	rcFile.WriteString(cmd + "\n")
+	rcFile.Close()
+}
+
 func onboardGPG_TTY(interactive bool) {
-	if os.Getenv("GPG_TTY") == "" {
+	if os.Getenv("GPG_TTY") != "" {
+		return
+	}
+	if interactive {
 		os.Stderr.WriteString("\r\n" + kr.Red("WARNING:") + " In order to see Kryptonite log messages when requesting a git signature, add " + kr.Yellow("export GPG_TTY=$(tty)") + " to your shell startup (~/.bashrc, ~/.bash_profile, ~/.zshrc, etc.) and restart your terminal.\r\n")
 		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to continue")
 		os.Stdin.Read([]byte{0})
 		os.Stderr.WriteString("\r\n")
+	} else {
+		addGPG_TTYExportToCurrentShellIfNotPresent()
 	}
 }
 
