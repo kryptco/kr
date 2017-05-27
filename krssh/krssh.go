@@ -60,11 +60,17 @@ func sendHostAuth(hostAuth kr.HostAuth) {
 func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error) {
 	kexECDHReplyTemplate := kexECDHReplyMsg{}
 	err = ssh.Unmarshal(buf, &kexECDHReplyTemplate)
+
+	hostnameWithNonDefaultPort := hostname
+	if port != "22" {
+		hostnameWithNonDefaultPort += ":" + port
+	}
+
 	if err == nil {
 		hostAuth := kr.HostAuth{
 			HostKey:   kexECDHReplyTemplate.HostKey,
 			Signature: kexECDHReplyTemplate.Signature,
-			HostNames: []string{hostname},
+			HostNames: []string{hostnameWithNonDefaultPort},
 		}
 		sigHash := sha256.Sum256(hostAuth.Signature)
 		select {
