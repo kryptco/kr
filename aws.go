@@ -2,8 +2,10 @@ package kr
 
 import (
 	"encoding/json"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -19,7 +21,38 @@ func queueNameToURL(name string) string {
 	return SQS_BASE_QUEUE_URL + name
 }
 
+var AWS_ENV_VARS_TO_UNSET = []string{
+	"AWS_ACCESS_KEY_ID",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_SESSION_TOKEN",
+	"AWS_DEFAULT_REGION",
+	"AWS_DEFAULT_PROFILE",
+	"AWS_ACCESS_KEY",
+	"AWS_SECRET_KEY",
+	"AWS_SDK_LOAD_CONFIG",
+}
+
+var AWS_ENV_VARS_TO_DEVNULL = []string{
+	"AWS_CONFIG_FILE",
+	"AWS_SHARED_CREDENTIALS_FILE",
+}
+
+func unsetAWSEnvVars() {
+	//	aws-sdk-go by default looks at ENV vars for shared configuration files. Unset them to prevent this:
+	//	https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
+	for _, env := range AWS_ENV_VARS_TO_UNSET {
+		os.Unsetenv(env)
+	}
+	for _, env := range AWS_ENV_VARS_TO_DEVNULL {
+		os.Setenv(env, "/dev/null")
+	}
+}
+
+var unsetAWSEnvVarsOnce sync.Once
+
 func getAWSSession() (conf client.ConfigProvider, err error) {
+	unsetAWSEnvVarsOnce.Do(unsetAWSEnvVars)
+
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
 	_, err = creds.Get()
 	if err != nil {
