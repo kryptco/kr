@@ -62,7 +62,7 @@ func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error)
 	err = ssh.Unmarshal(buf, &kexECDHReplyTemplate)
 
 	hostnameWithNonDefaultPort := hostname
-	if port != "22" {
+	if port != "22" && port != ""{
 		hostnameWithNonDefaultPort += ":" + port
 	}
 
