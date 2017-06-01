@@ -258,7 +258,7 @@ func main() {
 		}
 
 		var err error
-		remoteConn, err = net.Dial("tcp", host+":"+port)
+		remoteConn, err = net.Dial("tcp", net.JoinHostPort(host,port))
 		if err != nil {
 			fatal(kr.Red("could not connect to remote: " + err.Error()))
 		}
