@@ -62,8 +62,8 @@ func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error)
 	err = ssh.Unmarshal(buf, &kexECDHReplyTemplate)
 
 	hostnameWithNonDefaultPort := hostname
-	if port != "22" && port != ""{
-		hostnameWithNonDefaultPort += ":" + port
+	if port != "22" && port != "" {
+		hostnameWithNonDefaultPort = net.JoinHostPort(hostname, port)
 	}
 
 	if err == nil {
@@ -258,7 +258,7 @@ func main() {
 		}
 
 		var err error
-		remoteConn, err = net.Dial("tcp", net.JoinHostPort(host,port))
+		remoteConn, err = net.Dial("tcp", net.JoinHostPort(host, port))
 		if err != nil {
 			fatal(kr.Red("could not connect to remote: " + err.Error()))
 		}
