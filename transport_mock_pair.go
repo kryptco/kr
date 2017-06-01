@@ -15,7 +15,7 @@ func (t *ImmediatePairTransport) Setup(ps *PairingSecret) (err error) {
 	return
 }
 
-func (t *ImmediatePairTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
+func (t *ImmediatePairTransport) Read(notifier *Notifier, ps *PairingSecret) (ciphertexts [][]byte, err error) {
 	t.Lock()
 	defer t.Unlock()
 	if t.Keys == nil {
@@ -46,7 +46,7 @@ type MultiPairTransport struct {
 	SymKey []byte
 }
 
-func (t *MultiPairTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
+func (t *MultiPairTransport) Read(notifier *Notifier, ps *PairingSecret) (ciphertexts [][]byte, err error) {
 	t.Lock()
 	defer t.Unlock()
 	for _ = range []int{1, 2, 3} {

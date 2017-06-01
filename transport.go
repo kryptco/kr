@@ -2,13 +2,14 @@ package kr
 
 import (
 	"encoding/base64"
+	"strings"
 )
 
 type Transport interface {
 	Setup(ps *PairingSecret) (err error)
 	PushAlert(ps *PairingSecret, alertText string, message []byte) (err error)
 	SendMessage(ps *PairingSecret, message []byte) (err error)
-	Read(ps *PairingSecret) (ciphertexts [][]byte, err error)
+	Read(notifier *Notifier, ps *PairingSecret) (ciphertexts [][]byte, err error)
 }
 
 type AWSTransport struct{}
@@ -71,8 +72,18 @@ func (t AWSTransport) SendMessage(ps *PairingSecret, message []byte) (err error)
 	return
 }
 
-func (t AWSTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
+func notifyIfSignatureExpiredErr(err error, notifier *Notifier) {
+	if err == nil || notifier == nil {
+		return
+	}
+	if strings.Contains(err.Error(), "Signature expired") {
+		notifier.Notify([]byte(Red("Kryptonite ▶ Your system time is out of sync! Kryptonite will not work until you have synchronized your system time. Please run ") + Yellow(NTP_UPDATE_CMD) + Red(" and try again.") + "\r\n"))
+	}
+}
+
+func (t AWSTransport) Read(notifier *Notifier, ps *PairingSecret) (ciphertexts [][]byte, err error) {
 	ctxtStrings, err := ReceiveAndDeleteFromQueue(ps.SQSRecvQueueName())
+	notifyIfSignatureExpiredErr(err, notifier)
 	if err != nil {
 		return
 	}
