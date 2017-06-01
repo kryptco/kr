@@ -96,8 +96,8 @@ func (t *ResponseTransport) PushAlert(ps *PairingSecret, alertText string, messa
 	return
 }
 
-func (t *ResponseTransport) Read(ps *PairingSecret) (ciphertexts [][]byte, err error) {
-	pairCiphertexts, err := t.ImmediatePairTransport.Read(ps)
+func (t *ResponseTransport) Read(notifier *Notifier, ps *PairingSecret) (ciphertexts [][]byte, err error) {
+	pairCiphertexts, err := t.ImmediatePairTransport.Read(notifier, ps)
 	ciphertexts = append(ciphertexts, pairCiphertexts...)
 	t.Lock()
 	defer t.Unlock()

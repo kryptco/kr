@@ -498,7 +498,7 @@ func (client *EnclaveClient) sendRequestAndReceiveResponses(pairingSecret *kr.Pa
 	}
 
 	receive := func() (numReceived int, err error) {
-		ciphertexts, err := client.Transport.Read(pairingSecret)
+		ciphertexts, err := client.Transport.Read(client.notifier, pairingSecret)
 		if err != nil {
 			err = &RecvError{err}
 			return
