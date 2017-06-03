@@ -205,10 +205,9 @@ func (ec *EnclaveClient) activatePairing() (err error) {
 				ec.log.Error(err)
 				return
 			}
-			err = ec.bt.AddService(btUUID)
-			if err != nil {
-				ec.log.Error(err)
-				return
+			btErr := ec.bt.AddService(btUUID)
+			if btErr != nil {
+				ec.log.Error(btErr)
 			}
 		}
 	}
