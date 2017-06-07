@@ -77,7 +77,8 @@ func PairClient(t *testing.T, client EnclaveClientI) (ps *kr.PairingSecret) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ps, err = client.Pair()
+	var pairingOptions kr.PairingOptions
+	ps, err = client.Pair(pairingOptions)
 	if err != nil {
 		t.Fatal(err)
 	}

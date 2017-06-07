@@ -5,7 +5,7 @@ import (
 )
 
 func TestPairingPersistence(t *testing.T) {
-	pairing, err := GeneratePairingSecret()
+	pairing, err := GeneratePairingSecret("")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -20,7 +20,7 @@ func TestPair(t *testing.T) {
 func testPairSuccess(t *testing.T, unixFile string, ec krd.EnclaveClientI) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	err := pairOver(unixFile, true, stdout, stderr)
+	err := pairOver(unixFile, true, "", stdout, stderr)
 	if err != nil {
 		t.Fatal(err)
 	}

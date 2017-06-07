@@ -6,9 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+	"bytes"
 
 	"github.com/kryptco/kr"
 	"github.com/op/go-logging"
+	"bytes"
 )
 
 func NewTestControlServer(ec EnclaveClientI) *ControlServer {
@@ -19,7 +21,14 @@ func TestControlServerPair(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
 	cs := NewTestControlServer(ec)
-	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
+
+	var pairingOptions kr.PairingOptions
+	var body, err = json.Marshal(pairingOptions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pairRequest, err := http.NewRequest("PUT", "/pair", bytes.NewBuffer(body))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +44,7 @@ func TestControlServerPair(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	getPairRequest, err := http.NewRequest("GET", "/pair", nil)
+	getPairRequest, err := http.NewRequest("GET", "/pair", bytes.NewBuffer(body))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +69,14 @@ func TestControlServerUnpair(t *testing.T) {
 	transport := &kr.ResponseTransport{T: t}
 	ec := NewTestEnclaveClientShortTimeouts(transport)
 	cs := NewTestControlServer(ec)
-	pairRequest, err := http.NewRequest("PUT", "/pair", nil)
+	var pairingOptions kr.PairingOptions
+
+	var body, err = json.Marshal(pairingOptions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pairRequest, err := http.NewRequest("PUT", "/pair", bytes.NewBuffer(body))
 	if err != nil {
 		t.Fatal(err)
 	}
