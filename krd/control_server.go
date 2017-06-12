@@ -98,7 +98,14 @@ func (cs *ControlServer) handleGetPair(w http.ResponseWriter, r *http.Request) {
 
 //	initiate new pairing (clearing any existing)
 func (cs *ControlServer) handlePutPair(w http.ResponseWriter, r *http.Request) {
-	pairingSecret, err := cs.enclaveClient.Pair()
+	var paringOptions kr.PairingOptions
+	err := json.NewDecoder(r.Body).Decode(&paringOptions)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	pairingSecret, err := cs.enclaveClient.Pair(paringOptions)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))

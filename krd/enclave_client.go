@@ -58,7 +58,7 @@ func (err *ProtoError) Error() string {
 
 type EnclaveClientI interface {
 	kr.Transport
-	Pair() (pairing *kr.PairingSecret, err error)
+	Pair(kr.PairingOptions) (pairing *kr.PairingSecret, err error)
 	IsPaired() bool
 	Unpair()
 	Start() (err error)
@@ -89,11 +89,11 @@ type EnclaveClient struct {
 const BLUETOOTH = "bluetooth"
 const SQS = "sqs"
 
-func (ec *EnclaveClient) Pair() (pairingSecret *kr.PairingSecret, err error) {
+func (ec *EnclaveClient) Pair(pairingOptions kr.PairingOptions) (pairingSecret *kr.PairingSecret, err error) {
 	ec.Lock()
 	defer ec.Unlock()
 
-	err = ec.generatePairing()
+	err = ec.generatePairing(pairingOptions)
 	if err != nil {
 		return
 	}
@@ -124,14 +124,14 @@ func (ec *EnclaveClient) IsPaired() bool {
 	return ps.IsPaired()
 }
 
-func (ec *EnclaveClient) generatePairing() (err error) {
+func (ec *EnclaveClient) generatePairing(pairingOptions kr.PairingOptions) (err error) {
 	if ec.pairingSecret != nil {
 		ec.unpair(ec.pairingSecret, true)
 	}
 	ec.Persister.DeleteMe()
 	ec.Persister.DeletePairing()
 
-	pairingSecret, err := kr.GeneratePairingSecret()
+	pairingSecret, err := kr.GeneratePairingSecret(pairingOptions.WorkstationName)
 	if err != nil {
 		ec.log.Error(err)
 		return

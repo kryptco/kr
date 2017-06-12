@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
+	
 	"github.com/atotto/clipboard"
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
@@ -50,10 +50,10 @@ func pairCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "pair", nil, nil)
 	}()
-	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"), os.Stdout, os.Stderr)
+	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"), c.String("name"), os.Stdout, os.Stderr)
 }
 
-func pairOver(unixFile string, forceUnpair bool, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
+func pairOver(unixFile string, forceUnpair bool, name string, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
 	//	Listen for incompatible enclave notifications
 	go func() {
 		r, err := kr.OpenNotificationReader("")
@@ -95,7 +95,14 @@ func pairOver(unixFile string, forceUnpair bool, stdout io.ReadWriter, stderr io
 	}
 	defer putConn.Close()
 
-	putPair, err := http.NewRequest("PUT", "/pair", nil)
+	var pairingOptions kr.PairingOptions
+	pairingOptions.WorkstationName = name
+	body, err := json.Marshal(pairingOptions)
+	if err != nil {
+		PrintFatal(stderr,err.Error())
+	}
+
+	putPair, err := http.NewRequest("PUT", "/pair", bytes.NewBuffer(body))
 	if err != nil {
 		PrintFatal(stderr, err.Error())
 	}
@@ -416,6 +423,10 @@ func main() {
 				cli.BoolFlag{
 					Name:  "force",
 					Usage: "Do not ask for confirmation to unpair a currently paired device.",
+				},
+				cli.StringFlag{
+					Name:  "name",
+					Usage: "WorkstationName for this computer",
 				},
 			},
 			Action: pairCommand,
