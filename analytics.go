@@ -34,11 +34,7 @@ func (Analytics) post(clientID string, params url.Values) {
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
-	_, err := client.PostForm("https://www.google-analytics.com/collect", defaultParams)
-
-	if err != nil {
-		log.Error("error posting to analytics:", err.Error())
-	}
+	_, _ = client.PostForm("https://www.google-analytics.com/collect", defaultParams)
 }
 
 func (Analytics) PostEvent(clientID string, category string, action string, label *string, value *uint64) {
