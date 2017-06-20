@@ -87,7 +87,7 @@ func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
 		return
 	}
 	output := &bytes.Buffer{}
-	input, err := armor.Encode(output, "PGP SIGNATURE", map[string]string{"Comment": "Created With Kryptonite"})
+	input, err := armor.Encode(output, "PGP SIGNATURE", map[string]string{"Comment": "Created with Kryptonite"})
 	if err != nil {
 		return
 	}
