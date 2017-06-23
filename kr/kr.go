@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	
+
 	"github.com/atotto/clipboard"
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
@@ -96,10 +96,10 @@ func pairOver(unixFile string, forceUnpair bool, name string, stdout io.ReadWrit
 	defer putConn.Close()
 
 	var pairingOptions kr.PairingOptions
-	pairingOptions.WorkstationName = name
+	pairingOptions.WorkstationName = &name
 	body, err := json.Marshal(pairingOptions)
 	if err != nil {
-		PrintFatal(stderr,err.Error())
+		PrintFatal(stderr, err.Error())
 	}
 
 	putPair, err := http.NewRequest("PUT", "/pair", bytes.NewBuffer(body))

@@ -10,7 +10,6 @@ import (
 
 	"github.com/kryptco/kr"
 	"github.com/op/go-logging"
-	"bytes"
 )
 
 func NewTestControlServer(ec EnclaveClientI) *ControlServer {

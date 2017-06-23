@@ -27,8 +27,8 @@ type PairingSecret struct {
 	sync.Mutex
 }
 
-type PairingOptions struct{
-	WorkstationName string `json:"name"`
+type PairingOptions struct {
+	WorkstationName *string `json:"name"`
 }
 
 func (ps *PairingSecret) Equals(other *PairingSecret) bool {
@@ -56,16 +56,16 @@ func (ps *PairingSecret) SQSBaseQueueName() string {
 	return strings.ToUpper(derivedUUID.String())
 }
 
-func GeneratePairingSecret(workstationName string) (ps *PairingSecret, err error) {
+func GeneratePairingSecret(workstationName *string) (ps *PairingSecret, err error) {
 	ps = new(PairingSecret)
 	ps.WorkstationPublicKey, ps.workstationSecretKey, err = GenKeyPair()
 	if err != nil {
 		return
 	}
-	if workstationName == "" {
+	if workstationName == nil {
 		ps.WorkstationName = MachineName()
 	} else {
-		ps.WorkstationName = workstationName
+		ps.WorkstationName = *workstationName
 	}
 	ps.Version = CURRENT_VERSION.String()
 	return

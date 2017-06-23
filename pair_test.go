@@ -6,19 +6,20 @@ import (
 )
 
 func TestGenWrapEncDec(t *testing.T) {
-	ps, err := GeneratePairingSecret("test.workstation.name")
+	var workstationName = "test.workstation.name"
+	ps, err := GeneratePairingSecret(&workstationName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ps.WorkstationName != "test.workstation.name"{
+	if ps.WorkstationName != "test.workstation.name" {
 		t.Fatal("WorkstationName is wrong")
 	}
 
-	ps, err = GeneratePairingSecret("")
+	ps, err = GeneratePairingSecret(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ps.WorkstationName != MachineName(){
+	if ps.WorkstationName != MachineName() {
 		t.Fatal("WorkstationName is wrong")
 	}
 	sessionKey, err := RandNBytes(32)
