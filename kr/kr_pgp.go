@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -74,8 +75,8 @@ func shellRCFileAndGPG_TTYExport() (file string, export string) {
 	}
 }
 
-func addGPG_TTYExportToCurrentShellIfNotPresent() {
-	path, cmd := shellRCFileAndGPG_TTYExport()
+func addGPG_TTYExportToCurrentShellIfNotPresent() (path, cmd string) {
+	path, cmd = shellRCFileAndGPG_TTYExport()
 	rcContents, err := ioutil.ReadFile(path)
 	if err == nil {
 		if strings.Contains(string(rcContents), cmd) {
@@ -90,6 +91,7 @@ func addGPG_TTYExportToCurrentShellIfNotPresent() {
 	rcFile.Seek(0, 2)
 	rcFile.WriteString(cmd + "\n")
 	rcFile.Close()
+	return
 }
 
 func onboardGPG_TTY(interactive bool) {
@@ -102,7 +104,8 @@ func onboardGPG_TTY(interactive bool) {
 		os.Stdin.Read([]byte{0})
 		os.Stderr.WriteString("\r\n")
 	} else {
-		addGPG_TTYExportToCurrentShellIfNotPresent()
+		path, _ := addGPG_TTYExportToCurrentShellIfNotPresent()
+		os.Stderr.WriteString("In order to see Kryptonite log messages when requesting a git signature, run " + kr.Yellow(fmt.Sprintf("source %s", path)) + ".\r\n")
 	}
 }
 

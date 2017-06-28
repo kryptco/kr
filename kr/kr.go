@@ -532,11 +532,10 @@ func codesignCommand(c *cli.Context) (err error) {
 
 	onboardAutoCommitSign(interactive)
 
+	onboardLocalGPG(interactive, me)
+
 	onboardGPG_TTY(interactive)
 
-	onboardKeyServerUpload(interactive, pk)
-
-	onboardLocalGPG(interactive, me)
 	return
 }
 
