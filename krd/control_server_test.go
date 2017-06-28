@@ -1,12 +1,12 @@
 package krd
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-	"bytes"
 
 	"github.com/kryptco/kr"
 	"github.com/op/go-logging"

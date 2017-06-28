@@ -50,10 +50,15 @@ func pairCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "pair", nil, nil)
 	}()
-	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"), c.String("name"), os.Stdout, os.Stderr)
+	name := c.String("name")
+	nameOpt := &name
+	if *nameOpt == "" {
+		nameOpt = nil
+	}
+	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"), nameOpt, os.Stdout, os.Stderr)
 }
 
-func pairOver(unixFile string, forceUnpair bool, name string, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
+func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
 	//	Listen for incompatible enclave notifications
 	go func() {
 		r, err := kr.OpenNotificationReader("")
@@ -96,7 +101,7 @@ func pairOver(unixFile string, forceUnpair bool, name string, stdout io.ReadWrit
 	defer putConn.Close()
 
 	var pairingOptions kr.PairingOptions
-	pairingOptions.WorkstationName = &name
+	pairingOptions.WorkstationName = name
 	body, err := json.Marshal(pairingOptions)
 	if err != nil {
 		PrintFatal(stderr, err.Error())
@@ -425,7 +430,7 @@ func main() {
 					Usage: "Do not ask for confirmation to unpair a currently paired device.",
 				},
 				cli.StringFlag{
-					Name:  "name",
+					Name:  "name, n",
 					Usage: "WorkstationName for this computer",
 				},
 			},
