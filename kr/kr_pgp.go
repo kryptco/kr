@@ -37,6 +37,11 @@ func onboardGithub(pk string) {
 }
 
 func onboardAutoCommitSign(interactive bool) {
+	err := exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
+	if err != nil {
+		PrintErr(os.Stderr, err.Error()+"\r\n")
+	}
+
 	var autoSign bool
 	if interactive {
 		os.Stderr.WriteString("Would you like to enable " + kr.Cyan("automatic commit signing") + "? [y/n]")
@@ -168,7 +173,7 @@ func onboardLocalGPG(interactive bool, me kr.Profile) {
 		cmdTrust.Stdin = bytes.NewReader([]byte(pkFp + ":6:\r\n"))
 		output, err := cmdTrust.CombinedOutput()
 		if err == nil {
-			os.Stderr.WriteString(kr.Green("Key imported ✔\r\n"))
+			os.Stderr.WriteString(kr.Green("Key imported to local gpg keychain ✔\r\n"))
 		} else {
 			os.Stderr.WriteString(kr.Red("Failed to import key, gpg output:\r\n" + string(output) + "\r\n"))
 		}
