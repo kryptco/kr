@@ -31,7 +31,7 @@ func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 }
 
 func RequestMe() (me kr.Profile, err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	unixFile, err := kr.DaemonSocket()
 	if err != nil {
 		err = kr.ErrConnectingToDaemon
 		return
@@ -151,7 +151,7 @@ func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byt
 }
 
 func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	unixFile, err := kr.DaemonSocket()
 	if err != nil {
 		return
 	}
@@ -184,7 +184,7 @@ func requestNoOpOver(conn net.Conn) (err error) {
 }
 
 func RequestNoOp() (err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	unixFile, err := kr.DaemonSocket()
 	if err != nil {
 		return
 	}

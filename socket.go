@@ -1,3 +1,5 @@
+// +build !windows
+
 package kr
 
 import (
@@ -158,8 +160,13 @@ func DaemonDialWithTimeout(unixFile string) (conn net.Conn, err error) {
 	return
 }
 
+func DaemonSocket() (unixFile string, err error)
+{
+	return KrDirFile(DAEMON_SOCKET_FILENAME)
+}
+
 func DaemonSocketOrFatal() (unixFile string) {
-	unixFile, err := KrDirFile(DAEMON_SOCKET_FILENAME)
+	unixFile, err := DaemonSocket()
 	if err != nil {
 		log.Fatal("Could not open connection to daemon. Make sure it is running by typing \"kr restart\".")
 	}
