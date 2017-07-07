@@ -115,7 +115,9 @@ func onboardGPG_TTY(interactive bool) {
 		os.Stderr.WriteString("\r\n")
 	} else {
 		path, _ := addGPG_TTYExportToCurrentShellIfNotPresent()
-		os.Stderr.WriteString("In order to see Kryptonite log messages when requesting a git signature, run " + kr.Yellow(fmt.Sprintf("source %s", path)) + ".\r\n")
+		os.Stderr.WriteString("\r\nIn order to see Kryptonite log messages when requesting a git signature, run " +
+			kr.Red(fmt.Sprintf("source %s", strings.Replace(path, os.Getenv("HOME"), "~", 1))) +
+			".\r\n\r\n")
 	}
 }
 
