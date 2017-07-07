@@ -56,6 +56,11 @@ func onboardAutoCommitSign(interactive bool) {
 		if err != nil {
 			PrintErr(os.Stderr, err.Error()+"\r\n")
 		}
+		err = exec.Command("git", "config", "--global", "tag.forceSignAnnotated", "true").Run()
+		if err != nil {
+			PrintErr(os.Stderr, err.Error()+"\r\n")
+		}
+
 		os.Stderr.WriteString(kr.Green("Automatic commit signing enabled ✔ ") + " disable by running " + kr.Cyan("git config --global --unset commit.gpgSign") + "\r\n")
 	} else {
 		os.Stderr.WriteString("You can manually create a signed git commit by running " + kr.Cyan("git commit -S") + "\r\n")
@@ -68,7 +73,7 @@ func shellRCFileAndGPG_TTYExport() (file string, export string) {
 	if strings.Contains(shell, "zsh") {
 		return filepath.Join(os.Getenv("HOME"), ".zshrc"), "export GPG_TTY=$(tty)"
 	} else if strings.Contains(shell, "bash") {
-		return filepath.Join(os.Getenv("HOME"), ".bashrc"), "export GPG_TTY=$(tty)"
+		return filepath.Join(os.Getenv("HOME"), ".bash_profile"), "export GPG_TTY=$(tty)"
 	} else if strings.Contains(shell, "ksh") {
 		return filepath.Join(os.Getenv("HOME"), ".kshrc"), "export GPG_TTY=$(tty)"
 	} else if strings.Contains(shell, "csh") {
@@ -76,7 +81,7 @@ func shellRCFileAndGPG_TTYExport() (file string, export string) {
 	} else if strings.Contains(shell, "fish") {
 		return filepath.Join(os.Getenv("HOME"), ".config", "fish", "config.fish"), "set -x GPG_TTY (tty)"
 	} else {
-		return filepath.Join(os.Getenv("HOME"), "/.profile"), "export GPG_TTY=$(tty)"
+		return filepath.Join(os.Getenv("HOME"), ".profile"), "export GPG_TTY=$(tty)"
 	}
 }
 
@@ -104,7 +109,7 @@ func onboardGPG_TTY(interactive bool) {
 		return
 	}
 	if interactive {
-		os.Stderr.WriteString("\r\n" + kr.Red("WARNING:") + " In order to see Kryptonite log messages when requesting a git signature, add " + kr.Yellow("export GPG_TTY=$(tty)") + " to your shell startup (~/.bashrc, ~/.bash_profile, ~/.zshrc, etc.) and restart your terminal.\r\n")
+		os.Stderr.WriteString("\r\n" + kr.Red("WARNING:") + " In order to see Kryptonite log messages when requesting a git signature, add " + kr.Yellow("export GPG_TTY=$(tty)") + " to your shell startup (~/.bash_profile, ~/.zshrc, etc.) and restart your terminal.\r\n")
 		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to continue")
 		os.Stdin.Read([]byte{0})
 		os.Stderr.WriteString("\r\n")
