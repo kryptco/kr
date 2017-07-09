@@ -60,12 +60,14 @@ func uninstallCommand(c *cli.Context) (err error) {
 	os.Remove("/usr/local/bin/kr")
 	os.Remove("/usr/local/bin/krssh")
 	os.Remove("/usr/local/bin/krd")
+	os.Remove("/usr/local/bin/krgpg")
 	os.Remove("/usr/local/lib/kr-pkcs11.so")
 	os.Remove("/usr/local/share/kr")
 	exec.Command("launchctl", "unload", plist).Run()
 	os.Remove(plist)
 	cleanSSHConfig(sshConfigString, ".bak3")
 	cleanSSHConfig(oldSSHConfigString, ".bak4")
+	uninstallCodesigning()
 	PrintErr(os.Stderr, "Kryptonite uninstalled.")
 	return
 }
