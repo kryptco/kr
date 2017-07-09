@@ -479,10 +479,6 @@ func codesignCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
 	}()
 	stderr := os.Stderr
-	err = exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
-	if err != nil {
-		PrintFatal(os.Stderr, err.Error())
-	}
 
 	getConn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
 	if err != nil {
@@ -524,6 +520,12 @@ func codesignCommand(c *cli.Context) (err error) {
 	if err != nil {
 		PrintFatal(stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and try again.")
 	}
+
+	err = exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+
 	os.Stderr.WriteString("Code signing uses a different type of public key than SSH, called a " + kr.Cyan("PGP public key") + "\r\n")
 
 	onboardGithub(pk)
