@@ -294,14 +294,14 @@ func copyKey() (me kr.Profile, err error) {
 }
 
 func copyPGPKey() (me kr.Profile, err error) {
-	me, err = copyPGPKeyNonFatalClipboard()
+	me, err = copyPGPKeyNonFatalOnClipboardError()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
 	return
 }
 
-func copyPGPKeyNonFatalClipboard() (me kr.Profile, err error) {
+func copyPGPKeyNonFatalOnClipboardError() (me kr.Profile, err error) {
 	me, err = krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
@@ -539,6 +539,12 @@ func codesignCommand(c *cli.Context) (err error) {
 	return
 }
 
+func codesignUninstallCommand(c *cli.Context) (err error) {
+	uninstallCodesigning()
+	os.Stderr.WriteString("Kryptonite codesigning uninstalled... run " + kr.Cyan("kr codesign") + " to reinstall.\r\n")
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -583,6 +589,13 @@ func main() {
 				},
 			},
 			Action: codesignCommand,
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "uninstall",
+					Usage:  "Uninstall Kryptonite codesigning.",
+					Action: codesignUninstallCommand,
+				},
+			},
 		},
 		cli.Command{
 			Name:   "copy",

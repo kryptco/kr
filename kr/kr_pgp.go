@@ -18,7 +18,7 @@ func onboardGithub(pk string) {
 	in := []byte{0, 0}
 	os.Stdin.Read(in)
 	if in[0] == 'y' {
-		_, err := copyPGPKeyNonFatalClipboard()
+		_, err := copyPGPKeyNonFatalOnClipboardError()
 		if err == nil {
 			os.Stderr.WriteString("Your PGP public key has been " + kr.Cyan("copied to your clipboard.") + "\r\n")
 			<-time.After(1000 * time.Millisecond)
@@ -99,7 +99,7 @@ func addGPG_TTYExportToCurrentShellIfNotPresent() (path, cmd string) {
 	}
 	//	seek to end
 	rcFile.Seek(0, 2)
-	rcFile.WriteString(cmd + "\n")
+	rcFile.WriteString("\n" + cmd + "\n")
 	rcFile.Close()
 	return
 }
@@ -185,4 +185,18 @@ func onboardLocalGPG(interactive bool, me kr.Profile) {
 			os.Stderr.WriteString(kr.Red("Failed to import key, gpg output:\r\n" + string(output) + "\r\n"))
 		}
 	}
+}
+
+func uninstallCodesigning() {
+	currentGPGProgram, err := exec.Command("git", "config", "--global", "gpg.program").Output()
+	if err != nil {
+		PrintErr(os.Stderr, "Error running git config: "+err.Error())
+		return
+	}
+	if !strings.Contains(string(currentGPGProgram), "krgpg") {
+		return
+	}
+	exec.Command("git", "config", "--global", "--unset", "gpg.program").Run()
+	exec.Command("git", "config", "--global", "--unset", "commit.gpgSign").Run()
+	exec.Command("git", "config", "--global", "--unset", "tag.forceSignAnnotated").Run()
 }

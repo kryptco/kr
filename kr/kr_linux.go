@@ -25,7 +25,10 @@ func restartCommand(c *cli.Context) (err error) {
 }
 
 func openBrowser(url string) {
-	exec.Command("sensible-browser", url).Run()
+	err := exec.Command("sensible-browser", url).Run()
+	if err != nil {
+		os.Stderr.WriteString("Unable to open browser, please visit " + url + "\r\n")
+	}
 }
 
 func hasAptGet() bool {
@@ -58,6 +61,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 		uninstallCmd.Run()
 	}
 
+	uninstallCodesigning()
 	PrintErr(os.Stderr, "Kryptonite uninstalled.")
 	return
 }

@@ -46,13 +46,15 @@ func (p Profile) Equal(other Profile) bool {
 	return bytes.Equal(p.SSHWirePublicKey, other.SSHWirePublicKey) && p.Email == other.Email
 }
 
+var KRYPTONITE_ASCII_ARMOR_HEADERS = map[string]string{"Comment": "Created with Kryptonite"}
+
 func (p Profile) AsciiArmorPGPPublicKey() (s string, err error) {
 	if p.PGPPublicKey == nil {
 		err = fmt.Errorf("no pgp public key")
 		return
 	}
 	output := &bytes.Buffer{}
-	input, err := armor.Encode(output, "PGP PUBLIC KEY BLOCK", map[string]string{"Comment": "Created with Kryptonite"})
+	input, err := armor.Encode(output, "PGP PUBLIC KEY BLOCK", KRYPTONITE_ASCII_ARMOR_HEADERS)
 	if err != nil {
 		return
 	}
