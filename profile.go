@@ -80,7 +80,7 @@ func (p Profile) PGPPublicKeySHA1Fingerprint() (s string, err error) {
 		var pkt packet.Packet
 		pkt, err = packet.Read(reader)
 		if err != nil {
-			return
+			break
 		}
 		switch pkt := pkt.(type) {
 		case *packet.PublicKey:
