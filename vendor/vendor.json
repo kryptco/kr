@@ -184,6 +184,13 @@
 			"revisionTime": "2017-05-25T22:27:35Z"
 		},
 		{
+			"checksumSHA1": "Bra/9XucW0ivjIalL27XqSw2dTk=",
+			"origin": "github.com/kryptco/kr/krd/vendor/github.com/golang/groupcache/lru",
+			"path": "github.com/golang/groupcache/lru",
+			"revision": "2bf00a8c679f0c9056d2e53cdcd01701bdc537d7",
+			"revisionTime": "2017-07-09T21:24:37Z"
+		},
+		{
 			"checksumSHA1": "d9PxF1XQGLMJZRct2R8qVM/eYlE=",
 			"path": "github.com/hashicorp/golang-lru",
 			"revision": "0a025b7e63adc15a622f29b0b2c4c3848243bbf6",
@@ -219,6 +226,13 @@
 			"path": "github.com/kryptco/go-crypto/blake2b",
 			"revision": "4dd74302dce656561273d45beb4ae61575f5326a",
 			"revisionTime": "2017-04-10T21:23:53Z"
+		},
+		{
+			"checksumSHA1": "JBBsKS0O0xw5Pi861aveoUsMHrE=",
+			"origin": "github.com/kryptco/kr/krd/vendor/github.com/kryptco/go.corebluetooth",
+			"path": "github.com/kryptco/go.corebluetooth",
+			"revision": "2bf00a8c679f0c9056d2e53cdcd01701bdc537d7",
+			"revisionTime": "2017-07-09T21:24:37Z"
 		},
 		{
 			"checksumSHA1": "1FNUYeTxvldrwoTRD7mLx9Zi1M4=",
@@ -293,6 +307,12 @@
 			"revisionTime": "2017-05-24T20:39:50Z"
 		},
 		{
+			"checksumSHA1": "TT1rac6kpQp2vz24m5yDGUNQ/QQ=",
+			"path": "golang.org/x/crypto/cast5",
+			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
+			"revisionTime": "2017-05-24T20:39:50Z"
+		},
+		{
 			"checksumSHA1": "nAu0XmCeC6WnUySyI8R7w4cxAqU=",
 			"path": "golang.org/x/crypto/curve25519",
 			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
@@ -329,8 +349,26 @@
 			"revisionTime": "2017-05-24T20:39:50Z"
 		},
 		{
+			"checksumSHA1": "eo/KtdjieJQXH7Qy+faXFcF70ME=",
+			"path": "golang.org/x/crypto/openpgp/elgamal",
+			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
+			"revisionTime": "2017-05-24T20:39:50Z"
+		},
+		{
+			"checksumSHA1": "rlxVSaGgqdAgwblsErxTxIfuGfg=",
+			"path": "golang.org/x/crypto/openpgp/errors",
+			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
+			"revisionTime": "2017-05-24T20:39:50Z"
+		},
+		{
 			"checksumSHA1": "EhXQZ5k3Kfs6JHsjpE0caHQO9bc=",
 			"path": "golang.org/x/crypto/openpgp/packet",
+			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
+			"revisionTime": "2017-05-24T20:39:50Z"
+		},
+		{
+			"checksumSHA1": "s2qT4UwvzBSkzXuiuMkowif1Olw=",
+			"path": "golang.org/x/crypto/openpgp/s2k",
 			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
 			"revisionTime": "2017-05-24T20:39:50Z"
 		},
