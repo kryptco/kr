@@ -10,6 +10,26 @@ import (
 	krd "github.com/kryptco/kr/krd"
 )
 
+func TestVersion(t *testing.T) {
+	ec, _, unixFile := krd.NewLocalUnixServer(t)
+	krd.PairClient(t, ec)
+	defer ec.Stop()
+
+	conn, err := net.Dial("unix", unixFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(unixFile)
+
+	version, err := RequestKrdVersionOver(conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if version.Compare(kr.CURRENT_VERSION) != 0 {
+		t.Fatal("wrong version")
+	}
+}
+
 func TestMe(t *testing.T) {
 	ec, _, unixFile := krd.NewLocalUnixServer(t)
 	krd.PairClient(t, ec)

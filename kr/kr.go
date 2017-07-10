@@ -474,11 +474,15 @@ func awsCommand(c *cli.Context) (err error) {
 }
 
 func codesignCommand(c *cli.Context) (err error) {
+	stderr := os.Stderr
+	latestKrdRunning, err := krdclient.IsLatestKrdRunning()
+	if err != nil || !latestKrdRunning {
+		PrintFatal(stderr, kr.Red("An old version of krd is still running. Please run "+kr.Cyan("kr restart")+kr.Red(" and try again.")))
+	}
 	interactive := c.Bool("interactive")
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
 	}()
-	stderr := os.Stderr
 
 	_, err = kr.GlobalGitUserId()
 	if err != nil {

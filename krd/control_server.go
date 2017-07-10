@@ -37,6 +37,7 @@ func NewControlServer(log *logging.Logger, notifier *kr.Notifier) (cs *ControlSe
 
 func (cs *ControlServer) HandleControlHTTP(listener net.Listener) (err error) {
 	httpMux := http.NewServeMux()
+	httpMux.HandleFunc("/version", cs.handleVersion)
 	httpMux.HandleFunc("/pair", cs.handlePair)
 	httpMux.HandleFunc("/enclave", cs.handleEnclave)
 	httpMux.HandleFunc("/ping", cs.handlePing)
@@ -54,6 +55,10 @@ func (cs *ControlServer) Stop() (err error) {
 
 func (cs *ControlServer) EnclaveClient() EnclaveClientI {
 	return cs.enclaveClient
+}
+
+func (cs *ControlServer) handleVersion(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(kr.CURRENT_VERSION.String()))
 }
 
 func (cs *ControlServer) handlePair(w http.ResponseWriter, r *http.Request) {

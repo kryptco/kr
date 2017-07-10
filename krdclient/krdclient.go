@@ -4,11 +4,71 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 
+	"github.com/blang/semver"
 	"github.com/kryptco/kr"
 )
+
+func IsLatestKrdRunning() (isRunning bool, err error) {
+	version, err := RequestKrdVersion()
+	if err != nil {
+		return
+	}
+	isRunning = version.Compare(kr.CURRENT_VERSION) == 0
+	return
+}
+
+func RequestKrdVersionOver(conn net.Conn) (version semver.Version, err error) {
+	httpRequest, err := http.NewRequest("GET", "/version", nil)
+	if err != nil {
+		return
+	}
+	err = httpRequest.Write(conn)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+
+	responseReader := bufio.NewReader(conn)
+	httpResponse, err := http.ReadResponse(responseReader, httpRequest)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode != http.StatusOK {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+
+	defer httpResponse.Body.Close()
+	versionBytes, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return
+	}
+
+	version, err = semver.Make(string(versionBytes))
+	return
+}
+
+func RequestKrdVersion() (version semver.Version, err error) {
+	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	defer daemonConn.Close()
+	version, err = RequestKrdVersionOver(daemonConn)
+	return
+}
 
 func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 	meRequest, err := kr.NewRequest()
