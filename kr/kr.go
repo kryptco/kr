@@ -480,6 +480,16 @@ func codesignCommand(c *cli.Context) (err error) {
 	}()
 	stderr := os.Stderr
 
+	_, err = kr.GlobalGitUserId()
+	if err != nil {
+		PrintFatal(stderr, kr.Red("Your git name and email are not yet configured. Please run "+
+			kr.Cyan("git config --global user.name <FirstName LastName>")+
+			" and "+
+			kr.Cyan("git config --global user.email <Email>")+
+			" before running "+
+			kr.Cyan("kr codesign")))
+	}
+
 	getConn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
 	if err != nil {
 		PrintFatal(stderr, err.Error())
