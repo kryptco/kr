@@ -76,6 +76,14 @@ type GitSignRequest struct {
 	UserId string      `json:"user_id"`
 }
 
+func (gsr GitSignRequest) AnalyticsTag() string {
+	if gsr.Commit != nil {
+		return "git-commit-signature"
+	} else {
+		return "git-tag-signature"
+	}
+}
+
 type GitSignResponse struct {
 	Signature *[]byte `json:"signature,omitempty"`
 	Error     *string `json:"error,omitempty"`

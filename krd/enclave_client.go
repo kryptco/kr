@@ -404,10 +404,10 @@ func (client *EnclaveClient) RequestGitSignature(signRequest kr.GitSignRequest, 
 	callback, err := client.tryRequest(request, client.Timeouts.Sign.Fail, client.Timeouts.Sign.Alert, alertText, onACK)
 	if err != nil {
 		if err == ErrTimeout {
-			client.postEvent("git_signature", "timeout", nil, nil)
+			client.postEvent(signRequest.AnalyticsTag(), "timeout", nil, nil)
 		} else {
 			errStr := err.Error()
-			client.postEvent("git_signature", "error", &errStr, nil)
+			client.postEvent(signRequest.AnalyticsTag(), "error", &errStr, nil)
 		}
 		client.log.Error(err)
 		return
@@ -418,7 +418,7 @@ func (client *EnclaveClient) RequestGitSignature(signRequest kr.GitSignRequest, 
 		enclaveVersion = response.Version
 		millis := uint64(time.Since(start) / time.Millisecond)
 		client.log.Notice("GitSignature response took", millis, "ms")
-		client.postEvent("git_signature", "success", &callback.medium, &millis)
+		client.postEvent(signRequest.AnalyticsTag(), "success", &callback.medium, &millis)
 		if signResponse.Error != nil {
 			client.log.Error("GitSignature error:", *signResponse.Error)
 		}
