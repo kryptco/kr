@@ -106,7 +106,7 @@ func runCommandWithOutputOrFatal(cmd *exec.Cmd) {
 	if err != nil {
 		PrintFatal(os.Stderr, "error runing command: "+err.Error()+"\r\n"+string(out))
 	} else {
-		PrintErr(os.Stderr, string(out))
+		PrintErr(os.Stderr, strings.TrimSpace(string(out)))
 	}
 }
 
