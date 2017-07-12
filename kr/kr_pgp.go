@@ -1,17 +1,135 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/urfave/cli"
+
 	"github.com/kryptco/kr"
+	"github.com/kryptco/kr/krdclient"
 )
+
+func codesignCommand(c *cli.Context) (err error) {
+	stderr := os.Stderr
+	latestKrdRunning, err := krdclient.IsLatestKrdRunning()
+	if err != nil || !latestKrdRunning {
+		PrintFatal(stderr, kr.Red("An old version of krd is still running. Please run "+kr.Cyan("kr restart")+kr.Red(" and try again.")))
+	}
+	interactive := c.Bool("interactive")
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
+	}()
+
+	_, err = kr.GlobalGitUserId()
+	if err != nil {
+		PrintFatal(stderr, kr.Red("Your git name and email are not yet configured. Please run "+
+			kr.Cyan("git config --global user.name <FirstName LastName>")+
+			" and "+
+			kr.Cyan("git config --global user.email <Email>")+
+			" before running "+
+			kr.Cyan("kr codesign")))
+	}
+
+	getConn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+	defer getConn.Close()
+
+	//	explicitly ask phone, disregarding cached ME in case the phone did not support PGP when first paired
+	getPair, err := http.NewRequest("GET", "/pair", nil)
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+	err = getPair.Write(getConn)
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+
+	getReader := bufio.NewReader(getConn)
+	getResponse, err := http.ReadResponse(getReader, getPair)
+
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+	switch getResponse.StatusCode {
+	case http.StatusNotFound, http.StatusInternalServerError:
+		PrintFatal(stderr, "Failed to communicate with phone, ensure your phone and workstation are connected to the internet and try again.")
+	case http.StatusOK:
+	default:
+		PrintFatal(stderr, "Failed to communicate with phone, error %d", getResponse.StatusCode)
+	}
+	defer getResponse.Body.Close()
+	var me kr.Profile
+	err = json.NewDecoder(getResponse.Body).Decode(&me)
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+
+	pk, err := me.AsciiArmorPGPPublicKey()
+	if err != nil {
+		PrintFatal(stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and try again.")
+	}
+
+	err = exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+
+	os.Stderr.WriteString("Code signing uses a different type of public key than SSH, called a " + kr.Cyan("PGP public key") + "\r\n")
+
+	onboardGithub(pk)
+
+	os.Stderr.WriteString("You can print this key in the future by running " + kr.Cyan("kr me pgp") + " or copy it to your clipboard by running " + kr.Cyan("kr copy pgp") + "\r\n\r\n")
+
+	onboardAutoCommitSign(interactive)
+
+	onboardLocalGPG(interactive, me)
+
+	onboardGPG_TTY(interactive)
+
+	return
+}
+
+func runCommandWithOutputOrFatal(cmd *exec.Cmd) {
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		PrintFatal(os.Stderr, "error runing command: "+err.Error()+"\r\n"+string(out))
+	} else {
+		PrintErr(os.Stderr, string(out))
+	}
+}
+
+func codesignTestCommand(c *cli.Context) (err error) {
+	dir, err := ioutil.TempDir("", "kr-git-test")
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	defer os.RemoveAll(dir)
+
+	os.Setenv("GIT_DIR", dir+"/repo/.git")
+	os.Setenv("GIT_WORK_DIR", dir+"/repo")
+	runCommandWithOutputOrFatal(exec.Command("git", "init", dir+"/repo"))
+	runCommandWithOutputOrFatal(exec.Command("git", "commit", "-S", "--allow-empty", "-m", "Testing your first signed commit"))
+	PrintErr(os.Stderr, kr.Green("Kryptonite ▶ Codesigning successful ✔"))
+	return
+}
+
+func codesignUninstallCommand(c *cli.Context) (err error) {
+	uninstallCodesigning()
+	os.Stderr.WriteString("Kryptonite codesigning uninstalled... run " + kr.Cyan("kr codesign") + " to reinstall.\r\n")
+	return
+}
 
 func onboardGithub(pk string) {
 	os.Stderr.WriteString("Would you like to add this key to " + kr.Cyan("GitHub") + "? [y/n]")
@@ -95,20 +213,23 @@ func addGPG_TTYExportToCurrentShellIfNotPresent() (path, cmd string) {
 }
 
 func onboardGPG_TTY(interactive bool) {
-	if os.Getenv("GPG_TTY") != "" {
-		return
-	}
-	if interactive {
-		os.Stderr.WriteString("\r\n" + kr.Red("WARNING:") + " In order to see Kryptonite log messages when requesting a git signature, add " + kr.Yellow("export GPG_TTY=$(tty)") + " to your shell startup (~/.bash_profile, ~/.zshrc, etc.) and restart your terminal.\r\n")
-		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to continue")
-		os.Stdin.Read([]byte{0})
-		os.Stderr.WriteString("\r\n")
+	cmd := "export GPG_TTY=$(tty); "
+	if os.Getenv("GPG_TTY") == "" {
+		if interactive {
+			os.Stderr.WriteString("\r\n" + kr.Red("WARNING:") + " In order to see Kryptonite log messages when requesting a git signature, add " + kr.Yellow("export GPG_TTY=$(tty)") + " to your shell startup (~/.bash_profile, ~/.zshrc, etc.) and restart your terminal.\r\n")
+			os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to continue")
+			os.Stdin.Read([]byte{0})
+			os.Stderr.WriteString("\r\n")
+		} else {
+			_, cmd = addGPG_TTYExportToCurrentShellIfNotPresent()
+			cmd += "; "
+		}
 	} else {
-		path, _ := addGPG_TTYExportToCurrentShellIfNotPresent()
-		os.Stderr.WriteString("\r\nIn order to see Kryptonite log messages when requesting a git signature, run " +
-			kr.Red(fmt.Sprintf("source %s", strings.Replace(path, os.Getenv("HOME"), "~", 1))) +
-			".\r\n\r\n")
+		cmd = ""
 	}
+	os.Stderr.WriteString("\r\nIn order to make sure everything works,\r\n" + kr.Yellow("RUN: ") +
+		kr.Red(fmt.Sprintf("%skr codesign test", cmd)) +
+		"\r\n\r\n")
 }
 
 func onboardKeyServerUpload(interactive bool, pk string) {

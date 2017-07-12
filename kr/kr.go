@@ -513,95 +513,6 @@ func awsCommand(c *cli.Context) (err error) {
 	openBrowser("https://console.aws.amazon.com/ec2/v2/home?#KeyPairs:sort=keyName")
 	return
 }
-
-func codesignCommand(c *cli.Context) (err error) {
-	stderr := os.Stderr
-	latestKrdRunning, err := krdclient.IsLatestKrdRunning()
-	if err != nil || !latestKrdRunning {
-		PrintFatal(stderr, kr.Red("An old version of krd is still running. Please run "+kr.Cyan("kr restart")+kr.Red(" and try again.")))
-	}
-	interactive := c.Bool("interactive")
-	go func() {
-		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
-	}()
-
-	_, err = kr.GlobalGitUserId()
-	if err != nil {
-		PrintFatal(stderr, kr.Red("Your git name and email are not yet configured. Please run "+
-			kr.Cyan("git config --global user.name <FirstName LastName>")+
-			" and "+
-			kr.Cyan("git config --global user.email <Email>")+
-			" before running "+
-			kr.Cyan("kr codesign")))
-	}
-
-	getConn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	defer getConn.Close()
-
-	//	explicitly ask phone, disregarding cached ME in case the phone did not support PGP when first paired
-	getPair, err := http.NewRequest("GET", "/pair", nil)
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	err = getPair.Write(getConn)
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-
-	getReader := bufio.NewReader(getConn)
-	getResponse, err := http.ReadResponse(getReader, getPair)
-
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	switch getResponse.StatusCode {
-	case http.StatusNotFound, http.StatusInternalServerError:
-		PrintFatal(stderr, "Failed to communicate with phone, ensure your phone and workstation are connected to the internet and try again.")
-	case http.StatusOK:
-	default:
-		PrintFatal(stderr, "Failed to communicate with phone, error %d", getResponse.StatusCode)
-	}
-	defer getResponse.Body.Close()
-	var me kr.Profile
-	err = json.NewDecoder(getResponse.Body).Decode(&me)
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-
-	pk, err := me.AsciiArmorPGPPublicKey()
-	if err != nil {
-		PrintFatal(stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and try again.")
-	}
-
-	err = exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
-	if err != nil {
-		PrintFatal(os.Stderr, err.Error())
-	}
-
-	os.Stderr.WriteString("Code signing uses a different type of public key than SSH, called a " + kr.Cyan("PGP public key") + "\r\n")
-
-	onboardGithub(pk)
-
-	os.Stderr.WriteString("You can print this key in the future by running " + kr.Cyan("kr me pgp") + " or copy it to your clipboard by running " + kr.Cyan("kr copy pgp") + "\r\n\r\n")
-
-	onboardAutoCommitSign(interactive)
-
-	onboardLocalGPG(interactive, me)
-
-	onboardGPG_TTY(interactive)
-
-	return
-}
-
-func codesignUninstallCommand(c *cli.Context) (err error) {
-	uninstallCodesigning()
-	os.Stderr.WriteString("Kryptonite codesigning uninstalled... run " + kr.Cyan("kr codesign") + " to reinstall.\r\n")
-	return
-}
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -651,6 +562,11 @@ func main() {
 					Name:   "uninstall",
 					Usage:  "Uninstall Kryptonite codesigning.",
 					Action: codesignUninstallCommand,
+				},
+				cli.Command{
+					Name:   "test",
+					Usage:  "Test Kryptonite codesigning.",
+					Action: codesignTestCommand,
 				},
 			},
 		},
