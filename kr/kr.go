@@ -265,14 +265,12 @@ func mePGPCommand(c *cli.Context) (err error) {
 
 func copyCommand(c *cli.Context) (err error) {
 	copyKey()
-	PrintErr(os.Stderr, "SSH public key copied to clipboard.")
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "copy", nil, nil)
 	return
 }
 
 func copyPGPCommand(c *cli.Context) (err error) {
 	copyPGPKey()
-	PrintErr(os.Stderr, "PGP public key copied to clipboard.")
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "copy pgp", nil, nil)
 	return
 }
@@ -288,25 +286,35 @@ func copyKey() (me kr.Profile, err error) {
 	}
 	err = clipboard.WriteAll(authorizedKey)
 	if err != nil {
-		PrintFatal(os.Stderr, err.Error())
+		PrintErr(os.Stderr, err.Error())
+		PrintErr(os.Stderr, "Or copy the following lines to your clipboard:\n")
+		PrintErr(os.Stderr, authorizedKey)
+		err = nil
+	} else {
+		PrintErr(os.Stderr, "SSH public key "+kr.Cyan("copied to clipboard")+".")
 	}
 	return
 }
 
 func copyPGPKey() (me kr.Profile, err error) {
-	me, err = copyPGPKeyNonFatalOnClipboardError()
+	me, pk, err := copyPGPKeyNonFatalOnClipboardError()
 	if err != nil {
-		PrintFatal(os.Stderr, err.Error())
+		PrintErr(os.Stderr, err.Error())
+		PrintErr(os.Stderr, "Or copy the following lines to your clipboard:\n")
+		PrintErr(os.Stderr, pk)
+		err = nil
+	} else {
+		PrintErr(os.Stderr, "PGP public key "+kr.Cyan("copied to clipboard")+".")
 	}
 	return
 }
 
-func copyPGPKeyNonFatalOnClipboardError() (me kr.Profile, err error) {
+func copyPGPKeyNonFatalOnClipboardError() (me kr.Profile, pk string, err error) {
 	me, err = krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
-	pk, err := me.AsciiArmorPGPPublicKey()
+	pk, err = me.AsciiArmorPGPPublicKey()
 	if err != nil {
 		PrintFatal(os.Stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and that you have run "+kr.Cyan("kr codesign")+" successfully.")
 	}
@@ -359,7 +367,6 @@ func githubCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "github", nil, nil)
 	}()
 	copyKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitHub. Then click \"New SSH Key\" and paste your public key.")
 	os.Stdin.Read([]byte{0})
@@ -372,7 +379,6 @@ func githubPGPCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "github pgp", nil, nil)
 	}()
 	copyPGPKey()
-	PrintErr(os.Stderr, "PGP public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitHub. Then click "+kr.Cyan("New GPG key")+" and paste your public key.")
 	os.Stdin.Read([]byte{0})
@@ -395,7 +401,6 @@ func gheCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "ghe", nil, nil)
 	}()
 	copyKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 
 	gheURL := getGheUrlOrFatal(c)
 
@@ -411,7 +416,6 @@ func ghePGPCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "ghe pgp", nil, nil)
 	}()
 	copyPGPKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 
 	gheURL := getGheUrlOrFatal(c)
 
@@ -427,7 +431,6 @@ func gitlabCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "gitlab", nil, nil)
 	}()
 	copyKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitLab. Then paste your public key and click \"Add key.\"")
 	os.Stdin.Read([]byte{0})
@@ -440,7 +443,6 @@ func bitbucketCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "bitbucket", nil, nil)
 	}()
 	copyKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to BitBucket. Then click \"Add key\" and paste your public key.")
 	os.Stdin.Read([]byte{0})
@@ -453,7 +455,6 @@ func digitaloceanCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "digitalocean", nil, nil)
 	}()
 	copyKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to DigitalOcean. Then click \"Add SSH Key\" and paste your public key.")
 	os.Stdin.Read([]byte{0})
@@ -483,7 +484,6 @@ func gcloudCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "gcloud", nil, nil)
 	}()
 	copyKey()
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to Google Cloud. Then click \"Edit\" and paste your public key.")
 	os.Stdin.Read([]byte{0})
@@ -507,7 +507,6 @@ func awsCommand(c *cli.Context) (err error) {
 		PrintFatal(os.Stderr, fmt.Sprintf("Unsupported key type: %s, AWS only supports ssh-rsa keys", sshPk.Type()))
 	}
 
-	PrintErr(os.Stderr, "Public key copied to clipboard.")
 	<-time.After(500 * time.Millisecond)
 	PrintErr(os.Stderr, "Press ENTER to open your web browser to Amazon Web Services. Then click \"Import Key Pair\" and paste your public key.")
 	os.Stdin.Read([]byte{0})

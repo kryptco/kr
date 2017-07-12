@@ -18,21 +18,11 @@ func onboardGithub(pk string) {
 	in := []byte{0, 0}
 	os.Stdin.Read(in)
 	if in[0] == 'y' {
-		_, err := copyPGPKeyNonFatalOnClipboardError()
-		if err == nil {
-			os.Stderr.WriteString("Your PGP public key has been " + kr.Cyan("copied to your clipboard.") + "\r\n")
-			<-time.After(1000 * time.Millisecond)
-			os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to open your browser to GitHub settings. Then click " + kr.Cyan("New GPG key") + " and paste your Kryptonite PGP public key.\r\n")
-			os.Stdin.Read([]byte{0})
-			openBrowser("https://github.com/settings/keys")
-		} else {
-			os.Stderr.WriteString(kr.Cyan("Press ENTER to print your Kryptonite PGP public key\r\n"))
-			os.Stdin.Read([]byte{0})
-			os.Stdout.WriteString(pk)
-			os.Stdout.WriteString("\r\n\r\n")
-			<-time.After(500 * time.Millisecond)
-			os.Stderr.WriteString("Copy and paste your PGP public key in GitHub at " + kr.Yellow("https://github.com/settings/keys\r\n"))
-		}
+		copyPGPKey()
+		<-time.After(1000 * time.Millisecond)
+		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to open your browser to GitHub settings. Then click " + kr.Cyan("New GPG key") + " and paste your Kryptonite PGP public key.\r\n")
+		os.Stdin.Read([]byte{0})
+		openBrowser("https://github.com/settings/keys")
 	}
 }
 
