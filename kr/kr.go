@@ -380,6 +380,48 @@ func githubPGPCommand(c *cli.Context) (err error) {
 	return
 }
 
+func getGheUrlOrFatal(c *cli.Context) string {
+	if c.String("url") != "" {
+		return c.String("url")
+	}
+	PrintErr(os.Stderr, "Please enter your GitHub Enterprise URL, i.e. github.mit.edu")
+	buf := make([]byte, 1024)
+	n, _ := os.Stdin.Read(buf)
+	return strings.TrimSpace(string(buf[:n]))
+}
+
+func gheCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "ghe", nil, nil)
+	}()
+	copyKey()
+	PrintErr(os.Stderr, "Public key copied to clipboard.")
+
+	gheURL := getGheUrlOrFatal(c)
+
+	<-time.After(500 * time.Millisecond)
+	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitHub Enterprise. Then click \"New SSH Key\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
+	openBrowser("https://" + gheURL + "/settings/keys")
+	return
+}
+
+func ghePGPCommand(c *cli.Context) (err error) {
+	go func() {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "ghe pgp", nil, nil)
+	}()
+	copyPGPKey()
+	PrintErr(os.Stderr, "Public key copied to clipboard.")
+
+	gheURL := getGheUrlOrFatal(c)
+
+	<-time.After(500 * time.Millisecond)
+	PrintErr(os.Stderr, "Press ENTER to open your web browser to GitHub Enterprise. Then click \"New GPG Key\" and paste your public key.")
+	os.Stdin.Read([]byte{0})
+	openBrowser("https://" + gheURL + "/settings/keys")
+	return
+}
+
 func gitlabCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "gitlab", nil, nil)
@@ -626,7 +668,7 @@ func main() {
 			},
 		},
 		cli.Command{
-			Name:  "aws,bitbucket,digitalocean,gcloud,github,gitlab,heroku",
+			Name:  "aws,bitbucket,digitalocean,gcloud,github,ghe,gitlab,heroku",
 			Usage: "Upload your public key to this site. Copies your public key to the clipboard and opens the site's settings page.",
 		},
 		cli.Command{
@@ -639,6 +681,31 @@ func main() {
 					Name:   "pgp",
 					Usage:  "Upload your PGP public key to GitHub. Copies your public key to the clipboard and opens GitHub settings.",
 					Action: githubPGPCommand,
+				},
+			},
+		},
+		cli.Command{
+			Name:   "ghe",
+			Usage:  "Upload your public key to GitHub Enterprise. Copies your public key to the clipboard and opens GitHub Enterprise settings.",
+			Action: gheCommand,
+			Hidden: true,
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "pgp",
+					Usage:  "Upload your PGP public key to GitHub Enterprise. Copies your public key to the clipboard and opens GitHub Enterprise settings.",
+					Action: ghePGPCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "url",
+							Usage: "GitHub Enterprise URL, i.e. github.mit.edu",
+						},
+					},
+				},
+			},
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "url",
+					Usage: "GitHub Enterprise URL, i.e. github.mit.edu",
 				},
 			},
 		},
