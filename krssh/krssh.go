@@ -25,6 +25,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var silenceWarnings = os.Getenv("KR_SILENCE_WARNINGS") != ""
+
 func fatal(msg string) {
 	os.Stderr.WriteString(msg + "\r\n")
 	os.Exit(1)
@@ -108,7 +110,7 @@ func startLogger(prefix string, checkForUpdate bool) (r kr.NotificationReader, e
 		}
 
 		go func() {
-			if checkForUpdate && krd.CheckIfUpdateAvailable(logger) {
+			if checkForUpdate && !silenceWarnings && krd.CheckIfUpdateAvailable(logger) {
 				os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it. You can view the changelog at https://krypt.co/app/krd_changelog/\r\n"))
 			}
 		}()
@@ -121,6 +123,11 @@ func startLogger(prefix string, checkForUpdate bool) (r kr.NotificationReader, e
 				notificationStr := string(notification)
 				if _, ok := printedNotifications[notificationStr]; ok {
 					continue
+				}
+				if silenceWarnings {
+					if strings.Contains(notificationStr, kr.ErrNotPaired.Error()) {
+						continue
+					}
 				}
 				if strings.HasPrefix(notificationStr, "[") {
 					if prefix != "" && strings.HasPrefix(notificationStr, prefix) {
