@@ -1,5 +1,3 @@
-// +build !windows
-
 package kr
 
 import (
@@ -160,8 +158,7 @@ func DaemonDialWithTimeout(unixFile string) (conn net.Conn, err error) {
 	return
 }
 
-func DaemonSocket() (unixFile string, err error)
-{
+func DaemonSocket() (unixFile string, err error) {
 	return KrDirFile(DAEMON_SOCKET_FILENAME)
 }
 
