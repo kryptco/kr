@@ -26,6 +26,9 @@ func codesignCommand(c *cli.Context) (err error) {
 		PrintFatal(stderr, kr.Red("An old version of krd is still running. Please run "+kr.Cyan("kr restart")+kr.Red(" and try again.")))
 	}
 	interactive := c.Bool("interactive")
+
+	checkGitLocation()
+
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
 	}()
@@ -296,6 +299,31 @@ func onboardLocalGPG(interactive bool, me kr.Profile) {
 			os.Stderr.WriteString(kr.Red("Failed to import key, gpg output:\r\n" + string(output) + "\r\n"))
 		}
 	}
+}
+
+func checkGitLocation() {
+	//      make sure git is linked to /usr/bin or /usr/local/bin
+	usrBinGitErr := exec.Command("/usr/bin/git", "--version").Run()
+	usrLocalBinGitErr := exec.Command("/usr/local/bin/git", "--version").Run()
+
+	if usrBinGitErr == nil || usrLocalBinGitErr == nil {
+		return
+	}
+
+	gitLocation, err := exec.Command("which", "git").Output()
+	if err != nil {
+		PrintFatal(os.Stderr, "`which git` failed, please make sure you have git installed and on your PATH")
+	}
+	gitLocationStr := strings.TrimSpace(string(gitLocation))
+
+	PrintErr(os.Stderr, "git must be linked to /usr/bin or /usr/local/bin to work with Kryptonite (current location "+gitLocationStr+")")
+	confirmOrFatal(os.Stderr, "Link git to /usr/local/bin?")
+
+	linkGitCmd := exec.Command("ln", "-s", gitLocationStr, "/usr/local/bin/git")
+	linkGitCmd.Stdout = os.Stdout
+	linkGitCmd.Stderr = os.Stderr
+	linkGitCmd.Stdin = os.Stdin
+	linkGitCmd.Run()
 }
 
 func uninstallCodesigning() {
