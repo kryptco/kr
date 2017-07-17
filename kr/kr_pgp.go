@@ -84,7 +84,13 @@ func codesignCommand(c *cli.Context) (err error) {
 		PrintFatal(stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and try again.")
 	}
 
-	err = exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
+	whichKrGPG, err := exec.Command("which", "krgpg").Output()
+	if err != nil {
+		PrintFatal(stderr, "Could not find krgpg: "+err.Error())
+	}
+	krGPGPath := strings.TrimSpace(string(whichKrGPG))
+
+	err = exec.Command("git", "config", "--global", "gpg.program", krGPGPath).Run()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
@@ -148,11 +154,6 @@ func onboardGithub(pk string) {
 }
 
 func onboardAutoCommitSign(interactive bool) {
-	err := exec.Command("git", "config", "--global", "gpg.program", "krgpg").Run()
-	if err != nil {
-		PrintErr(os.Stderr, err.Error()+"\r\n")
-	}
-
 	var autoSign bool
 	if interactive {
 		os.Stderr.WriteString("Would you like to enable " + kr.Cyan("automatic commit signing") + "? [y/n]")
