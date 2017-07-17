@@ -25,6 +25,9 @@ func UnsudoedHomeDir() (home string) {
 		home = os.Getenv("HOME")
 		err = nil
 	}
+	if os.Getenv("HOME") != home {
+		os.Setenv("HOME", home)
+	}
 	return
 }
 
