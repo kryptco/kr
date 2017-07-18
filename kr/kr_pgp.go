@@ -318,13 +318,14 @@ func checkGitLocation() {
 	gitLocationStr := strings.TrimSpace(string(gitLocation))
 
 	PrintErr(os.Stderr, "git must be linked to /usr/bin or /usr/local/bin to work with Kryptonite (current location "+gitLocationStr+")")
-	confirmOrFatal(os.Stderr, "Link git to /usr/local/bin?")
+	if confirm(os.Stderr, "Link git to /usr/local/bin?") {
 
-	linkGitCmd := exec.Command("ln", "-s", gitLocationStr, "/usr/local/bin/git")
-	linkGitCmd.Stdout = os.Stdout
-	linkGitCmd.Stderr = os.Stderr
-	linkGitCmd.Stdin = os.Stdin
-	linkGitCmd.Run()
+		linkGitCmd := exec.Command("ln", "-s", gitLocationStr, "/usr/local/bin/git")
+		linkGitCmd.Stdout = os.Stdout
+		linkGitCmd.Stderr = os.Stderr
+		linkGitCmd.Stdin = os.Stdin
+		linkGitCmd.Run()
+	}
 }
 
 func uninstallCodesigning() {

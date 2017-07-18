@@ -38,12 +38,16 @@ func PrintErr(stderr io.ReadWriter, msg string, args ...interface{}) {
 }
 
 func confirmOrFatal(stderr io.ReadWriter, message string) {
+	if !confirm(stderr, message) {
+		PrintFatal(stderr, "Aborting.")
+	}
+}
+
+func confirm(stderr io.ReadWriter, message string) bool {
 	PrintErr(stderr, message+" [y/N] ")
 	var c string
 	fmt.Scan(&c)
-	if len(c) == 0 || c[0] != 'y' {
-		PrintFatal(stderr, "Aborting.")
-	}
+	return !(len(c) == 0 || c[0] != 'y')
 }
 
 func pairCommand(c *cli.Context) (err error) {
