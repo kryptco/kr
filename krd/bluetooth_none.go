@@ -1,4 +1,4 @@
-// +build nobluetooth
+// +build nobluetooth windows
 
 package krd
 

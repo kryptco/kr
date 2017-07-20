@@ -15,6 +15,7 @@ type Versions struct {
 	IOS   string `json:"iOS"`
 	OSX   string `json:"osx"`
 	Linux string `json:"linux"`
+	Windows string `json:"windows"`
 }
 
 func GetLatestVersions() (versions Versions, err error) {

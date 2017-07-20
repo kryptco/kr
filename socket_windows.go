@@ -1,5 +1,3 @@
-// +build !windows
-
 package kr
 
 import (
@@ -11,24 +9,19 @@ import (
 	"os/user"
 	"path/filepath"
 	"time"
+
+	"gopkg.in/natefinch/npipe.v2"
 )
 
 //	Find home directory of logged-in user even when run as sudo
 func UnsudoedHomeDir() (home string) {
-	userName := os.Getenv("SUDO_USER")
-	if userName == "" {
-		userName = os.Getenv("USER")
-	}
-	user, err := user.Lookup(userName)
+	user, err := user.Current()
 	if err == nil && user != nil {
 		home = user.HomeDir
 	} else {
 		log.Notice("falling back to $HOME")
 		home = os.Getenv("HOME")
 		err = nil
-	}
-	if os.Getenv("HOME") != home {
-		os.Setenv("HOME", home)
 	}
 	return
 }
@@ -38,18 +31,18 @@ func KrDir() (krPath string, err error) {
 	if err != nil {
 		return
 	}
-	krPath = filepath.Join(home, ".kr")
+	krPath = filepath.Join(home, "appdata", "local", "kryptco", "kr")
 	err = os.MkdirAll(krPath, os.FileMode(0700))
 	return
 }
 
-func NotifyDir() (krPath string, err error) {
-	home := UnsudoedHomeDir()
+func NotifyDir() (notifyPath string, err error) {
+	krDir,err := KrDir()
 	if err != nil {
 		return
 	}
-	krPath = filepath.Join(home, ".kr", "notify")
-	err = os.MkdirAll(krPath, os.FileMode(0700))
+	notifyPath = filepath.Join(krDir, "notify")
+	err = os.MkdirAll(notifyPath, os.FileMode(0700))
 	return
 }
 
@@ -71,50 +64,54 @@ func KrDirFile(file string) (fullPath string, err error) {
 	return
 }
 
-const AGENT_SOCKET_FILENAME = "krd-agent.sock"
+func KrPipeFile(file string) (fullPath string, err error) {
+	fullPath = `\\.\pipe\` + file;
+	return
+}
+
+const AGENT_SOCKET_FILENAME = `krdagent`
 
 func AgentListen() (listener net.Listener, err error) {
-	socketPath, err := KrDirFile(AGENT_SOCKET_FILENAME)
+	socketPath, err := KrPipeFile(AGENT_SOCKET_FILENAME)
 	if err != nil {
 		return
 	}
 	//	delete UNIX socket in case daemon was not killed cleanly
-	_ = os.Remove(socketPath)
-	listener, err = net.Listen("unix", socketPath)
+	// _ = os.Remove(socketPath)
+	listener, err = npipe.Listen(socketPath)
 	return
 }
 
-const DAEMON_SOCKET_FILENAME = "krd.sock"
+const DAEMON_SOCKET_FILENAME = `krd`
 
 func DaemonListen() (listener net.Listener, err error) {
-	socketPath, err := KrDirFile(DAEMON_SOCKET_FILENAME)
+	socketPath, err := KrPipeFile(DAEMON_SOCKET_FILENAME)
 	if err != nil {
 		return
 	}
-	//	delete UNIX socket in case daemon was not killed cleanly
-	_ = os.Remove(socketPath)
-	listener, err = net.Listen("unix", socketPath)
+
+	listener, err = npipe.Listen(socketPath)
 	return
 }
 
-const HOST_AUTH_FILENAME = "krd-hostauth.sock"
+const HOST_AUTH_FILENAME = `krdhost`
 
 func HostAuthListen() (listener net.Listener, err error) {
-	socketPath, err := KrDirFile(HOST_AUTH_FILENAME)
+	socketPath, err := KrPipeFile(HOST_AUTH_FILENAME)
 	if err != nil {
 		return
 	}
-	//	delete UNIX socket in case daemon was not killed cleanly
-	_ = os.Remove(socketPath)
-	listener, err = net.Listen("unix", socketPath)
+
+	listener, err = npipe.Listen(socketPath)
 	return
 }
 
 func HostAuthDial() (conn net.Conn, err error) {
-	socketPath, err := KrDirFile(HOST_AUTH_FILENAME)
+	socketPath, err := KrPipeFile(HOST_AUTH_FILENAME)
 	if err != nil {
 		return
 	}
+
 	conn, err = DaemonDial(socketPath)
 	return
 }
@@ -163,14 +160,23 @@ func DaemonDialWithTimeout(unixFile string) (conn net.Conn, err error) {
 	return
 }
 
-func DaemonSocket() (unixFile string, err error) {
-	return KrDirFile(DAEMON_SOCKET_FILENAME)
+func DaemonDial(unixFile string) (conn net.Conn, err error) {
+	conn, err = npipe.Dial(unixFile)
+	if err != nil {
+		err = fmt.Errorf("Failed to connect to Kryptonite daemon. Please make sure it is running.")
+	}
+	return
 }
+
+func DaemonSocket() (unixFile string, err error) {
+	return KrPipeFile(DAEMON_SOCKET_FILENAME)
+}
+
 
 func DaemonSocketOrFatal() (unixFile string) {
 	unixFile, err := DaemonSocket()
 	if err != nil {
-		log.Fatal("Could not open connection to daemon. Make sure it is running by typing \"kr restart\".")
+		log.Fatal("Could not open connection to daemon. Make sure it is running.")
 	}
 	return
 }

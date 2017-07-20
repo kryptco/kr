@@ -1,8 +1,6 @@
 package kr
 
 import (
-	stdlog "log"
-	"log/syslog"
 	"os"
 
 	"github.com/op/go-logging"
@@ -19,18 +17,7 @@ var stderrFormat = logging.MustStringFormatter(
 func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) *logging.Logger {
 	var backend logging.Backend
 	if trySyslog {
-		var err error
-		backend, err = logging.NewSyslogBackendPriority(prefix, syslog.LOG_NOTICE)
-		if err == nil {
-			logging.SetFormatter(syslogFormat)
-			//	direct panic output to syslog as well
-			if syslogBackend, ok := backend.(*logging.SyslogBackend); ok {
-				stdlog.SetOutput(syslogBackend.Writer)
-			}
-		} else {
-			backend = nil
-		}
-
+		backend = GetSyslogBackend(prefix)
 	}
 	if backend == nil {
 		var err error
