@@ -1,10 +1,10 @@
 package kr
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"strings"
-	"bytes"
 	"sync"
 )
 
@@ -22,7 +22,7 @@ func getAnalyticsOSVersion() *string {
 		return cachedAnalyticsOSVersion
 	}
 
-	cmd := exec.Command("cmd","ver")
+	cmd := exec.Command("cmd", "ver")
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
@@ -31,8 +31,8 @@ func getAnalyticsOSVersion() *string {
 	if err != nil {
 		panic(err)
 	}
-	osStr := strings.Replace(out.String(),"\n","",-1)
-	osStr = strings.Replace(osStr,"\r\n","",-1)
+	osStr := strings.Replace(out.String(), "\n", "", -1)
+	osStr = strings.Replace(osStr, "\r\n", "", -1)
 	cachedAnalyticsOSVersion = &osStr
 	return cachedAnalyticsOSVersion
 }

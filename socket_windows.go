@@ -37,7 +37,7 @@ func KrDir() (krPath string, err error) {
 }
 
 func NotifyDir() (notifyPath string, err error) {
-	krDir,err := KrDir()
+	krDir, err := KrDir()
 	if err != nil {
 		return
 	}
@@ -65,7 +65,7 @@ func KrDirFile(file string) (fullPath string, err error) {
 }
 
 func KrPipeFile(file string) (fullPath string, err error) {
-	fullPath = `\\.\pipe\` + file;
+	fullPath = `\\.\pipe\` + file
 	return
 }
 
@@ -171,7 +171,6 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 func DaemonSocket() (unixFile string, err error) {
 	return KrPipeFile(DAEMON_SOCKET_FILENAME)
 }
-
 
 func DaemonSocketOrFatal() (unixFile string) {
 	unixFile, err := DaemonSocket()
