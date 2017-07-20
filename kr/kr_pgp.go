@@ -33,7 +33,7 @@ func codesignCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
 	}()
 
-	_, err = kr.GlobalGitUserId()
+	userID, err := kr.GlobalGitUserId()
 	if err != nil {
 		PrintFatal(stderr, kr.Red("Your git name and email are not yet configured. Please run "+
 			kr.Cyan("git config --global user.name <FirstName LastName>")+
@@ -50,7 +50,12 @@ func codesignCommand(c *cli.Context) (err error) {
 	defer getConn.Close()
 
 	//	explicitly ask phone, disregarding cached ME in case the phone did not support PGP when first paired
-	getPair, err := http.NewRequest("GET", "/pair", nil)
+
+	meRequestJSON, err := json.Marshal(kr.MeRequest{&userID})
+	if err != nil {
+		PrintFatal(stderr, err.Error())
+	}
+	getPair, err := http.NewRequest("GET", "/pair", bytes.NewReader(meRequestJSON))
 	if err != nil {
 		PrintFatal(stderr, err.Error())
 	}
