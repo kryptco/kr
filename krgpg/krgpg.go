@@ -152,12 +152,12 @@ func signGitCommit(tree string, reader *bufio.Reader) {
 		}
 		if thirdTag == "parent" {
 			secondParent = &thirdContents
+			_, author, err = readLineSplittingFirstToken(reader)
 			if err != nil {
 				stderr.WriteString("error parsing author tag")
 				stderr.WriteString(err.Error())
 				os.Exit(1)
 			}
-			_, author, err = readLineSplittingFirstToken(reader)
 		} else {
 			author = thirdContents
 		}
