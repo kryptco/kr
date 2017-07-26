@@ -153,39 +153,39 @@ func signGit() {
 }
 
 func signGitCommit(tree string, reader *bufio.Reader) (err error) {
-	var parent *string
-	var secondParent *string
+	var firstParent *string
+	var mergeParents *[]string
 	var author string
-	secondTag, secondContents, err := readLineSplittingFirstToken(reader)
-	if err != nil {
-		stderr.WriteString("error parsing commit second line")
-		stderr.WriteString(err.Error())
-		return
-	}
-	switch secondTag {
-	case "parent":
-		parent = &secondContents
-		thirdTag, thirdContents, err := readLineSplittingFirstToken(reader)
-		if err != nil {
-			stderr.WriteString("error parsing third tag")
-			stderr.WriteString(err.Error())
-			return err
-		}
-		if thirdTag == "parent" {
-			secondParent = &thirdContents
-			_, author, err = readLineSplittingFirstToken(reader)
+	err = func() (err error) {
+		for {
+			tag, contents, err := readLineSplittingFirstToken(reader)
 			if err != nil {
-				stderr.WriteString("error parsing author tag")
+				stderr.WriteString("error parsing commit")
 				stderr.WriteString(err.Error())
 				return err
 			}
-		} else {
-			author = thirdContents
+			switch tag {
+			case "parent":
+				if firstParent == nil {
+					firstParent = &contents
+					continue
+				}
+				if mergeParents == nil {
+					mergeParents = &[]string{}
+				}
+				newMergeParents := append(*mergeParents, contents)
+				mergeParents = &newMergeParents
+			case "author":
+				author = contents
+				return nil
+			default:
+				err = fmt.Errorf("unexpected tag: " + tag)
+				stderr.WriteString(err.Error())
+				return err
+			}
 		}
-	case "author":
-		author = secondContents
-	default:
-		stderr.WriteString("error parsing commit second line, wrong tag")
+	}()
+	if err != nil {
 		return
 	}
 
@@ -203,8 +203,8 @@ func signGitCommit(tree string, reader *bufio.Reader) (err error) {
 	}
 	commit := kr.CommitInfo{
 		Tree:         tree,
-		Parent:       parent,
-		SecondParent: secondParent,
+		Parent:       firstParent,
+		MergeParents: mergeParents,
 		Author:       author,
 		Committer:    committer,
 		Message:      message,
