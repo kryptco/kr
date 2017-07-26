@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,6 +15,22 @@ import (
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
 )
+
+func globalGitUserIDOrFatal() string {
+	userID, err := kr.GlobalGitUserId()
+	if err != nil {
+		PrintFatal(os.Stderr, kr.Red("Your git name and email are not yet configured. Please run "+
+			kr.Cyan("git config --global user.name \"FirstName LastName\"")+
+			" and "+
+			kr.Cyan("git config --global user.email Email")+
+			" before running "+
+			kr.Cyan("kr codesign")))
+	}
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	return userID
+}
 
 func codesignCommand(c *cli.Context) (err error) {
 	stderr := os.Stderr
@@ -33,53 +46,10 @@ func codesignCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "codesign", nil, nil)
 	}()
 
-	userID, err := kr.GlobalGitUserId()
-	if err != nil {
-		PrintFatal(stderr, kr.Red("Your git name and email are not yet configured. Please run "+
-			kr.Cyan("git config --global user.name <FirstName LastName>")+
-			" and "+
-			kr.Cyan("git config --global user.email <Email>")+
-			" before running "+
-			kr.Cyan("kr codesign")))
-	}
-
-	getConn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	defer getConn.Close()
+	userID := globalGitUserIDOrFatal()
 
 	//	explicitly ask phone, disregarding cached ME in case the phone did not support PGP when first paired
-
-	meRequestJSON, err := json.Marshal(kr.MeRequest{&userID})
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	getPair, err := http.NewRequest("GET", "/pair", bytes.NewReader(meRequestJSON))
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	err = getPair.Write(getConn)
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-
-	getReader := bufio.NewReader(getConn)
-	getResponse, err := http.ReadResponse(getReader, getPair)
-
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	switch getResponse.StatusCode {
-	case http.StatusNotFound, http.StatusInternalServerError:
-		PrintFatal(stderr, "Failed to communicate with phone, ensure your phone and workstation are connected to the internet and try again.")
-	case http.StatusOK:
-	default:
-		PrintFatal(stderr, "Failed to communicate with phone, error %d", getResponse.StatusCode)
-	}
-	defer getResponse.Body.Close()
-	var me kr.Profile
-	err = json.NewDecoder(getResponse.Body).Decode(&me)
+	me, err := krdclient.RequestMeForceRefresh(&userID)
 	if err != nil {
 		PrintFatal(stderr, err.Error())
 	}

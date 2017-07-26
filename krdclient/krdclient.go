@@ -2,6 +2,7 @@ package krdclient
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -67,6 +68,53 @@ func RequestKrdVersion() (version semver.Version, err error) {
 	}
 	defer daemonConn.Close()
 	version, err = RequestKrdVersionOver(daemonConn)
+	return
+}
+
+func RequestMeForceRefresh(userID *string) (me kr.Profile, err error) {
+	conn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+	return RequestMeForceRefreshOver(conn, userID)
+}
+
+func RequestMeForceRefreshOver(conn net.Conn, userID *string) (me kr.Profile, err error) {
+	meRequestJSON, err := json.Marshal(kr.MeRequest{userID})
+	if err != nil {
+		return
+	}
+	getPair, err := http.NewRequest("GET", "/pair", bytes.NewReader(meRequestJSON))
+	if err != nil {
+		return
+	}
+	err = getPair.Write(conn)
+	if err != nil {
+		return
+	}
+
+	getReader := bufio.NewReader(conn)
+	getResponse, err := http.ReadResponse(getReader, getPair)
+
+	if err != nil {
+		return
+	}
+	switch getResponse.StatusCode {
+	case http.StatusNotFound, http.StatusInternalServerError:
+		err = fmt.Errorf("Failed to communicate with phone, ensure your phone and workstation are connected to the internet and try again.")
+		return
+	case http.StatusOK:
+	default:
+		err = fmt.Errorf("Failed to communicate with phone, error %d", getResponse.StatusCode)
+		return
+	}
+
+	defer getResponse.Body.Close()
+	err = json.NewDecoder(getResponse.Body).Decode(&me)
+	if err != nil {
+		return
+	}
 	return
 }
 
