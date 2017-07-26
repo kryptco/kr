@@ -133,6 +133,7 @@ func signGit() {
 
 func signGitCommit(tree string, reader *bufio.Reader) {
 	var parent *string
+	var secondParent *string
 	var author string
 	secondTag, secondContents, err := readLineSplittingFirstToken(reader)
 	if err != nil {
@@ -143,11 +144,22 @@ func signGitCommit(tree string, reader *bufio.Reader) {
 	switch secondTag {
 	case "parent":
 		parent = &secondContents
-		_, author, err = readLineSplittingFirstToken(reader)
+		thirdTag, thirdContents, err := readLineSplittingFirstToken(reader)
 		if err != nil {
-			stderr.WriteString("error parsing commit author")
+			stderr.WriteString("error parsing third tag")
 			stderr.WriteString(err.Error())
 			os.Exit(1)
+		}
+		if thirdTag == "parent" {
+			secondParent = &thirdContents
+			if err != nil {
+				stderr.WriteString("error parsing author tag")
+				stderr.WriteString(err.Error())
+				os.Exit(1)
+			}
+			_, author, err = readLineSplittingFirstToken(reader)
+		} else {
+			author = thirdContents
 		}
 	case "author":
 		author = secondContents
@@ -169,11 +181,12 @@ func signGitCommit(tree string, reader *bufio.Reader) {
 		os.Exit(1)
 	}
 	commit := kr.CommitInfo{
-		Tree:      tree,
-		Parent:    parent,
-		Author:    author,
-		Committer: committer,
-		Message:   message,
+		Tree:         tree,
+		Parent:       parent,
+		SecondParent: secondParent,
+		Author:       author,
+		Committer:    committer,
+		Message:      message,
 	}
 	request, err := kr.NewRequest()
 	if err != nil {
