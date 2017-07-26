@@ -23,3 +23,8 @@ func GlobalGitUserId() (id string, err error) {
 	id = fmt.Sprintf("%s <%s>", strings.TrimSpace(string(name)), strings.TrimSpace(string(email)))
 	return
 }
+
+func HasGPG() bool {
+	err := exec.Command("gpg", "--help").Run()
+	return err == nil
+}

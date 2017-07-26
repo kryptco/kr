@@ -232,13 +232,8 @@ func onboardKeyServerUpload(interactive bool, pk string) {
 	}
 }
 
-func hasGPG() bool {
-	err := exec.Command("gpg", "--help").Run()
-	return err == nil
-}
-
 func onboardLocalGPG(interactive bool, me kr.Profile) {
-	if !hasGPG() {
+	if !kr.HasGPG() {
 		return
 	}
 	var importKey bool
