@@ -549,6 +549,16 @@ func main() {
 					Usage:  "Test Kryptonite codesigning.",
 					Action: codesignTestCommand,
 				},
+				cli.Command{
+					Name:   "on",
+					Usage:  "Turn on auto commit signing (requires git v2.0+)",
+					Action: codesignOnCommand,
+				},
+				cli.Command{
+					Name:   "off",
+					Usage:  "Turn off auto commit signing",
+					Action: codesignOffCommand,
+				},
 			},
 		},
 		cli.Command{
