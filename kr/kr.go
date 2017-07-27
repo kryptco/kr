@@ -147,22 +147,10 @@ func pairOver(forceUnpair bool, name *string, stdout io.ReadWriter, stderr io.Re
 
 	getConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
-		PrintFatal(stderr, err.Error())
+		PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
 	}
-	defer getConn.Close()
-
-	getPair, err := http.NewRequest("GET", "/pair", nil)
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	err = getPair.Write(getConn)
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-
-	//	Check/wait for pairing
-	getReader := bufio.NewReader(getConn)
-	getResponse, err := http.ReadResponse(getReader, getPair)
+	defer putConn.Close()
+	me, err := krdclient.RequestMeForceRefreshOver(getConn, nil)
 
 	clearCommand := exec.Command("clear")
 	clearCommand.Stdout = stdout
@@ -171,20 +159,6 @@ func pairOver(forceUnpair bool, name *string, stdout io.ReadWriter, stderr io.Re
 	if err != nil {
 		PrintFatal(stderr, err.Error())
 	}
-	switch getResponse.StatusCode {
-	case http.StatusNotFound, http.StatusInternalServerError:
-		PrintFatal(stderr, "Pairing failed, ensure your phone and workstation are connected to the internet and try again.")
-	case http.StatusOK:
-	default:
-		PrintFatal(stderr, "Pairing failed with error %d", getResponse.StatusCode)
-	}
-	defer getResponse.Body.Close()
-	var me kr.Profile
-	responseBody, err := ioutil.ReadAll(getResponse.Body)
-	if err != nil {
-		PrintFatal(stderr, err.Error())
-	}
-	err = json.Unmarshal(responseBody, &me)
 
 	stdout.Write([]byte("Paired successfully with identity\r\n"))
 	authorizedKey, err := me.AuthorizedKeyString()
@@ -251,7 +225,8 @@ func meCommand(c *cli.Context) (err error) {
 }
 
 func mePGPCommand(c *cli.Context) (err error) {
-	me, err := krdclient.RequestMe()
+	userID := globalGitUserIDOrFatal()
+	me, err := krdclient.RequestMeForceRefresh(&userID)
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
@@ -314,7 +289,8 @@ func copyPGPKey() (me kr.Profile, err error) {
 }
 
 func copyPGPKeyNonFatalOnClipboardError() (me kr.Profile, pk string, err error) {
-	me, err = krdclient.RequestMe()
+	userID := globalGitUserIDOrFatal()
+	me, err = krdclient.RequestMeForceRefresh(&userID)
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}

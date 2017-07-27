@@ -42,7 +42,7 @@ func TestRemoteUnpair(t *testing.T) {
 
 	transport.RemoteUnpair()
 
-	go ec.RequestMe(false)
+	go ec.RequestMe(kr.MeRequest{}, false)
 
 	kr.TrueBefore(t, func() bool {
 		return !ec.IsPaired()
@@ -68,7 +68,7 @@ func TestMeTimeout(t *testing.T) {
 	PairClient(t, ec)
 	defer ec.Stop()
 
-	me, err := ec.RequestMe(true)
+	me, err := ec.RequestMe(kr.MeRequest{}, true)
 	if me != nil && err != ErrTimeout {
 		t.Fatal("expected nil response or timeout")
 	}
@@ -78,7 +78,7 @@ func testMeSuccess(t *testing.T, ec EnclaveClientI) {
 	PairClient(t, ec)
 	defer ec.Stop()
 
-	me, err := ec.RequestMe(true)
+	me, err := ec.RequestMe(kr.MeRequest{}, true)
 	if err != nil {
 		t.Fatal(err)
 	}

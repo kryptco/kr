@@ -112,11 +112,12 @@ func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
 }
 
 type CommitInfo struct {
-	Tree      string  `json:"tree"`
-	Parent    *string `json:"parent,omitempty"`
-	Author    string  `json:"author"`
-	Committer string  `json:"committer"`
-	Message   []byte  `json:"message"`
+	Tree         string    `json:"tree"`
+	Parent       *string   `json:"parent,omitempty"`
+	MergeParents *[]string `json:"merge_parents,omitempty"`
+	Author       string    `json:"author"`
+	Committer    string    `json:"committer"`
+	Message      []byte    `json:"message"`
 }
 
 type TagInfo struct {
