@@ -57,7 +57,7 @@ func NewLocalUnixServer(t *testing.T) (ec EnclaveClientI, cs *ControlServer) {
 	if listener == nil {
 		l, err := kr.DaemonListen()
 		if err != nil {
-			t.Fatal(fmt.Errorf("DaemonListen() failure: %s.  Try stopping krd and running tests again", "doofis"))
+			t.Fatal(fmt.Errorf("DaemonListen() failure: %s.  Try stopping krd and running tests again", err))
 		}
 		listener = l
 	}
