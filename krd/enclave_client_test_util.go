@@ -95,7 +95,7 @@ func PairClient(t *testing.T, client EnclaveClientI) (ps *kr.PairingSecret) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	go client.RequestMe(true)
+	go client.RequestMe(kr.MeRequest{}, true)
 	kr.TrueBefore(t, client.IsPaired, time.Now().Add(time.Second))
 	return
 }

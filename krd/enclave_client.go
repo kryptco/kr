@@ -63,7 +63,7 @@ type EnclaveClientI interface {
 	Unpair()
 	Start() (err error)
 	Stop() (err error)
-	RequestMe(isPairing bool) (*kr.MeResponse, error)
+	RequestMe(meRequest kr.MeRequest, isPairing bool) (*kr.MeResponse, error)
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest, func()) (*kr.SignResponse, semver.Version, error)
 	RequestGitSignature(kr.GitSignRequest, func()) (*kr.GitSignResponse, semver.Version, error)
@@ -307,7 +307,7 @@ func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeo
 	}
 }
 
-func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeResponse, err error) {
+func (client *EnclaveClient) RequestMe(meSubrequest kr.MeRequest, isPairing bool) (meResponse *kr.MeResponse, err error) {
 	if !isPairing && !client.IsPaired() {
 		err = ErrNotPaired
 		return
@@ -317,13 +317,16 @@ func (client *EnclaveClient) RequestMe(isPairing bool) (meResponse *kr.MeRespons
 		client.log.Error(err)
 		return
 	}
-	meRequest.MeRequest = &kr.MeRequest{}
-	gitUserId, err := kr.GlobalGitUserId()
-	if err == nil {
-		meRequest.MeRequest.PGPUserId = &gitUserId
-	} else {
-		client.log.Error("error reading git global user ID: " + err.Error())
-		err = nil
+	meRequest.MeRequest = &meSubrequest
+	if meRequest.MeRequest.PGPUserId == nil {
+		client.log.Notice("no PGP user ID in me request, krd invoking git")
+		gitUserId, err := kr.GlobalGitUserId()
+		if err == nil {
+			meRequest.MeRequest.PGPUserId = &gitUserId
+		} else {
+			client.log.Error("error reading git global user ID: " + err.Error())
+			err = nil
+		}
 	}
 	timeout := client.Timeouts.Me.Fail
 	if isPairing {
