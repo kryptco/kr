@@ -43,7 +43,7 @@ func codesignCommand(c *cli.Context) (err error) {
 			kr.Cyan("kr codesign")))
 	}
 
-	getConn, err := kr.DaemonDialWithTimeout(kr.DaemonSocketOrFatal())
+	getConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		PrintFatal(stderr, err.Error())
 	}
