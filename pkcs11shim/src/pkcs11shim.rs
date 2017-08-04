@@ -6,6 +6,7 @@ use std::sync::Mutex;
 use std::env;
 use std::fs::OpenOptions;
 use std::os::unix::io::AsRawFd;
+use std::path::Path;
 
 extern crate libc;
 extern crate users;
@@ -43,33 +44,33 @@ pub extern "C" fn CK_C_GetFunctionList(function_list: *mut *mut _CK_FUNCTION_LIS
 extern "C" fn CK_C_Initialize(init_args: *mut ::std::os::raw::c_void) -> CK_RV {
     notice!("CK_C_Initialize");
 
-    if let Ok(original_auth_sock) = env::var("SSH_AUTH_SOCK") {
-        notice!("found backup auth_sock {}", original_auth_sock);
-        if let Some(mut backup_agent) = env::home_dir() {
-            use std::os::unix::fs::symlink;
-            use std::fs;
-
-            backup_agent.push(".kr/original-agent.sock");
-            fs::remove_file(backup_agent.clone());
-            match symlink(original_auth_sock, backup_agent) {
-            Err(e) => {
-                error!("error linking backup agent: {:?}", e);
-            },
-            _ => {},
-            };
-        }
-    } else {
-        notice!("backup auth_sock");
-    }
-
-    let mut unsudoed_home = if let Ok(sudo_user) = env::var("SUDO_USER") {
+    let mut krd_auth_sock = if let Ok(sudo_user) = env::var("SUDO_USER") {
         get_user_by_name(&sudo_user).map(|u| u.home_dir().to_path_buf())
     } else {
         env::home_dir()
     };
-    if let Some(mut unsudoed_home) = unsudoed_home {
-        unsudoed_home.push(".kr/krd-agent.sock");
-        env::set_var("SSH_AUTH_SOCK", unsudoed_home);
+    if let Some(mut krd_auth_sock) = krd_auth_sock {
+        krd_auth_sock.push(".kr/krd-agent.sock");
+        if let Ok(original_auth_sock) = env::var("SSH_AUTH_SOCK") {
+            if let Some(mut backup_agent) = env::home_dir() {
+                use std::os::unix::fs::symlink;
+                use std::fs;
+
+                backup_agent.push(".kr/original-agent.sock");
+                fs::remove_file(backup_agent.clone());
+                if Path::new(&original_auth_sock) != krd_auth_sock {
+                    notice!("found backup auth_sock {}", original_auth_sock);
+                    match symlink(original_auth_sock, backup_agent) {
+                        Err(e) => {
+                            error!("error linking backup agent: {:?}", e);
+                        },
+                        _ => {},
+                    };
+                }
+            }
+        }
+
+        env::set_var("SSH_AUTH_SOCK", krd_auth_sock);
     }
 
     if let Ok(dev_null) = OpenOptions::new()
