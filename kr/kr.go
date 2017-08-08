@@ -33,6 +33,14 @@ func PrintFatal(stderr io.ReadWriter, msg string, args ...interface{}) {
 	os.Exit(1)
 }
 
+func runCommandWithUserInteraction(name string, arg ...string) {
+	cmd := exec.Command(name, arg...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+}
+
 func PrintErr(stderr io.ReadWriter, msg string, args ...interface{}) {
 	stderr.Write([]byte(fmt.Sprintf(msg, args...) + "\n"))
 }

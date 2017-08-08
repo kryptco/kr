@@ -19,14 +19,6 @@ func getPrefix() string {
 	return prefix
 }
 
-func runCommandWithUserInteraction(name string, arg ...string) {
-	cmd := exec.Command(name, arg...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
-}
-
 func restartCommand(c *cli.Context) (err error) {
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
 	exec.Command("pkill", "krd").Run()

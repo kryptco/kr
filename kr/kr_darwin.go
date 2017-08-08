@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -22,12 +24,31 @@ func getPrefix() string {
 	return prefix
 }
 
+const PLIST_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>co.krypt.krd</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>%s</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>`
+
 func copyPlist() (err error) {
-	prefix := getPrefix()
-	sharePlist := prefix + "/share/kr/" + PLIST
-	output, err := exec.Command("cp", sharePlist, homePlist).CombinedOutput()
+	output, err := exec.Command("which", "krd").Output()
 	if err != nil {
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error copying krd plist: "+string(output)))
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Could not find krd on PATH, make sure krd is installed"))
+		return
+	}
+	plistContents := fmt.Sprintf(PLIST_TEMPLATE, strings.TrimSpace(string(output)))
+	err = ioutil.WriteFile(homePlist, []byte(plistContents), 0700)
+	if err != nil {
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error writing krd plist: "+err.Error()))
 		return
 	}
 	return
@@ -105,20 +126,34 @@ func openBrowser(url string) {
 	exec.Command("open", url).Run()
 }
 
-var oldSSHConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\`find \\/usr\\/local\\/bin\\/krssh 2\\>\\/dev\\/null \\|\\| which nc\\` \\%h \\%p\\n\\tIdentityFile ~\\/.ssh\\/id_kryptonite\\n\\tIdentityFile ~\\/.ssh\\/id_ed25519\\n\\tIdentityFile ~\\/.ssh\\/id_rsa\\n\\tIdentityFile ~\\/.ssh\\/id_ecdsa\\n\\tIdentityFile ~\\/.ssh\\/id_dsa"
-var sshConfigString = "# Added by Kryptonite\\nHost \\*\\n\\tPKCS11Provider \\/usr\\/local\\/lib\\/kr-pkcs11.so\\n\\tProxyCommand \\/usr\\/local\\/bin\\/krssh \\%h \\%p\\n\\tIdentityFile ~\\/.ssh\\/id_kryptonite\\n\\tIdentityFile ~\\/.ssh\\/id_ed25519\\n\\tIdentityFile ~\\/.ssh\\/id_rsa\\n\\tIdentityFile ~\\/.ssh\\/id_ecdsa\\n\\tIdentityFile ~\\/.ssh\\/id_dsa"
+func cleanSSHConfig() (err error) {
+	configBlock := []byte(getKryptoniteSSHConfigBlock())
+	sshDirPath := os.Getenv("HOME") + "/.ssh"
+	_ = os.MkdirAll(sshDirPath, 0700)
+	sshConfigPath := sshDirPath + "/config"
+	sshConfigBackupPath := sshConfigPath + ".bak.kr.uninstall"
 
-func cleanSSHConfigString(sshConfig string) string {
-	return "s/\\s*" + sshConfig + "//g"
-}
+	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return
+	}
+	currentConfigContents, err := ioutil.ReadAll(sshConfigFile)
+	if err != nil {
+		return
+	}
+	if len(currentConfigContents) > 0 {
+		err = ioutil.WriteFile(sshConfigBackupPath, currentConfigContents, 0700)
+		if err != nil {
+			return
+		}
+	}
 
-func cleanSSHConfigCommand(sshConfig string, backupExtension string) []string {
-	return []string{"perl", "-0777", "-p", "-i" + backupExtension, "-e", cleanSSHConfigString(sshConfig), os.Getenv("HOME") + "/.ssh/config"}
-}
-
-func cleanSSHConfig(sshConfig string, backupExtension string) {
-	command := cleanSSHConfigCommand(sshConfig, backupExtension)
-	exec.Command(command[0], command[1:]...).Run()
+	newConfigContents := bytes.Replace(currentConfigContents, configBlock, []byte{}, -1)
+	err = ioutil.WriteFile(sshConfigPath, newConfigContents, 0700)
+	if err != nil {
+		return
+	}
+	return
 }
 
 func uninstallCommand(c *cli.Context) (err error) {
@@ -128,16 +163,17 @@ func uninstallCommand(c *cli.Context) (err error) {
 	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation?")
 	_, _ = runCommandTmuxFriendly("brew", "uninstall", "kr")
 	_, _ = runCommandTmuxFriendly("npm", "uninstall", "-g", "krd")
-	os.Remove("/usr/local/bin/kr")
-	os.Remove("/usr/local/bin/krssh")
-	os.Remove("/usr/local/bin/krd")
-	os.Remove("/usr/local/bin/krgpg")
-	os.Remove("/usr/local/lib/kr-pkcs11.so")
-	os.Remove("/usr/local/share/kr")
-	exec.Command("launchctl", "unload", homePlist).Run()
+	prefix := getPrefix()
+	for _, file := range []string{"/bin/kr", "/bin/krssh", "/bin/krd", "/bin/krgpg", "/lib/kr-pkcs11.so", "/share/kr"} {
+		rmErr := exec.Command("rm", "-rf", prefix+file).Run()
+		if rmErr != nil {
+			PrintErr(os.Stderr, "sudo rm -rf "+prefix+file)
+			runCommandWithUserInteraction("sudo", "rm", "-rf", prefix+file)
+		}
+	}
+	runCommandTmuxFriendly("launchctl", "unload", homePlist)
 	os.Remove(homePlist)
-	cleanSSHConfig(sshConfigString, ".bak3")
-	cleanSSHConfig(oldSSHConfigString, ".bak4")
+	cleanSSHConfig()
 	uninstallCodesigning()
 	PrintErr(os.Stderr, "Kryptonite uninstalled.")
 	return

@@ -313,7 +313,6 @@ func checkGitLocation() {
 func uninstallCodesigning() {
 	currentGPGProgram, err := exec.Command("git", "config", "--global", "gpg.program").Output()
 	if err != nil {
-		PrintErr(os.Stderr, "Error running git config: "+err.Error())
 		return
 	}
 	if !strings.Contains(string(currentGPGProgram), "krgpg") {
