@@ -1,12 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 
 	"github.com/kryptco/kr"
 	"github.com/urfave/cli"
 )
+
+const DEFAULT_PREFIX = "/usr"
+
+func getPrefix() string {
+	prefix := DEFAULT_PREFIX
+	if os.Getenv("PREFIX") != "" {
+		prefix = os.Getenv("PREFIX")
+	}
+	return prefix
+}
 
 func runCommandWithUserInteraction(name string, arg ...string) {
 	cmd := exec.Command(name, arg...)
@@ -19,9 +30,18 @@ func runCommandWithUserInteraction(name string, arg ...string) {
 func restartCommand(c *cli.Context) (err error) {
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
 	exec.Command("pkill", "krd").Run()
-	exec.Command("nohup", "krd").Start()
+	startKrd()
 	PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
 	return
+}
+
+func startKrd() (err error) {
+	exec.Command("nohup", "krd").Start()
+	return
+}
+
+func isKrdRunning() bool {
+	return nil == exec.Command("pgrep", "krd").Run()
 }
 
 func openBrowser(url string) {

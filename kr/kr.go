@@ -54,6 +54,20 @@ func pairCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "pair", nil, nil)
 	}()
+	if !isKrdRunning() {
+		err = startKrd()
+		if err != nil {
+			return
+		}
+		<-time.After(time.Second)
+	}
+	err = promptEditSSHConfig()
+	if err != nil {
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error verifying SSH config: "+err.Error()))
+		<-time.After(2 * time.Second)
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Continuing with pairing..."))
+		<-time.After(2 * time.Second)
+	}
 	name := c.String("name")
 	nameOpt := &name
 	if *nameOpt == "" {
@@ -67,7 +81,7 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 	go func() {
 		r, err := kr.OpenNotificationReader("")
 		if err != nil {
-			os.Stderr.WriteString("error connection to notificationr reader: " + err.Error())
+			os.Stderr.WriteString("error connecting to notification reader: " + err.Error())
 			return
 		}
 		printedMessages := map[string]bool{}

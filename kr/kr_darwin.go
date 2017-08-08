@@ -10,7 +10,59 @@ import (
 	"github.com/urfave/cli"
 )
 
-var plist = os.Getenv("HOME") + "/Library/LaunchAgents/co.krypt.krd.plist"
+const DEFAULT_PREFIX = "/usr/local"
+
+func getPrefix() string {
+	prefix := DEFAULT_PREFIX
+	if os.Getenv("PREFIX") != "" {
+		prefix = os.Getenv("PREFIX")
+	} else if os.Getenv("HOMEBREW_PREFIX") != "" {
+		prefix = os.Getenv("HOMEBREW_PREFIX")
+	}
+	return prefix
+}
+
+func copyPlist() (err error) {
+	prefix := getPrefix()
+	sharePlist := prefix + "/share/kr/" + PLIST
+	output, err := exec.Command("cp", sharePlist, homePlist).CombinedOutput()
+	if err != nil {
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error copying krd plist: "+string(output)))
+		return
+	}
+	return
+}
+
+func startKrd() (err error) {
+	err = copyPlist()
+	if err != nil {
+		return
+	}
+	for _, proxyVar := range []string{"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"} {
+		copyEnvToLaunchctl(proxyVar)
+	}
+	_ = exec.Command("launchctl", "unload", homePlist).Run()
+	output, err := exec.Command("launchctl", "load", homePlist).CombinedOutput()
+	if err != nil {
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error starting krd with launchctl: "+string(output)))
+		return
+	}
+	return
+}
+
+func isKrdRunning() bool {
+	return nil == exec.Command("pgrep", "krd").Run()
+}
+
+func killKrd() (err error) {
+	exec.Command("launchctl", "unload", homePlist).Run()
+	exec.Command("pkill", "krd").Run()
+	return
+}
+
+const PLIST = "co.krypt.krd.plist"
+
+var homePlist = os.Getenv("HOME") + "/Library/LaunchAgents/" + PLIST
 
 func copyEnvToLaunchctl(varName string) {
 	exec.Command("launchctl", "setenv", varName, os.Getenv(varName)).Run()
@@ -18,14 +70,19 @@ func copyEnvToLaunchctl(varName string) {
 
 func restartCommand(c *cli.Context) (err error) {
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
-	for _, proxyVar := range []string{"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"} {
-		copyEnvToLaunchctl(proxyVar)
-	}
-	exec.Command("launchctl", "unload", plist).Run()
-	err = exec.Command("launchctl", "load", plist).Run()
+	err = copyPlist()
 	if err != nil {
-		PrintFatal(os.Stderr, "Failed to restart Kryptonite daemon.")
+		return
 	}
+	err = killKrd()
+	if err != nil {
+		return
+	}
+	err = startKrd()
+	if err != nil {
+		return
+	}
+
 	fmt.Println("Restarted Kryptonite daemon.")
 	return
 }
@@ -63,8 +120,8 @@ func uninstallCommand(c *cli.Context) (err error) {
 	os.Remove("/usr/local/bin/krgpg")
 	os.Remove("/usr/local/lib/kr-pkcs11.so")
 	os.Remove("/usr/local/share/kr")
-	exec.Command("launchctl", "unload", plist).Run()
-	os.Remove(plist)
+	exec.Command("launchctl", "unload", homePlist).Run()
+	os.Remove(homePlist)
 	cleanSSHConfig(sshConfigString, ".bak3")
 	cleanSSHConfig(oldSSHConfigString, ".bak4")
 	uninstallCodesigning()
