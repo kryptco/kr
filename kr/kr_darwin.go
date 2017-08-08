@@ -33,6 +33,19 @@ func copyPlist() (err error) {
 	return
 }
 
+func runCommandTmuxFriendly(cmd string, args ...string) (output string, err error) {
+	//	fixes tmux launchctl permissions
+	var outputBytes []byte
+	if os.Getenv("TMUX") != "" {
+		subcommandArgs := strings.Join(append([]string{cmd}, args...), " ")
+		outputBytes, err = exec.Command("reattach-to-user-namespace", "-l", "bash", "-c", subcommandArgs).CombinedOutput()
+	} else {
+		outputBytes, err = exec.Command(cmd, args...).CombinedOutput()
+	}
+	output = string(outputBytes)
+	return
+}
+
 func startKrd() (err error) {
 	err = copyPlist()
 	if err != nil {
@@ -41,10 +54,11 @@ func startKrd() (err error) {
 	for _, proxyVar := range []string{"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"} {
 		copyEnvToLaunchctl(proxyVar)
 	}
-	_ = exec.Command("launchctl", "unload", homePlist).Run()
-	output, err := exec.Command("launchctl", "load", homePlist).CombinedOutput()
-	if err != nil {
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error starting krd with launchctl: "+string(output)))
+	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
+	output, err := runCommandTmuxFriendly("launchctl", "load", homePlist)
+	if len(output) > 0 || err != nil {
+		err = fmt.Errorf(kr.Red("Kryptonite ▶ Error starting krd with launchctl: " + string(output)))
+		PrintErr(os.Stderr, err.Error())
 		return
 	}
 	return
@@ -55,8 +69,8 @@ func isKrdRunning() bool {
 }
 
 func killKrd() (err error) {
-	exec.Command("launchctl", "unload", homePlist).Run()
-	exec.Command("pkill", "krd").Run()
+	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
+	_, _ = runCommandTmuxFriendly("pkill", "krd")
 	return
 }
 
@@ -65,7 +79,7 @@ const PLIST = "co.krypt.krd.plist"
 var homePlist = os.Getenv("HOME") + "/Library/LaunchAgents/" + PLIST
 
 func copyEnvToLaunchctl(varName string) {
-	exec.Command("launchctl", "setenv", varName, os.Getenv(varName)).Run()
+	_, _ = runCommandTmuxFriendly("launchctl", "setenv", varName, os.Getenv(varName))
 }
 
 func restartCommand(c *cli.Context) (err error) {
@@ -112,8 +126,8 @@ func uninstallCommand(c *cli.Context) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "uninstall", nil, nil)
 	}()
 	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation?")
-	exec.Command("brew", "uninstall", "kr").Run()
-	exec.Command("npm", "uninstall", "-g", "krd").Run()
+	_, _ = runCommandTmuxFriendly("brew", "uninstall", "kr")
+	_, _ = runCommandTmuxFriendly("npm", "uninstall", "-g", "krd")
 	os.Remove("/usr/local/bin/kr")
 	os.Remove("/usr/local/bin/krssh")
 	os.Remove("/usr/local/bin/krd")
