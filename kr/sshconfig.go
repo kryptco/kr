@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/urfave/cli"
+
 	"github.com/kryptco/kr"
 )
 
@@ -28,10 +30,22 @@ func getKryptoniteSSHConfigBlock() string {
 	return sshConfigWithPrefix
 }
 
-func promptEditSSHConfig() (err error) {
+func sshConfigCommand(c *cli.Context) (err error) {
+	if c.Bool("print") {
+		os.Stdout.WriteString(getKryptoniteSSHConfigBlock() + "\n")
+		return
+	}
+	return editSSHConfig(true, c.Bool("force"))
+}
+
+func autoEditSSHConfig() (err error) {
 	if os.Getenv(KR_SKIP_SSH_CONFIG) != "" {
 		return
 	}
+	return editSSHConfig(false, false)
+}
+
+func editSSHConfig(prompt bool, forceAppend bool) (err error) {
 	configBlock := []byte(getKryptoniteSSHConfigBlock())
 	sshDirPath := os.Getenv("HOME") + "/.ssh"
 	_ = os.MkdirAll(sshDirPath, 0700)
@@ -48,29 +62,44 @@ func promptEditSSHConfig() (err error) {
 	}
 
 	if bytes.Contains(currentConfigContents, configBlock) {
+		if prompt {
+			PrintErr(os.Stderr, kr.Green("Kryptonite ▶ SSH already configured ✔"))
+		}
+		return
+	}
+	if bytes.Contains(currentConfigContents, []byte("krssh %h %p")) && !forceAppend {
+		if prompt {
+			PrintErr(os.Stderr, kr.Yellow("Kryptonite ▶ ~/.ssh/config already contains Kryptonite-related configuration. Please remove all Kryptonite-related lines from ~/.ssh/config or run with --force."))
+		}
 		return
 	}
 
-	if !confirm(os.Stderr, kr.Yellow("Kryptonite ▶ SSH must be configured to use Kryptonite. Automatically configure SSH?")) {
-		os.Stderr.WriteString(kr.Yellow("Please add the following to ~/.ssh/config:") + "\n\n" + string(configBlock) + "\n\n" + "You can mute this message by adding \"export KR_SKIP_SSH_CONFIG=1\" to your ~/.bashrc file.\n\n")
-		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to continue")
-		os.Stdin.Read([]byte{0})
-		return
+	if prompt {
+		if !confirm(os.Stderr, kr.Yellow("Kryptonite ▶ SSH must be configured to use Kryptonite. Automatically configure SSH?")) {
+			os.Stderr.WriteString(kr.Yellow("Please add the following to ~/.ssh/config:") + "\n\n" + string(configBlock) + "\n\n")
+			os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to continue")
+			os.Stdin.Read([]byte{0})
+			return
+		}
 	}
 	if len(currentConfigContents) > 0 {
 		err = ioutil.WriteFile(sshConfigBackupPath, currentConfigContents, 0700)
 		if err != nil {
 			return
 		}
-		PrintErr(os.Stderr, kr.Green("Kryptonite ▶ ~/.ssh/config backed up to ~/.ssh/config.bak.kr ✔"))
+		if prompt {
+			PrintErr(os.Stderr, kr.Green("Kryptonite ▶ ~/.ssh/config backed up to ~/.ssh/config.bak.kr ✔"))
+		}
 	}
 
-	newConfigContents := bytes.Join([][]byte{currentConfigContents, configBlock}, []byte("\n"))
+	newConfigContents := bytes.Join([][]byte{currentConfigContents, configBlock}, []byte("\n\n"))
 	err = ioutil.WriteFile(sshConfigPath, newConfigContents, 0700)
 	if err != nil {
 		return
 	}
-	PrintErr(os.Stderr, kr.Green("Kryptonite ▶ SSH configured ✔"))
-	<-time.After(time.Second)
+	if prompt {
+		PrintErr(os.Stderr, kr.Green("Kryptonite ▶ SSH configured ✔"))
+		<-time.After(time.Second)
+	}
 	return
 }

@@ -61,7 +61,7 @@ func pairCommand(c *cli.Context) (err error) {
 		}
 		<-time.After(time.Second)
 	}
-	err = promptEditSSHConfig()
+	err = autoEditSSHConfig()
 	if err != nil {
 		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error verifying SSH config: "+err.Error()))
 		<-time.After(2 * time.Second)
@@ -584,6 +584,21 @@ func main() {
 					Name:   "pgp",
 					Usage:  "Copy your PGP public key to the clipboard.",
 					Action: copyPGPCommand,
+				},
+			},
+		},
+		cli.Command{
+			Name:   "sshconfig",
+			Usage:  "Verify SSH is configured to use Kryptonite.",
+			Action: sshConfigCommand,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "print",
+					Usage: "Print Kryptonite SSH config block.",
+				},
+				cli.BoolFlag{
+					Name:  "force",
+					Usage: "Force append the Kryptonite SSH config block even if other Kryptonite-related lines are present.",
 				},
 			},
 		},
