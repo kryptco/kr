@@ -52,7 +52,7 @@ func editSSHConfig(prompt bool, forceAppend bool) (err error) {
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr"
 
-	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0600)
+	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0700)
 	if err != nil {
 		return
 	}

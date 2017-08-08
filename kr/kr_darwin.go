@@ -129,11 +129,10 @@ func openBrowser(url string) {
 func cleanSSHConfig() (err error) {
 	configBlock := []byte(getKryptoniteSSHConfigBlock())
 	sshDirPath := os.Getenv("HOME") + "/.ssh"
-	_ = os.MkdirAll(sshDirPath, 0700)
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr.uninstall"
 
-	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0600)
+	sshConfigFile, err := os.Open(sshConfigPath)
 	if err != nil {
 		return
 	}
