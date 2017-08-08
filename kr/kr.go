@@ -516,6 +516,18 @@ func awsCommand(c *cli.Context) (err error) {
 	openBrowser("https://console.aws.amazon.com/ec2/v2/home?#KeyPairs:sort=keyName")
 	return
 }
+
+func envCommand(c *cli.Context) (err error) {
+	const ENV_VAR_USAGE = `Useful environment variables:
+	KR_SKIP_SSH_CONFIG=1		Do not automatically configure ~/.ssh/config (see 'kr sshconfig --help')
+	KR_SILENCE_WARNINGS=1		Do not print warnings about not being paired or a newer version of kr being available
+	KR_NO_STDERR=1			Do not log anything to the terminal (useful for scripts that parse stderr)
+	KR_LOG_LEVEL=<log level>	Set log level of kr/krssh
+	KR_LOG_SYSLOG=true		Force krssh to log to system log`
+	os.Stderr.WriteString(ENV_VAR_USAGE + "\n")
+	return
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
@@ -594,6 +606,11 @@ func main() {
 					Action: copyPGPCommand,
 				},
 			},
+		},
+		cli.Command{
+			Name:   "env",
+			Usage:  "Print useful environment variables for configuring kr/krd.",
+			Action: envCommand,
 		},
 		cli.Command{
 			Name:   "sshconfig",
