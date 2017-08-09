@@ -1,0 +1,9 @@
+language: go
+before_script:
+  - curl https://sh.rustup.rs -sSf | sh -s -- -y
+  - export PATH=$PATH:$HOME/.cargo/bin/
+go:
+  - master
+script:
+  - make
+  - make check

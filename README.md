@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/kryptco/kr.svg?branch=master)](https://travis-ci.org/kryptco/kr)
+
 # kr
 __kr__ enables SSH to authenticate with a key stored in a __Kryptonite__
 ([iOS](https://github.com/kryptco/kryptonite-ios) or
