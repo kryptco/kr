@@ -1,0 +1,11 @@
+language: go
+before_script:
+  - curl https://sh.rustup.rs -sSf | sh
+go:
+  - 1.x
+  - 1.6
+  - 1.7
+  - master
+script:
+  - make
+  - make check
