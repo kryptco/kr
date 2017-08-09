@@ -46,6 +46,7 @@ func copyPlist() (err error) {
 		return
 	}
 	plistContents := fmt.Sprintf(PLIST_TEMPLATE, strings.TrimSpace(string(output)))
+	_ = os.MkdirAll(homePlistDir, 0700)
 	err = ioutil.WriteFile(homePlist, []byte(plistContents), 0700)
 	if err != nil {
 		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error writing krd plist: "+err.Error()))
@@ -97,7 +98,8 @@ func killKrd() (err error) {
 
 const PLIST = "co.krypt.krd.plist"
 
-var homePlist = os.Getenv("HOME") + "/Library/LaunchAgents/" + PLIST
+var homePlistDir = os.Getenv("HOME") + "/Library/LaunchAgents"
+var homePlist = homePlistDir + "/" + PLIST
 
 func copyEnvToLaunchctl(varName string) {
 	_, _ = runCommandTmuxFriendly("launchctl", "setenv", varName, os.Getenv(varName))
