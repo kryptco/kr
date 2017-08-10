@@ -18,3 +18,7 @@ func CreateTeam(name string) {
 func CreateInvite() {
 	C.create_invite()
 }
+
+func SetApprovalWindow(approval_window *int64) {
+	C.set_policy((*C.int64_t)(approval_window))
+}

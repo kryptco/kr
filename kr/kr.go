@@ -805,6 +805,23 @@ func main() {
 					Usage:  "Create a secret invitatation URL to share with your team.",
 					Action: createInviteCommand,
 				},
+				cli.Command{
+					Name:  "policy",
+					Usage: "View your team's policy.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "set",
+							Usage:  "Set your team's policy.",
+							Action: setPolicyCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "window,w",
+									Usage: "temporary approval window in seconds, or \"\" to not override Kryptonite's default",
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
