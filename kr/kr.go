@@ -785,6 +785,28 @@ func main() {
 			Usage:  "Check connectivity to AWS SQS.",
 			Action: debugAWSCommand,
 		},
+		cli.Command{
+			Name:  "team",
+			Usage: "View or manage your Kryptonite Command team.",
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "create",
+					Usage:  "Create a team.",
+					Action: createTeamCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "name,n",
+							Usage: "team name",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "invite",
+					Usage:  "Create a secret invitatation URL to share with your team.",
+					Action: createInviteCommand,
+				},
+			},
+		},
 	}
 	app.Run(os.Args)
 }
