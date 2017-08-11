@@ -34,11 +34,14 @@ func NewRequest() (request Request, err error) {
 }
 
 func (r *Request) Prepare() (err error) {
-	id, err := Rand128Base62()
-	if err != nil {
-		return
+	if r.RequestID == "" {
+		id, idErr := Rand128Base62()
+		if idErr != nil {
+			err = idErr
+			return
+		}
+		r.RequestID = id
 	}
-	r.RequestID = id
 	r.UnixSeconds = time.Now().Unix()
 	r.Version = CURRENT_VERSION
 	r.SendACK = true

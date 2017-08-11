@@ -5,11 +5,39 @@ import (
 	"strconv"
 
 	"github.com/kryptco/kr"
+	"github.com/kryptco/kr/krdclient"
 	"github.com/urfave/cli"
 )
 
 func createTeamCommand(c *cli.Context) (err error) {
-	kr.CreateTeam(c.String("name"))
+	request, err := kr.NewRequest()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+		return
+	}
+	name := c.String("name")
+	if name == "" {
+		PrintFatal(os.Stderr, "Team name requied.")
+	}
+	request.CreateTeamRequest = &kr.CreateTeamRequest{
+		Name: name,
+	}
+	response, err := krdclient.Request(request)
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+	createTeamResponse := response.CreateTeamResponse
+	if createTeamResponse == nil {
+		PrintFatal(os.Stderr, "Invalid response from Kryptonite app.")
+	}
+	if createTeamResponse.Error != nil {
+		PrintFatal(os.Stderr, "Error creating team: "+*createTeamResponse.Error)
+	}
+	privateKeySeed := createTeamResponse.PrivateKeySeed
+	if privateKeySeed == nil {
+		PrintFatal(os.Stderr, "No team admin private key returned from Kryptonite app.")
+	}
+	kr.SaveAdminKeypair(*privateKeySeed)
 	return
 }
 

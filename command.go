@@ -9,6 +9,12 @@ package kr
 */
 import "C"
 
+func SaveAdminKeypair(seed []byte) {
+	bytes := C.CBytes(seed)
+	C.save_admin_keypair((*C.uint8_t)(bytes), C.uintptr_t(len(seed)))
+	C.free(bytes)
+}
+
 func CreateTeam(name string) {
 	bytes := C.CBytes([]byte(name))
 	C.create_team((*C.uint8_t)(bytes), C.uintptr_t(len(name)))
