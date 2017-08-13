@@ -5,6 +5,6 @@ type CreateTeamRequest struct {
 }
 
 type CreateTeamResponse struct {
-	PrivateKeySeed *[]byte `json:"private_key_seed,omitempty"`
+	PrivateKeySeed *[]byte `json:"seed,omitempty"`
 	Error          *string `json:"error,omitempty"`
 }
