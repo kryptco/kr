@@ -64,6 +64,7 @@ ifeq ($(shell expr $(OSXRELEASE) \>= 16), 1)
 		cp -R krbtle/build/$(CONFIGURATION)/krbtle.framework $(SRCFRAMEWORK)/krbtle.framework
 endif
 endif
+	cd krcommand; cargo build --release
 	cd kr; go build $(GO_TAGS) -o ../bin/kr
 	cd krd/main; CGO_LDFLAGS="$(CGO_LDFLAGS)" go build $(GO_TAGS) -o ../../bin/krd
 	cd pkcs11shim; make; cp target/release/kr-pkcs11.so ../lib/
