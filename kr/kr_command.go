@@ -58,3 +58,13 @@ func setPolicyCommand(c *cli.Context) (err error) {
 	kr.SetApprovalWindow(window)
 	return
 }
+
+func getMembersCommand(c *cli.Context) (err error) {
+	var query *string
+	if c.String("query") != "" {
+		queryStr := c.String("query")
+		query = &queryStr
+	}
+	kr.GetMembers(query, c.Bool("ssh"), c.Bool("pgp"))
+	return
+}

@@ -28,3 +28,15 @@ func CreateInvite() {
 func SetApprovalWindow(approval_window *int64) {
 	C.set_policy((*C.int64_t)(approval_window))
 }
+
+func GetMembers(query *string, printSSHPubkey bool, printPGPPubkey bool) {
+	if query != nil {
+		bytes := C.CBytes([]byte(*query))
+		C.get_members((*C.uint8_t)(bytes), C.uintptr_t(len(*query)),
+			C._Bool(printSSHPubkey), C._Bool(printPGPPubkey))
+		C.free(bytes)
+	} else {
+		C.get_members((*C.uint8_t)(nil), C.uintptr_t(0),
+			C._Bool(printSSHPubkey), C._Bool(printPGPPubkey))
+	}
+}

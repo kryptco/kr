@@ -806,6 +806,25 @@ func main() {
 					Action: createInviteCommand,
 				},
 				cli.Command{
+					Name:   "members",
+					Usage:  "List your team members' emails and public keys.",
+					Action: getMembersCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "query,q",
+							Usage: "Filter by email",
+						},
+						cli.BoolFlag{
+							Name:  "ssh,s",
+							Usage: "Print SSH public keys",
+						},
+						cli.BoolFlag{
+							Name:  "pgp,p",
+							Usage: "Print PGP public keys",
+						},
+					},
+				},
+				cli.Command{
 					Name:  "policy",
 					Usage: "View your team's policy.",
 					Subcommands: []cli.Command{
