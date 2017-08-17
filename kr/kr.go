@@ -848,11 +848,15 @@ func main() {
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:  "host",
-							Usage: "Host name",
+							Usage: "(Required) Host name",
 						},
 						cli.StringFlag{
 							Name:  "public-key",
-							Usage: "Public key to pin. In unset, parses keys from local known_hosts file.",
+							Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file.",
+						},
+						cli.StringFlag{
+							Name:  "update-from-server",
+							Usage: "(Optional) user@hostname or SSH alias. Update list of known keys from this server before pinning. A separate argument is required because the alias used to SSH to a server may be different than the hostname.",
 						},
 					},
 				},
