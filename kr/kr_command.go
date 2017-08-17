@@ -68,3 +68,17 @@ func getMembersCommand(c *cli.Context) (err error) {
 	kr.GetMembers(query, c.Bool("ssh"), c.Bool("pgp"))
 	return
 }
+
+func pinHostKeyCommand(c *cli.Context) (err error) {
+	if c.String("public-key") == "" {
+		kr.PinKnownHostKeys(c.String("host"))
+		return
+	}
+	kr.PinHostKey(c.String("host"), []byte(c.String("public-key")))
+	return
+}
+
+func unpinHostKeyCommand(c *cli.Context) (err error) {
+	kr.UnpinHostKey(c.String("host"), []byte(c.String("public-key")))
+	return
+}

@@ -841,6 +841,36 @@ func main() {
 						},
 					},
 				},
+				cli.Command{
+					Name:   "pin",
+					Usage:  "Pin a host's SSH public keys.",
+					Action: pinHostKeyCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "Host name",
+						},
+						cli.StringFlag{
+							Name:  "public-key",
+							Usage: "Public key to pin. In unset, parses keys from local known_hosts file.",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "unpin",
+					Usage:  "Unpin a host SSH public key.",
+					Action: unpinHostKeyCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "Host name",
+						},
+						cli.StringFlag{
+							Name:  "public-key",
+							Usage: "Public key",
+						},
+					},
+				},
 			},
 		},
 	}
