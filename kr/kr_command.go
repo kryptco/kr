@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"os"
 	"strconv"
 
@@ -74,11 +75,19 @@ func pinHostKeyCommand(c *cli.Context) (err error) {
 		kr.PinKnownHostKeys(c.String("host"))
 		return
 	}
-	kr.PinHostKey(c.String("host"), []byte(c.String("public-key")))
+	pk, err := base64.StdEncoding.DecodeString(c.String("public-key"))
+	if err != nil {
+		PrintFatal(os.Stderr, "error decoding public-key, make sure it is base64 encoded without the key type prefix (i.e. no 'ssh-rsa' or 'ssh-ed25519') "+err.Error())
+	}
+	kr.PinHostKey(c.String("host"), pk)
 	return
 }
 
 func unpinHostKeyCommand(c *cli.Context) (err error) {
-	kr.UnpinHostKey(c.String("host"), []byte(c.String("public-key")))
+	pk, err := base64.StdEncoding.DecodeString(c.String("public-key"))
+	if err != nil {
+		PrintFatal(os.Stderr, "error decoding public-key, make sure it is base64 encoded without the key type prefix (i.e. no 'ssh-rsa' or 'ssh-ed25519') "+err.Error())
+	}
+	kr.UnpinHostKey(c.String("host"), pk)
 	return
 }
