@@ -56,22 +56,13 @@ func PinHostKey(host string, publicKey []byte) {
 	)
 }
 
-func PinKnownHostKeys(host string, updateAlias *string) {
+func PinKnownHostKeys(host string, updateFromServer bool) {
 	hostSlice := []byte(host)
 	hostBytes := C.CBytes(hostSlice)
 	defer C.free(hostBytes)
 
-	if updateAlias != nil {
-		updateAliasSlice := []byte(*updateAlias)
-		updateAliasBytes := C.CBytes(updateAliasSlice)
-		defer C.free(updateAliasBytes)
-
-		C.pin_known_host_keys((*C.uint8_t)(hostBytes), C.uintptr_t(len(hostSlice)),
-			(*C.uint8_t)(updateAliasBytes), C.uintptr_t(len(updateAliasSlice)))
-	} else {
-		C.pin_known_host_keys((*C.uint8_t)(hostBytes), C.uintptr_t(len(hostSlice)),
-			(*C.uint8_t)(nil), C.uintptr_t(0))
-	}
+	C.pin_known_host_keys((*C.uint8_t)(hostBytes), C.uintptr_t(len(hostSlice)),
+		C._Bool(updateFromServer))
 }
 
 func UnpinHostKey(host string, publicKey []byte) {

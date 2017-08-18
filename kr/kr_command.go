@@ -72,12 +72,7 @@ func getMembersCommand(c *cli.Context) (err error) {
 
 func pinHostKeyCommand(c *cli.Context) (err error) {
 	if c.String("public-key") == "" {
-		var updateAlias *string
-		updateAliasArg := c.String("update-from-server")
-		if updateAliasArg != "" {
-			updateAlias = &updateAliasArg
-		}
-		kr.PinKnownHostKeys(c.String("host"), updateAlias)
+		kr.PinKnownHostKeys(c.String("host"), c.Bool("update-from-server"))
 		return
 	}
 	pk, err := base64.StdEncoding.DecodeString(c.String("public-key"))
