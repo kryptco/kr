@@ -91,3 +91,13 @@ func unpinHostKeyCommand(c *cli.Context) (err error) {
 	kr.UnpinHostKey(c.String("host"), pk)
 	return
 }
+
+func listPinnedKeysCommand(c *cli.Context) (err error) {
+	host := c.String("host")
+	if host == "" {
+		kr.GetAllPinnedHostKeys()
+		return
+	}
+	kr.GetPinnedHostKeys(host, c.Bool("search"))
+	return
+}

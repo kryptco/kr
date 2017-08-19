@@ -77,3 +77,18 @@ func UnpinHostKey(host string, publicKey []byte) {
 		(*C.uint8_t)(publicKeyBytes), C.uintptr_t(len(publicKey)),
 	)
 }
+
+func GetAllPinnedHostKeys() {
+	C.get_all_pinned_host_keys()
+}
+
+func GetPinnedHostKeys(host string, search bool) {
+	hostSlice := []byte(host)
+	hostBytes := C.CBytes(hostSlice)
+	defer C.free(hostBytes)
+
+	C.get_pinned_host_keys(
+		(*C.uint8_t)(hostBytes), C.uintptr_t(len(hostSlice)),
+		C._Bool(search),
+	)
+}

@@ -859,6 +859,23 @@ func main() {
 							Usage: "Update list of known keys from this server before pinning.",
 						},
 					},
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "list",
+							Usage:  "List pinned host SSH public keys.",
+							Action: listPinnedKeysCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "host",
+									Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned.",
+								},
+								cli.BoolFlag{
+									Name:  "search",
+									Usage: "(Optional) Treats --host flag as a search instead of exact match.",
+								},
+							},
+						},
+					},
 				},
 				cli.Command{
 					Name:   "unpin",
