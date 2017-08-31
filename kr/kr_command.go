@@ -18,11 +18,12 @@ func createTeamCommand(c *cli.Context) (err error) {
 	}
 	name := c.String("name")
 	if name == "" {
-		PrintFatal(os.Stderr, "Team name requied.")
+		PrintFatal(os.Stderr, "--name flag required")
 	}
 	request.CreateTeamRequest = &kr.CreateTeamRequest{
 		Name: name,
 	}
+	os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ Your team is almost ready, use the Kryptonite app on your phone to complete the setup.\r\n"))
 	response, err := krdclient.Request(request)
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
@@ -39,6 +40,7 @@ func createTeamCommand(c *cli.Context) (err error) {
 		PrintFatal(os.Stderr, "No team admin private key returned from Kryptonite app.")
 	}
 	kr.SaveAdminKeypair(*privateKeySeed)
+	os.Stderr.WriteString(kr.Green("Success! Team " + name + " is ready to go ✔\r\n"))
 	return
 }
 
