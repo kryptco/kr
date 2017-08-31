@@ -856,7 +856,7 @@ func main() {
 						},
 						cli.BoolFlag{
 							Name:  "update-from-server",
-							Usage: "Update list of known keys from this server before pinning.",
+							Usage: "(Optional) Update list of known keys from this server before pinning.",
 						},
 					},
 					Subcommands: []cli.Command{
