@@ -72,6 +72,24 @@ func getMembersCommand(c *cli.Context) (err error) {
 	return
 }
 
+func addAdminCommand(c *cli.Context) (err error) {
+	email := c.String("email")
+	if email == "" {
+		PrintFatal(os.Stderr, "--email required")
+	}
+	kr.AddAdmin(email)
+	return
+}
+
+func removeAdminCommand(c *cli.Context) (err error) {
+	email := c.String("email")
+	if email == "" {
+		PrintFatal(os.Stderr, "--email required")
+	}
+	kr.RemoveAdmin(email)
+	return
+}
+
 func pinHostKeyCommand(c *cli.Context) (err error) {
 	if c.String("public-key") == "" {
 		kr.PinKnownHostKeys(c.String("host"), c.Bool("update-from-server"))

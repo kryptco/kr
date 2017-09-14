@@ -43,6 +43,20 @@ func GetMembers(query *string, printSSHPubkey bool, printPGPPubkey bool) {
 	}
 }
 
+func AddAdmin(email string) {
+	emailSlice := []byte(email)
+	bytes := C.CBytes(emailSlice)
+	C.add_admin((*C.uint8_t)(bytes), C.uintptr_t(len(emailSlice)))
+	C.free(bytes)
+}
+
+func RemoveAdmin(email string) {
+	emailSlice := []byte(email)
+	bytes := C.CBytes(emailSlice)
+	C.remove_admin((*C.uint8_t)(bytes), C.uintptr_t(len(emailSlice)))
+	C.free(bytes)
+}
+
 func PinHostKey(host string, publicKey []byte) {
 	hostSlice := []byte(host)
 	hostBytes := C.CBytes(hostSlice)

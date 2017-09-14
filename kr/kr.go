@@ -825,6 +825,40 @@ func main() {
 					},
 				},
 				cli.Command{
+					Name:  "admin",
+					Usage: "List or manage your team's admins.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "add",
+							Usage:  "Grant a team member admin privileges.",
+							Action: addAdminCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "email",
+									Usage: "Team member's email.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "remove",
+							Usage:  "Revoke a team member's admin privileges.",
+							Action: removeAdminCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "email",
+									Usage: "Team member's email.",
+								},
+							},
+						},
+						cli.Command{
+							Name:  "list",
+							Usage: "List your team's admins.",
+							//TODO
+							Action: nil,
+						},
+					},
+				},
+				cli.Command{
 					Name:  "policy",
 					Usage: "View your team's policy.",
 					Subcommands: []cli.Command{
