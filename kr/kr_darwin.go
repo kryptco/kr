@@ -61,6 +61,11 @@ func runCommandTmuxFriendly(cmd string, args ...string) (output string, err erro
 	if os.Getenv("TMUX") != "" {
 		subcommandArgs := strings.Join(append([]string{cmd}, args...), " ")
 		outputBytes, err = exec.Command("reattach-to-user-namespace", "-l", "bash", "-c", subcommandArgs).CombinedOutput()
+		if err != nil {
+			if execErr, ok := err.(*exec.Error); ok && execErr.Err == exec.ErrNotFound {
+				PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ Running tmux-friendly command failed. Make sure \"reattach-to-user-namespace\" is installed with \"brew install reattach-to-user-namespace\"\r\n"))
+			}
+		}
 	} else {
 		outputBytes, err = exec.Command(cmd, args...).CombinedOutput()
 	}
