@@ -15,13 +15,6 @@ func SaveAdminKeypair(seed []byte) {
 	C.free(bytes)
 }
 
-func CreateTeam(name string) {
-	nameSlice := []byte(name)
-	bytes := C.CBytes(nameSlice)
-	C.create_team((*C.uint8_t)(bytes), C.uintptr_t(len(nameSlice)))
-	C.free(bytes)
-}
-
 func CreateInvite() {
 	C.create_invite()
 }
