@@ -57,6 +57,10 @@ func RemoveAdmin(email string) {
 	C.free(bytes)
 }
 
+func GetAdmins() {
+	C.get_admins()
+}
+
 func PinHostKey(host string, publicKey []byte) {
 	hostSlice := []byte(host)
 	hostBytes := C.CBytes(hostSlice)

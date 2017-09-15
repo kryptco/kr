@@ -851,10 +851,9 @@ func main() {
 							},
 						},
 						cli.Command{
-							Name:  "list",
-							Usage: "List your team's admins.",
-							//TODO
-							Action: nil,
+							Name:   "list",
+							Usage:  "List your team's admins.",
+							Action: getAdminsCommand,
 						},
 					},
 				},

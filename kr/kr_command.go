@@ -90,6 +90,11 @@ func removeAdminCommand(c *cli.Context) (err error) {
 	return
 }
 
+func getAdminsCommand(c *cli.Context) (err error) {
+	kr.GetAdmins()
+	return
+}
+
 func pinHostKeyCommand(c *cli.Context) (err error) {
 	if c.String("public-key") == "" {
 		kr.PinKnownHostKeys(c.String("host"), c.Bool("update-from-server"))
