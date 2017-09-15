@@ -11,6 +11,11 @@ import (
 )
 
 func createTeamCommand(c *cli.Context) (err error) {
+	_, err = krdclient.RequestMe()
+	if err != nil {
+		PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+err.Error()))
+		return
+	}
 	request, err := kr.NewRequest()
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
