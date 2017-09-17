@@ -1,0 +1,23 @@
+# Makefile for building on Windows using nmake
+
+GOBUILDFLAGS = -ldflags -s
+
+all:
+	if not exist "bin" mkdir bin
+	cd kr& go build $(GOBUILDFLAGS) -o ../bin/kr.exe
+	cd krd/main& go build $(GOBUILDFLAGS) -o ../../bin/krd.exe
+	cd krgpg& go build $(GOBUILDFLAGS) -o ../bin/krgpg.exe
+
+clean:
+	if exist "bin" rmdir /s /q bin
+
+check:
+	go test $(GOBUILDFLAGS) github.com/kryptco/kr
+	go test $(GOBUILDFLAGS) github.com/kryptco/kr/krd
+	go test $(GOBUILDFLAGS) github.com/kryptco/kr/krdclient
+	go test $(GOBUILDFLAGS) github.com/kryptco/kr/kr
+	go test $(GOBUILDFLAGS) github.com/kryptco/kr/krssh
+	go test $(GOBUILDFLAGS) github.com/kryptco/kr/krgpg
+
+vet:
+	go vet github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg

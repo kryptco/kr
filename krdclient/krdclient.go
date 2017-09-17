@@ -56,12 +56,7 @@ func RequestKrdVersionOver(conn net.Conn) (version semver.Version, err error) {
 }
 
 func RequestKrdVersion() (version semver.Version, err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
-	if err != nil {
-		err = kr.ErrConnectingToDaemon
-		return
-	}
-	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		err = kr.ErrConnectingToDaemon
 		return
@@ -139,12 +134,7 @@ func RequestMeOver(conn net.Conn) (me kr.Profile, err error) {
 }
 
 func RequestMe() (me kr.Profile, err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
-	if err != nil {
-		err = kr.ErrConnectingToDaemon
-		return
-	}
-	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		err = kr.ErrConnectingToDaemon
 		return
@@ -169,12 +159,7 @@ func RequestGitSignatureOver(request kr.Request, conn net.Conn) (gitSignResponse
 }
 
 func RequestGitSignature(request kr.Request) (response kr.GitSignResponse, err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
-	if err != nil {
-		err = kr.ErrConnectingToDaemon
-		return
-	}
-	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		err = kr.ErrConnectingToDaemon
 		return
@@ -289,11 +274,7 @@ func signOver(conn net.Conn, pkFingerprint []byte, data []byte) (signature []byt
 }
 
 func Sign(pkFingerprint []byte, data []byte) (signature []byte, err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
-	if err != nil {
-		return
-	}
-	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return
@@ -322,11 +303,7 @@ func requestNoOpOver(conn net.Conn) (err error) {
 }
 
 func RequestNoOp() (err error) {
-	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
-	if err != nil {
-		return
-	}
-	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	daemonConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
 		return

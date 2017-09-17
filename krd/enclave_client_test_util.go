@@ -1,14 +1,13 @@
 package krd
 
 import (
-	"net"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
+	"fmt"
 	"github.com/kryptco/kr"
 	"github.com/op/go-logging"
+	"net"
 )
 
 func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {
@@ -48,23 +47,37 @@ func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
 	return ec
 }
 
-func NewLocalUnixServer(t *testing.T) (ec EnclaveClientI, cs *ControlServer, unixFile string) {
+var listener net.Listener
+
+func NewLocalUnixServer(t *testing.T) (ec EnclaveClientI, cs *ControlServer) {
 	transport := &kr.ResponseTransport{T: t}
 	ec = NewTestEnclaveClient(transport)
 	cs = &ControlServer{ec, kr.SetupLogging("test", logging.INFO, false)}
 
-	randFile, err := kr.Rand128Base62()
-	if err != nil {
-		t.Fatal(err)
-	}
-	unixFile = filepath.Join(os.TempDir(), randFile)
-	l, err := net.Listen("unix", unixFile)
-	if err != nil {
-		t.Fatal(err)
+	if listener == nil {
+		l, err := kr.DaemonListen()
+		if err != nil {
+			t.Fatal(fmt.Errorf("DaemonListen() failure: %s.  Try stopping krd and running tests again", err))
+		}
+		listener = l
 	}
 
 	go func() {
-		err := cs.HandleControlHTTP(l)
+		err := cs.HandleControlHTTP(listener)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+	return
+}
+
+func NewLocalUnixServerWithListener(t *testing.T, listener net.Listener) (ec EnclaveClientI, cs *ControlServer) {
+	transport := &kr.ResponseTransport{T: t}
+	ec = NewTestEnclaveClient(transport)
+	cs = &ControlServer{ec, kr.SetupLogging("test", logging.INFO, false)}
+
+	go func() {
+		err := cs.HandleControlHTTP(listener)
 		if err != nil {
 			t.Fatal(err)
 		}

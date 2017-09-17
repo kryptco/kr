@@ -2,25 +2,23 @@ package main
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
-	krd "github.com/kryptco/kr/krd"
+	"github.com/kryptco/kr/krd"
 )
 
 func TestPair(t *testing.T) {
-	ec, _, unixFile := krd.NewLocalUnixServer(t)
-	defer os.Remove(unixFile)
+	ec, _ := krd.NewLocalUnixServer(t)
 	ec.Start()
 	defer ec.Stop()
 
-	testPairSuccess(t, unixFile, ec)
+	testPairSuccess(t, ec)
 }
 
-func testPairSuccess(t *testing.T, unixFile string, ec krd.EnclaveClientI) {
+func testPairSuccess(t *testing.T, ec krd.EnclaveClientI) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	err := pairOver(unixFile, true, nil, stdout, stderr)
+	err := pairOver(true, nil, stdout, stderr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,16 +28,15 @@ func testPairSuccess(t *testing.T, unixFile string, ec krd.EnclaveClientI) {
 }
 
 func TestUnpair(t *testing.T) {
-	ec, _, unixFile := krd.NewLocalUnixServer(t)
-	defer os.Remove(unixFile)
+	ec, _ := krd.NewLocalUnixServer(t)
 	ec.Start()
 	defer ec.Stop()
 
-	testPairSuccess(t, unixFile, ec)
+	testPairSuccess(t, ec)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	err := unpairOver(unixFile, stdout, stderr)
+	err := unpairOver(stdout, stderr)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -81,10 +81,10 @@ func pairCommand(c *cli.Context) (err error) {
 	if *nameOpt == "" {
 		nameOpt = nil
 	}
-	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"), nameOpt, os.Stdout, os.Stderr)
+	return pairOver(c.Bool("force"), nameOpt, os.Stdout, os.Stderr)
 }
 
-func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
+func pairOver(forceUnpair bool, name *string, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
 	//	Listen for incompatible enclave notifications
 	go func() {
 		r, err := kr.OpenNotificationReader("")
@@ -111,7 +111,7 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 		}
 	}()
 	if !forceUnpair {
-		meConn, err := kr.DaemonDialWithTimeout(unixFile)
+		meConn, err := kr.DaemonDialWithTimeout()
 		if err != nil {
 			PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
 		}
@@ -120,7 +120,7 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 			confirmOrFatal(stderr, "Already paired, unpair current session?")
 		}
 	}
-	putConn, err := kr.DaemonDialWithTimeout(unixFile)
+	putConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
 	}
@@ -167,8 +167,7 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 	stdout.Write([]byte("Scan this QR Code with the Kryptonite mobile app to connect it with this workstation. Maximize the window and/or lower your font size if the QR code does not fit."))
 	stdout.Write([]byte("\r\n"))
 
-	//	Check/wait for pairing
-	getConn, err := kr.DaemonDialWithTimeout(unixFile)
+	getConn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
 	}
@@ -195,11 +194,11 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 
 func unpairCommand(c *cli.Context) (err error) {
 	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "unpair", nil, nil)
-	return unpairOver(kr.DaemonSocketOrFatal(), os.Stdout, os.Stderr)
+	return unpairOver(os.Stdout, os.Stderr)
 }
 
-func unpairOver(unixFile string, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
-	conn, err := kr.DaemonDialWithTimeout(unixFile)
+func unpairOver(stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
+	conn, err := kr.DaemonDialWithTimeout()
 	if err != nil {
 		PrintFatal(stderr, err.Error())
 	}

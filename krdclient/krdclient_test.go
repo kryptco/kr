@@ -2,24 +2,21 @@ package krdclient
 
 import (
 	"crypto/sha256"
-	"net"
-	"os"
 	"testing"
 
 	"github.com/kryptco/kr"
-	krd "github.com/kryptco/kr/krd"
+	"github.com/kryptco/kr/krd"
 )
 
 func TestVersion(t *testing.T) {
-	ec, _, unixFile := krd.NewLocalUnixServer(t)
+	ec, _ := krd.NewLocalUnixServer(t)
 	krd.PairClient(t, ec)
 	defer ec.Stop()
 
-	conn, err := net.Dial("unix", unixFile)
+	conn, err := kr.DaemonDial()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(unixFile)
 
 	version, err := RequestKrdVersionOver(conn)
 	if err != nil {
@@ -31,15 +28,14 @@ func TestVersion(t *testing.T) {
 }
 
 func TestMe(t *testing.T) {
-	ec, _, unixFile := krd.NewLocalUnixServer(t)
+	ec, _ := krd.NewLocalUnixServer(t)
 	krd.PairClient(t, ec)
 	defer ec.Stop()
 
-	conn, err := net.Dial("unix", unixFile)
+	conn, err := kr.DaemonDial()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(unixFile)
 
 	me, err := RequestMeOver(conn)
 	if err != nil {
@@ -52,15 +48,14 @@ func TestMe(t *testing.T) {
 }
 
 func TestSign(t *testing.T) {
-	ec, _, unixFile := krd.NewLocalUnixServer(t)
+	ec, _ := krd.NewLocalUnixServer(t)
 	krd.PairClient(t, ec)
 	defer ec.Stop()
 
-	conn, err := net.Dial("unix", unixFile)
+	conn, err := kr.DaemonDial()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(unixFile)
 
 	testMe, _, _ := kr.TestMe(t)
 
@@ -72,15 +67,14 @@ func TestSign(t *testing.T) {
 }
 
 func TestNoOp(t *testing.T) {
-	ec, _, unixFile := krd.NewLocalUnixServer(t)
+	ec, _ := krd.NewLocalUnixServer(t)
 	krd.PairClient(t, ec)
 	defer ec.Stop()
 
-	conn, err := net.Dial("unix", unixFile)
+	conn, err := kr.DaemonDial()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(unixFile)
 
 	err = requestNoOpOver(conn)
 	if err != nil {

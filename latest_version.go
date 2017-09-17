@@ -12,9 +12,10 @@ import (
 var VERSIONS_S3_BUCKET = "https://s3.amazonaws.com/kr-versions/versions"
 
 type Versions struct {
-	IOS   string `json:"iOS"`
-	OSX   string `json:"osx"`
-	Linux string `json:"linux"`
+	IOS     string `json:"iOS"`
+	OSX     string `json:"osx"`
+	Linux   string `json:"linux"`
+	Windows string `json:"windows"`
 }
 
 func GetLatestVersions() (versions Versions, err error) {
