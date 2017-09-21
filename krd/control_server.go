@@ -160,6 +160,11 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if enclaveRequest.AdminKeyRequest != nil {
+		cs.handleEnclaveGeneric(w, enclaveRequest)
+		return
+	}
+
 	cs.enclaveClient.RequestNoOp()
 
 	w.WriteHeader(http.StatusOK)

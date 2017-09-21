@@ -15,6 +15,10 @@ func SaveAdminKeypair(seed []byte) {
 	C.free(bytes)
 }
 
+func AdminKeypairExists() bool {
+	return bool(C.admin_keypair_exists())
+}
+
 func CreateInvite() {
 	C.create_invite()
 }
