@@ -356,16 +356,23 @@ func addCommand(c *cli.Context) (err error) {
 	server := c.Args()[0]
 
 	portFlag := c.String("port")
+	publicKeyFlag := c.String("public-key")
 
-	me, err := krdclient.RequestMe()
-	if err != nil {
-		PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
+	var authorizedKeyString string
+	if publicKeyFlag == "" {
+		me, err := krdclient.RequestMe()
+		if err != nil {
+			PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
+		}
+
+		authorizedKeyString, err = me.AuthorizedKeyString()
+		if err != nil {
+			PrintFatal(os.Stderr, err.Error())
+		}
+	} else {
+		authorizedKeyString = publicKeyFlag
 	}
 
-	authorizedKeyString, err := me.AuthorizedKeyString()
-	if err != nil {
-		PrintFatal(os.Stderr, err.Error())
-	}
 	authorizedKey := append([]byte(authorizedKeyString), []byte("\n")...)
 
 	PrintErr(os.Stderr, "Adding your SSH public key to %s", server)
@@ -757,6 +764,10 @@ func main() {
 				cli.StringFlag{
 					Name:  "port, p",
 					Usage: "Port of SSH server",
+				},
+				cli.StringFlag{
+					Name:  "public-key",
+					Usage: "A non-paired public key to add",
 				},
 			},
 		},
