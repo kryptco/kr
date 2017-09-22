@@ -41,17 +41,20 @@ func createTeamCommand(c *cli.Context) (err error) {
 	if createTeamResponse.Error != nil {
 		PrintFatal(os.Stderr, "Error creating team: "+*createTeamResponse.Error)
 	}
-	privateKeySeed := createTeamResponse.PrivateKeySeed
-	if privateKeySeed == nil {
+	keyAndTeamCheckpoint := createTeamResponse.KeyAndTeamCheckpoint
+	if keyAndTeamCheckpoint == nil {
 		PrintFatal(os.Stderr, "No team admin private key returned from Kryptonite app.")
 	}
-	kr.SaveAdminKeypair(*privateKeySeed)
+	err = kr.SaveAdminSeedAndTeamCheckpoint(*keyAndTeamCheckpoint)
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
 	os.Stderr.WriteString(kr.Green("Success! Team " + name + " is ready to go ✔\r\n"))
 	return
 }
 
 func ensureAdminKeyPresent() (err error) {
-	if kr.AdminKeypairExists() {
+	if kr.AdminSeedAndTeamCheckpointExists() {
 		return
 	}
 
@@ -77,12 +80,12 @@ func ensureAdminKeyPresent() (err error) {
 		return
 	}
 
-	if adminResponse.PrivateKeySeed == nil {
+	if adminResponse.KeyAndTeamCheckpoint == nil {
 		err = errors.New("no admin key returned from phone")
 		return
 	}
-	privateKeySeed := *adminResponse.PrivateKeySeed
-	kr.SaveAdminKeypair(privateKeySeed)
+	keyAndTeamCheckpoint := *adminResponse.KeyAndTeamCheckpoint
+	kr.SaveAdminSeedAndTeamCheckpoint(keyAndTeamCheckpoint)
 
 	return
 }

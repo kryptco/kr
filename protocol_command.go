@@ -5,13 +5,19 @@ type CreateTeamRequest struct {
 }
 
 type CreateTeamResponse struct {
-	PrivateKeySeed *[]byte `json:"seed,omitempty"`
-	Error          *string `json:"error,omitempty"`
+	KeyAndTeamCheckpoint *KeyAndTeamCheckpoint `json:"key_and_team_checkpoint,omitempty"`
+	Error                *string               `json:"error,omitempty"`
 }
 
 type AdminKeyRequest struct{}
 
 type AdminKeyResponse struct {
-	PrivateKeySeed *[]byte `json:"seed,omitempty"`
-	Error          *string `json:"error,omitempty"`
+	KeyAndTeamCheckpoint *KeyAndTeamCheckpoint `json:"key_and_team_checkpoint,omitempty"`
+	Error                *string               `json:"error,omitempty"`
+}
+
+type KeyAndTeamCheckpoint struct {
+	PrivateKeySeed []byte `json:"seed"`
+	TeamPublicKey  []byte `json:"team_public_key"`
+	LastBlockHash  []byte `json:"last_block_hash"`
 }

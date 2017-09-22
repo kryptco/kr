@@ -9,14 +9,23 @@ package kr
 */
 import "C"
 
-func SaveAdminKeypair(seed []byte) {
-	bytes := C.CBytes(seed)
-	C.save_admin_keypair((*C.uint8_t)(bytes), C.uintptr_t(len(seed)))
+import (
+	"encoding/json"
+)
+
+func SaveAdminSeedAndTeamCheckpoint(keyAndTeamCheckpoint KeyAndTeamCheckpoint) (err error) {
+	seedAndTeamCheckpointJson, err := json.Marshal(keyAndTeamCheckpoint)
+	if err != nil {
+		return
+	}
+	bytes := C.CBytes(seedAndTeamCheckpointJson)
+	C.save_admin_seed_and_team_checkpoint_json((*C.uint8_t)(bytes), C.uintptr_t(len(seedAndTeamCheckpointJson)))
 	C.free(bytes)
+	return
 }
 
-func AdminKeypairExists() bool {
-	return bool(C.admin_keypair_exists())
+func AdminSeedAndTeamCheckpointExists() bool {
+	return bool(C.admin_seed_and_team_checkpoint_exists())
 }
 
 func CreateInvite() {
