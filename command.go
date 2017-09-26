@@ -116,3 +116,7 @@ func GetPinnedHostKeys(host string, search bool) {
 		C._Bool(search),
 	)
 }
+
+func EnableLogging() {
+	C.enable_logging()
+}

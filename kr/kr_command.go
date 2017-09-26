@@ -208,3 +208,8 @@ func listPinnedKeysCommand(c *cli.Context) (err error) {
 	kr.GetPinnedHostKeys(host, c.Bool("search"))
 	return
 }
+
+func enableLoggingCommand(c *cli.Context) (err error) {
+	kr.EnableLogging()
+	return
+}

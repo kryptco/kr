@@ -936,6 +936,17 @@ func main() {
 						},
 					},
 				},
+				cli.Command{
+					Name:  "logging",
+					Usage: "Manage team audit logging preferences.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "enable",
+							Usage:  "Enable logging of encrypted logs.",
+							Action: enableLoggingCommand,
+						},
+					},
+				},
 			},
 		},
 	}
