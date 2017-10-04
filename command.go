@@ -1,7 +1,7 @@
 package kr
 
 /*
-#cgo darwin LDFLAGS: -lsqlite3 -framework Security -framework Security -framework CoreFoundation -lSystem -lresolv -lc -lm
+#cgo darwin LDFLAGS: -lsodium -lsqlite3 -framework Security -framework Security -framework CoreFoundation -lSystem -lresolv -lc -lm
 #cgo LDFLAGS: -L ${SRCDIR}/krcommand/target/release -lkrcommand
 
 #include <stdlib.h>
