@@ -22,8 +22,9 @@ type ReadTeamRequest struct {
 }
 
 type ReadTeamResponse struct {
-	Token     string `json:"token"`
-	Signature []byte `json:"signature"`
+	SignerPublicKey []byte `json:"signer_public_key"`
+	Token           string `json:"token"`
+	Signature       []byte `json:"signature"`
 }
 
 type ReadToken struct {
