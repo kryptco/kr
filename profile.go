@@ -15,9 +15,10 @@ import (
 )
 
 type Profile struct {
-	SSHWirePublicKey []byte  `json:"public_key_wire"`
-	Email            string  `json:"email"`
-	PGPPublicKey     *[]byte `json:"pgp_pk,omitempty"`
+	SSHWirePublicKey []byte          `json:"public_key_wire"`
+	Email            string          `json:"email"`
+	PGPPublicKey     *[]byte         `json:"pgp_pk,omitempty"`
+	TeamCheckpoint   *TeamCheckpoint `json:"team_checkpoint,omitempty"`
 }
 
 func (p Profile) AuthorizedKeyString() (authString string, err error) {

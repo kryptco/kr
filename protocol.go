@@ -16,17 +16,20 @@ var ENCLAVE_VERSION_SUPPORTS_RSA_SHA2_256_512 = semver.MustParse("2.1.0")
 var ENCLAVE_VERSION_SUPPORTS_KRYPTON_ASCII_ARMOR_HEADERS = semver.MustParse("2.3.1")
 
 type Request struct {
-	RequestID         string             `json:"request_id"`
-	UnixSeconds       int64              `json:"unix_seconds"`
-	Version           semver.Version     `json:"v"`
-	SendACK           bool               `json:"a"`
-	SignRequest       *SignRequest       `json:"sign_request,omitempty"`
-	GitSignRequest    *GitSignRequest    `json:"git_sign_request,omitempty"`
-	MeRequest         *MeRequest         `json:"me_request,omitempty"`
-	UnpairRequest     *UnpairRequest     `json:"unpair_request,omitempty"`
-	HostsRequest      *HostsRequest      `json:"hosts_request,omitempty"`
-	CreateTeamRequest *CreateTeamRequest `json:"create_team_request,omitempty"`
-	AdminKeyRequest   *AdminKeyRequest   `json:"admin_key_request,omitempty"`
+	RequestID      string          `json:"request_id"`
+	UnixSeconds    int64           `json:"unix_seconds"`
+	Version        semver.Version  `json:"v"`
+	SendACK        bool            `json:"a"`
+	SignRequest    *SignRequest    `json:"sign_request,omitempty"`
+	GitSignRequest *GitSignRequest `json:"git_sign_request,omitempty"`
+	MeRequest      *MeRequest      `json:"me_request,omitempty"`
+	UnpairRequest  *UnpairRequest  `json:"unpair_request,omitempty"`
+	HostsRequest   *HostsRequest   `json:"hosts_request,omitempty"`
+
+	CreateTeamRequest    *CreateTeamRequest    `json:"create_team_request,omitempty"`
+	ReadTeamRequest      *ReadTeamRequest      `json:"read_team_request,omitempty"`
+	TeamOperationRequest *TeamOperationRequest `json:"team_operation_request,omitempty"`
+	LogDecryptionRequest *LogDecryptionRequest `json:"log_decryption_request,omitempty"`
 }
 
 func NewRequest() (request Request, err error) {
@@ -86,19 +89,22 @@ func (r Request) RequestParameters(timeouts Timeouts) RequestParameters {
 }
 
 type Response struct {
-	RequestID          string              `json:"request_id"`
-	Version            semver.Version      `json:"v"`
-	SignResponse       *SignResponse       `json:"sign_response,omitempty"`
-	GitSignResponse    *GitSignResponse    `json:"git_sign_response,omitempty"`
-	MeResponse         *MeResponse         `json:"me_response,omitempty"`
-	UnpairResponse     *UnpairResponse     `json:"unpair_response,omitempty"`
-	AckResponse        *AckResponse        `json:"ack_response,omitempty"`
-	CreateTeamResponse *CreateTeamResponse `json:"create_team_response,omitempty"`
-	AdminKeyResponse   *AdminKeyResponse   `json:"admin_key_response,omitempty"`
-	SNSEndpointARN     *string             `json:"sns_endpoint_arn,omitempty"`
-	TrackingID         *string             `json:"tracking_id,omitempty"`
-	HostsResponse      *HostsResponse      `json:"hosts_response,omitempty"`
-	CreateTeamResponse *CreateTeamResponse `json:"create_team_response,omitempty"`
+	RequestID        string            `json:"request_id"`
+	Version          semver.Version    `json:"v"`
+	SignResponse     *SignResponse     `json:"sign_response,omitempty"`
+	GitSignResponse  *GitSignResponse  `json:"git_sign_response,omitempty"`
+	MeResponse       *MeResponse       `json:"me_response,omitempty"`
+	UnpairResponse   *UnpairResponse   `json:"unpair_response,omitempty"`
+	AckResponse      *AckResponse      `json:"ack_response,omitempty"`
+	HostsResponse    *HostsResponse    `json:"hosts_response,omitempty"`
+	AdminKeyResponse *AdminKeyResponse `json:"admin_key_response,omitempty"`
+	SNSEndpointARN   *string           `json:"sns_endpoint_arn,omitempty"`
+	TrackingID       *string           `json:"tracking_id,omitempty"`
+
+	CreateTeamResponse    *TeamCheckpoint        `json:"create_team_response,omitempty"`
+	ReadTeamResponse      *ReadTeamResponse      `json:"read_team_response,omitempty"`
+	TeamOperationResponse *TeamOperationResponse `json:"team_operation_response,omitempty"`
+	LogDecryptionResponse *LogDecryptionResponse `json:"log_decryption_response,omitempty"`
 }
 
 type SignRequest struct {

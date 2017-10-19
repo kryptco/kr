@@ -144,23 +144,13 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if enclaveRequest.SignRequest != nil {
-		cs.handleEnclaveGeneric(w, enclaveRequest)
-		return
-	}
-
-	if enclaveRequest.GitSignRequest != nil {
-		cs.handleEnclaveGeneric(w, enclaveRequest)
-		return
-	}
-
-	if enclaveRequest.HostsRequest != nil ||
-		enclaveRequest.CreateTeamRequest != nil {
-		cs.handleEnclaveGeneric(w, enclaveRequest)
-		return
-	}
-
-	if enclaveRequest.AdminKeyRequest != nil {
+	if enclaveRequest.SignRequest != nil ||
+		enclaveRequest.GitSignRequest != nil ||
+		enclaveRequest.HostsRequest != nil ||
+		enclaveRequest.CreateTeamRequest != nil ||
+		enclaveRequest.ReadTeamRequest != nil ||
+		enclaveRequest.TeamOperationRequest != nil ||
+		enclaveRequest.LogDecryptionRequest != nil {
 		cs.handleEnclaveGeneric(w, enclaveRequest)
 		return
 	}
@@ -228,6 +218,7 @@ func (cs *ControlServer) handleEnclaveGeneric(w http.ResponseWriter, enclaveRequ
 		return
 	}
 
+	cs.log.Error("encoding response...")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		cs.log.Error(err)

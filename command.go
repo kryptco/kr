@@ -2,34 +2,26 @@ package kr
 
 /*
 #cgo darwin LDFLAGS: -lsodium -lsqlite3 -framework Security -framework Security -framework CoreFoundation -lSystem -lresolv -lc -lm
-#cgo LDFLAGS: -L ${SRCDIR}/krcommand/target/release -lkrcommand
+#cgo LDFLAGS: -L ${SRCDIR}/krcommand/target/debug -lkrcommand
 
 #include <stdlib.h>
 #include "krcommand/target/include/krcommand.h"
 */
 import "C"
 
-import (
-	"encoding/json"
-)
-
-func SaveAdminSeedAndTeamCheckpoint(keyAndTeamCheckpoint KeyAndTeamCheckpoint) (err error) {
-	seedAndTeamCheckpointJson, err := json.Marshal(keyAndTeamCheckpoint)
-	if err != nil {
-		return
-	}
-	bytes := C.CBytes(seedAndTeamCheckpointJson)
-	C.save_admin_seed_and_team_checkpoint_json((*C.uint8_t)(bytes), C.uintptr_t(len(seedAndTeamCheckpointJson)))
-	C.free(bytes)
-	return
-}
-
 func AdminSeedAndTeamCheckpointExists() bool {
-	return bool(C.admin_seed_and_team_checkpoint_exists())
+	return bool(C.team_public_key_and_checkpoint_exists())
 }
 
 func CreateInvite() {
 	C.create_invite()
+}
+
+func CreateTeam(name string) {
+	nameSlice := []byte(name)
+	bytes := C.CBytes(nameSlice)
+	C.create_team((*C.uint8_t)(bytes), C.uintptr_t(len(nameSlice)))
+	C.free(bytes)
 }
 
 func SetApprovalWindow(approval_window *int64) {
