@@ -10,7 +10,7 @@ type TeamCheckpoint struct {
 	LastBlockHash []byte `json:"last_block_hash"`
 }
 type TeamOperationRequest struct {
-	Operation RequestableTeamOperation `json:"requestable_team_operation"`
+	Operation RequestableTeamOperation `json:"operation"`
 }
 
 type TeamOperationResponse struct {
