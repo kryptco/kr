@@ -112,3 +112,8 @@ func enableLoggingCommand(c *cli.Context) (err error) {
 	kr.EnableLogging()
 	return
 }
+
+func logsCommand(c *cli.Context) (err error) {
+	kr.UpdateTeamLogs()
+	return
+}

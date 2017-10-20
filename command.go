@@ -112,3 +112,7 @@ func GetPinnedHostKeys(host string, search bool) {
 func EnableLogging() {
 	C.enable_logging()
 }
+
+func UpdateTeamLogs() {
+	C.update_team_logs()
+}
