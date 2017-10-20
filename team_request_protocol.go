@@ -14,7 +14,12 @@ type TeamOperationRequest struct {
 }
 
 type TeamOperationResponse struct {
-	PostedBlockHash []byte `json:"posted_block_hash"`
+	PostedBlockHash []byte                     `json:"posted_block_hash"`
+	Data            *TeamOperationResponseData `json:"data,omitempty"`
+}
+
+type TeamOperationResponseData struct {
+	InviteLink *string `json:"invite_link,omitempty"`
 }
 
 type ReadTeamRequest struct {
