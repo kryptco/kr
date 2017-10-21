@@ -1,4 +1,4 @@
-// +build nobluetooth
+// +build nobluetooth !linux,!darwin
 
 package krd
 

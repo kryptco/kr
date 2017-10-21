@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (Macintosh; Linux) (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
+var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (X11; Linux) (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
 
 const analytics_os = "Linux"
 
