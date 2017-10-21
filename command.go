@@ -24,6 +24,13 @@ func CreateTeam(name string) {
 	C.free(bytes)
 }
 
+func SetTeamName(name string) {
+	nameSlice := []byte(name)
+	bytes := C.CBytes(nameSlice)
+	C.set_team_name((*C.uint8_t)(bytes), C.uintptr_t(len(nameSlice)))
+	C.free(bytes)
+}
+
 func SetApprovalWindow(approval_window *int64) {
 	C.set_policy((*C.int64_t)(approval_window))
 }

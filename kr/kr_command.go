@@ -24,6 +24,20 @@ func createTeamCommand(c *cli.Context) (err error) {
 	kr.CreateTeam(name)
 	return
 }
+func setTeamNameCommand(c *cli.Context) (err error) {
+	_, err = krdclient.RequestMe()
+	if err != nil {
+		PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+err.Error()))
+		return
+	}
+
+	name := c.String("name")
+	if name == "" {
+		PrintFatal(os.Stderr, "--name flag required")
+	}
+	kr.SetTeamName(name)
+	return
+}
 
 func createInviteCommand(c *cli.Context) (err error) {
 	kr.CreateInvite()

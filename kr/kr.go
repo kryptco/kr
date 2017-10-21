@@ -812,6 +812,17 @@ func main() {
 					},
 				},
 				cli.Command{
+					Name:   "set-name",
+					Usage:  "Change the name of your team.",
+					Action: setTeamNameCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "name,n",
+							Usage: "team name",
+						},
+					},
+				},
+				cli.Command{
 					Name:   "invite",
 					Usage:  "Create a secret invitatation URL to share with your team.",
 					Action: createInviteCommand,
