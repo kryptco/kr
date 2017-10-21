@@ -29,6 +29,9 @@ endif
 ifeq ($(UNAME_S),Darwin)
 	PREFIX ?= /usr/local
 endif
+ifeq ($(UNAME_S),FreeBSD)
+	PREFIX ?= /usr/local
+endif
 
 SRCBIN = $(PWD)/bin
 DSTBIN = $(PREFIX)/bin
