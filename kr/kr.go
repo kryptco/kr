@@ -828,6 +828,11 @@ func main() {
 					Action: createInviteCommand,
 				},
 				cli.Command{
+					Name:   "cancel-invite",
+					Usage:  "Cancel any open team invitations.",
+					Action: cancelInviteCommand,
+				},
+				cli.Command{
 					Name:   "members",
 					Usage:  "List your team members' emails and public keys.",
 					Action: getMembersCommand,

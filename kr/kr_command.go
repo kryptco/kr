@@ -44,6 +44,11 @@ func createInviteCommand(c *cli.Context) (err error) {
 	return
 }
 
+func cancelInviteCommand(c *cli.Context) (err error) {
+	kr.CancelInvite()
+	return
+}
+
 func setPolicyCommand(c *cli.Context) (err error) {
 	var window *int64
 	if c.String("window") != "" {

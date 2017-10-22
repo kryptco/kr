@@ -17,6 +17,10 @@ func CreateInvite() {
 	C.create_invite()
 }
 
+func CancelInvite() {
+	C.cancel_invite()
+}
+
 func CreateTeam(name string) {
 	nameSlice := []byte(name)
 	bytes := C.CBytes(nameSlice)
