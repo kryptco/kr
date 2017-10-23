@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -327,19 +326,37 @@ func uninstallCodesigning() {
 
 func pgpSignCommand(c *cli.Context) (err error) {
 	message := c.String("message")
+	if message == "" {
+		stat, err := os.Stdin.Stat()
+		if err != nil {
+			PrintFatal(os.Stderr, "error reading stdin: "+err.Error())
+			return err
+		}
+		if (stat.Mode() & os.ModeCharDevice) == 0 {
+			_, err = fmt.Scanf("%s", &message)
+			if err != nil {
+				PrintFatal(os.Stderr, "error reading stdin: "+err.Error())
+				return err
+			}
+		}
+		if message == "" {
+			cli.ShowCommandHelp(c, "pgp-sign")
+			return err
+		}
+	}
 	sigType := c.String("sigType")
 	if sigType != "detach" && sigType != "attach" && sigType != "clearsign" {
-		err = errors.New("Invalid signature type!\n")
-		os.Stderr.WriteString(err.Error())
+		err = errors.New("invalid signature type")
+		PrintFatal(os.Stderr, err.Error())
 		return
 	}
 
 	request, err := kr.NewRequest()
 	if err != nil {
-		os.Stderr.WriteString(err.Error())
+		PrintFatal(os.Stderr, err.Error())
 		return
 	}
-	startLogger(request.NotifyPrefix())
+	kr.StartControlServerLogger(request.NotifyPrefix())
 	request.BlobSignRequest = &kr.BlobSignRequest{
 		Blob:    message,
 		SigType: sigType,
@@ -349,16 +366,20 @@ func pgpSignCommand(c *cli.Context) (err error) {
 	if err != nil {
 		return
 	}
-	sig, err := response.AsciiArmorSignature()
+	sig, err := kr.CreateAsciiArmorSignature(response.Signature)
 	if err != nil {
-		os.Stderr.WriteString(err.Error())
+		PrintFatal(os.Stderr, err.Error())
 		return
 	}
-	os.Stdout.Write([]byte("\n"))
+	os.Stderr.Write([]byte("\n"))
+	if sigType == "clearsign" {
+		os.Stdout.WriteString("-----BEGIN PGP SIGNED MESSAGE-----\n")
+		os.Stdout.WriteString("Hash: SHA512\n\n")
+		os.Stdout.WriteString(message + "\n")
+	}
 	os.Stdout.WriteString(sig)
 	os.Stdout.Write([]byte("\n"))
 	os.Stdout.Close()
-	os.Exit(0)
 	return
 }
 
@@ -367,55 +388,24 @@ func requestBlobSignature(request kr.Request) (sig kr.BlobSignResponse, err erro
 	if err != nil {
 		switch err {
 		case kr.ErrNotPaired:
-			os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()) + "\r\n")
+			PrintFatal(os.Stderr, kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error())+"\r\n")
 			return
 		case kr.ErrConnectingToDaemon:
-			os.Stderr.WriteString(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\"\r\n"))
+			PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+kr.ErrConnectingToDaemon.Error())+"\r\n")
 			return
 		default:
-			os.Stderr.WriteString(kr.Red("Kryptonite ▶ Unknown error: " + err.Error() + "\r\n"))
+			PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ Unknown error: "+err.Error()+"\r\n"))
 			return
 		}
 	}
 	if response.Error != nil {
 		switch *response.Error {
 		case "rejected":
-			os.Stderr.WriteString(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error() + "\r\n"))
+			PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+kr.ErrRejected.Error()+"\r\n"))
 			err = fmt.Errorf("{}", *response.Error)
 			return
 		}
 	}
 	os.Stderr.WriteString(kr.Green("Kryptonite ▶ Success. Request Allowed ✔") + "\r\n")
 	return response, nil
-}
-
-func startLogger(prefix string) (r kr.NotificationReader, err error) {
-	r, err = kr.OpenNotificationReader(prefix)
-	if err != nil {
-		return
-	}
-	go func() {
-		if prefix != "" {
-			defer os.Remove(r.Name())
-		}
-
-		printedNotifications := map[string]bool{}
-		for {
-			notification, err := r.Read()
-			switch err {
-			case nil:
-				notificationStr := string(notification)
-				if _, ok := printedNotifications[notificationStr]; ok {
-					continue
-				}
-				os.Stderr.WriteString(notificationStr)
-				printedNotifications[notificationStr] = true
-			case io.EOF:
-				<-time.After(50 * time.Millisecond)
-			default:
-				return
-			}
-		}
-	}()
-	return
 }

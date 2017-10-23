@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/urfave/cli"
 
@@ -214,7 +213,7 @@ func signGitCommit(tree string, reader *bufio.Reader) (err error) {
 		stderr.WriteString(err.Error())
 		return
 	}
-	startLogger(request.NotifyPrefix())
+	kr.StartControlServerLogger(request.NotifyPrefix())
 	request.GitSignRequest = &kr.GitSignRequest{
 		Commit: &commit,
 		UserId: os.Args[len(os.Args)-1],
@@ -224,7 +223,7 @@ func signGitCommit(tree string, reader *bufio.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	sig, err := response.AsciiArmorSignature()
+	sig, err := kr.CreateAsciiArmorSignature(response.Signature)
 	if err != nil {
 		stderr.WriteString(err.Error())
 		return
@@ -274,7 +273,7 @@ func signGitTag(object string, reader *bufio.Reader) (err error) {
 		stderr.WriteString(err.Error())
 		return
 	}
-	startLogger(request.NotifyPrefix())
+	kr.StartControlServerLogger(request.NotifyPrefix())
 	request.GitSignRequest = &kr.GitSignRequest{
 		Tag:    &tagInfo,
 		UserId: os.Args[len(os.Args)-1],
@@ -284,7 +283,7 @@ func signGitTag(object string, reader *bufio.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	sig, err := response.AsciiArmorSignature()
+	sig, err := kr.CreateAsciiArmorSignature(response.Signature)
 	if err != nil {
 		stderr.WriteString(err.Error())
 		return
@@ -305,7 +304,7 @@ func requestSignature(request kr.Request) (sig kr.GitSignResponse, err error) {
 			stderr.WriteString(kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()) + "\r\n")
 			return
 		case kr.ErrConnectingToDaemon:
-			stderr.WriteString(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\"\r\n"))
+			stderr.WriteString(kr.Red("Kryptonite ▶ "+kr.ErrConnectingToDaemon.Error()) + "\r\n")
 			return
 		default:
 			stderr.WriteString(kr.Red("Kryptonite ▶ Unknown error: " + err.Error() + "\r\n"))
@@ -322,35 +321,4 @@ func requestSignature(request kr.Request) (sig kr.GitSignResponse, err error) {
 	}
 	stderr.WriteString(kr.Green("Kryptonite ▶ Success. Request Allowed ✔") + "\r\n")
 	return response, nil
-}
-
-func startLogger(prefix string) (r kr.NotificationReader, err error) {
-	r, err = kr.OpenNotificationReader(prefix)
-	if err != nil {
-		return
-	}
-	go func() {
-		if prefix != "" {
-			defer os.Remove(r.Name())
-		}
-
-		printedNotifications := map[string]bool{}
-		for {
-			notification, err := r.Read()
-			switch err {
-			case nil:
-				notificationStr := string(notification)
-				if _, ok := printedNotifications[notificationStr]; ok {
-					continue
-				}
-				stderr.WriteString(notificationStr)
-				printedNotifications[notificationStr] = true
-			case io.EOF:
-				<-time.After(50 * time.Millisecond)
-			default:
-				return
-			}
-		}
-	}()
-	return
 }
