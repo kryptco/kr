@@ -91,28 +91,6 @@ type GitSignResponse struct {
 	Error     *string `json:"error,omitempty"`
 }
 
-func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
-	if gsr.Signature == nil {
-		err = fmt.Errorf("no signature")
-		return
-	}
-	output := &bytes.Buffer{}
-	input, err := armor.Encode(output, "PGP SIGNATURE", KRYPTONITE_ASCII_ARMOR_HEADERS)
-	if err != nil {
-		return
-	}
-	_, err = input.Write(*gsr.Signature)
-	if err != nil {
-		return
-	}
-	err = input.Close()
-	if err != nil {
-		return
-	}
-	s = string(output.Bytes())
-	return
-}
-
 type CommitInfo struct {
 	Tree         string    `json:"tree"`
 	Parent       *string   `json:"parent,omitempty"`
@@ -144,8 +122,8 @@ type BlobSignResponse struct {
 	Error     *string `json:"error,omitempty"`
 }
 
-func (bsr BlobSignResponse) AsciiArmorSignature() (s string, err error) {
-	if bsr.Signature == nil {
+func CreateAsciiArmorSignature(sig *[]byte) (s string, err error) {
+	if sig == nil {
 		err = fmt.Errorf("no signature")
 		return
 	}
@@ -154,7 +132,7 @@ func (bsr BlobSignResponse) AsciiArmorSignature() (s string, err error) {
 	if err != nil {
 		return
 	}
-	_, err = input.Write(*bsr.Signature)
+	_, err = input.Write(*sig)
 	if err != nil {
 		return
 	}
