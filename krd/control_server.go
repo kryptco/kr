@@ -154,7 +154,8 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if enclaveRequest.HostsRequest != nil {
+	if enclaveRequest.HostsRequest != nil ||
+		enclaveRequest.CreateTeamRequest != nil {
 		cs.handleEnclaveGeneric(w, enclaveRequest)
 		return
 	}
