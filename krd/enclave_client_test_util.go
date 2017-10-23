@@ -24,16 +24,16 @@ func NewTestEnclaveClient(transport kr.Transport) EnclaveClientI {
 func NewTestEnclaveClientShortTimeouts(transport kr.Transport) EnclaveClientI {
 	shortTimeouts := kr.Timeouts{
 		Me: kr.TimeoutPhases{
-			Alert: 100 * time.Millisecond,
-			Fail:  200 * time.Millisecond,
+			Alert: 400 * time.Millisecond,
+			Fail:  800 * time.Millisecond,
 		},
 		Pair: kr.TimeoutPhases{
-			Alert: 100 * time.Millisecond,
-			Fail:  200 * time.Millisecond,
+			Alert: 400 * time.Millisecond,
+			Fail:  800 * time.Millisecond,
 		},
 		Sign: kr.TimeoutPhases{
-			Alert: 100 * time.Millisecond,
-			Fail:  200 * time.Millisecond,
+			Alert: 400 * time.Millisecond,
+			Fail:  800 * time.Millisecond,
 		},
 		ACKDelay: kr.SHORT_ACK_DELAY,
 	}
