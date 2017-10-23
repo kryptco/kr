@@ -67,13 +67,14 @@ type EnclaveClientI interface {
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest, func()) (*kr.SignResponse, semver.Version, error)
 	RequestGitSignature(kr.GitSignRequest, func()) (*kr.GitSignResponse, semver.Version, error)
+	RequestGeneric(kr.Request, func()) (kr.Response, error)
 	RequestNoOp() error
 }
 
 type EnclaveClient struct {
 	sync.Mutex
 	kr.Transport
-	Timeouts
+	kr.Timeouts
 	kr.Persister
 	pairingSecret               *kr.PairingSecret
 	requestCallbacksByRequestID *lru.Cache
@@ -290,8 +291,8 @@ func (ec *EnclaveClient) postEvent(category string, action string, label *string
 	}
 }
 
-func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeoutsOverride *Timeouts, log *logging.Logger, notifier *kr.Notifier) EnclaveClientI {
-	var timeouts = DefaultTimeouts()
+func UnpairedEnclaveClient(transport kr.Transport, persister kr.Persister, timeoutsOverride *kr.Timeouts, log *logging.Logger, notifier *kr.Notifier) EnclaveClientI {
+	var timeouts = kr.DefaultTimeouts()
 	if timeoutsOverride != nil {
 		timeouts = *timeoutsOverride
 	}
@@ -354,76 +355,72 @@ func (client *EnclaveClient) RequestMe(meSubrequest kr.MeRequest, isPairing bool
 }
 
 func (client *EnclaveClient) RequestSignature(signRequest kr.SignRequest, onACK func()) (signResponse *kr.SignResponse, enclaveVersion semver.Version, err error) {
-	start := time.Now()
 	request, err := kr.NewRequest()
 	if err != nil {
 		client.log.Error(err)
 		return
 	}
 	request.SignRequest = &signRequest
-	alertText := "Incoming SSH request. Open Kryptonite to continue."
-	ps := client.getPairingSecret()
-	if ps != nil {
-		alertText = "Request from " + ps.DisplayName()
-	}
-	callback, err := client.tryRequest(request, client.Timeouts.Sign.Fail, client.Timeouts.Sign.Alert, alertText, onACK)
+	response, err := client.RequestGeneric(request, onACK)
 	if err != nil {
-		if err == ErrTimeout {
-			client.postEvent("signature", "timeout", nil, nil)
-		} else {
-			errStr := err.Error()
-			client.postEvent("signature", "error", &errStr, nil)
-		}
-		client.log.Error(err)
 		return
 	}
-	if callback != nil && callback.response.SignResponse != nil {
-		response := callback.response
-		signResponse = response.SignResponse
-		enclaveVersion = response.Version
-		millis := uint64(time.Since(start) / time.Millisecond)
-		client.log.Notice("Signature response took", millis, "ms")
-		client.postEvent("signature", "success", &callback.medium, &millis)
-		if signResponse.Error != nil {
-			client.log.Error("Signature error:", *signResponse.Error)
-		}
-	}
+	signResponse = response.SignResponse
+	enclaveVersion = response.Version
 	return
 }
 
 func (client *EnclaveClient) RequestGitSignature(signRequest kr.GitSignRequest, onACK func()) (signResponse *kr.GitSignResponse, enclaveVersion semver.Version, err error) {
-	start := time.Now()
 	request, err := kr.NewRequest()
 	if err != nil {
 		client.log.Error(err)
 		return
 	}
 	request.GitSignRequest = &signRequest
-	alertText := "Incoming Git request. Open Kryptonite to continue."
+	response, err := client.RequestGeneric(request, onACK)
+	if err != nil {
+		return
+	}
+	signResponse = response.GitSignResponse
+	enclaveVersion = response.Version
+	return
+}
+
+func (client *EnclaveClient) RequestGeneric(request kr.Request, onACK func()) (response kr.Response, err error) {
+	start := time.Now()
+	err = request.Prepare()
+	if err != nil {
+		return
+	}
+	alertText := request.RequestParameters(client.Timeouts).AlertText
 	ps := client.getPairingSecret()
 	if ps != nil {
 		alertText = "Request from " + ps.DisplayName()
 	}
-	callback, err := client.tryRequest(request, client.Timeouts.Sign.Fail, client.Timeouts.Sign.Alert, alertText, onACK)
+	timeout := request.RequestParameters(client.Timeouts).Timeout
+
+	callback, err := client.tryRequest(request, timeout.Fail, timeout.Alert, alertText, onACK)
 	if err != nil {
-		if err == ErrTimeout {
-			client.postEvent(signRequest.AnalyticsTag(), "timeout", nil, nil)
-		} else {
-			errStr := err.Error()
-			client.postEvent(signRequest.AnalyticsTag(), "error", &errStr, nil)
+		if request.AnalyticsTag() != nil {
+			if err == ErrTimeout {
+				client.postEvent(*request.AnalyticsTag(), "timeout", nil, nil)
+			} else {
+				errStr := err.Error()
+				client.postEvent(*request.AnalyticsTag(), "error", &errStr, nil)
+			}
 		}
 		client.log.Error(err)
 		return
 	}
-	if callback != nil && callback.response.GitSignResponse != nil {
-		response := callback.response
-		signResponse = response.GitSignResponse
-		enclaveVersion = response.Version
+	if callback != nil {
+		response = callback.response
 		millis := uint64(time.Since(start) / time.Millisecond)
-		client.log.Notice("GitSignature response took", millis, "ms")
-		client.postEvent(signRequest.AnalyticsTag(), "success", &callback.medium, &millis)
-		if signResponse.Error != nil {
-			client.log.Error("GitSignature error:", *signResponse.Error)
+		client.log.Notice("response took", millis, "ms")
+		if request.AnalyticsTag() != nil {
+			client.postEvent(*request.AnalyticsTag(), "success", &callback.medium, &millis)
+		}
+		if response.Error() != nil {
+			client.log.Error("error:", *response.Error())
 		}
 	}
 	return

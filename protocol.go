@@ -26,21 +26,48 @@ type Request struct {
 }
 
 func NewRequest() (request Request, err error) {
+	err = request.Prepare()
+	return
+}
+
+func (r *Request) Prepare() (err error) {
 	id, err := Rand128Base62()
 	if err != nil {
 		return
 	}
-	request = Request{
-		RequestID:   id,
-		UnixSeconds: time.Now().Unix(),
-		Version:     CURRENT_VERSION,
-		SendACK:     true,
-	}
+	r.RequestID = id
+	r.UnixSeconds = time.Now().Unix()
+	r.Version = CURRENT_VERSION
+	r.SendACK = true
 	return
 }
 
 func (r Request) NotifyPrefix() string {
 	return fmt.Sprintf("[%s]", r.RequestID)
+}
+
+type RequestParameters struct {
+	AlertText string
+	Timeout   TimeoutPhases
+}
+
+func (r Request) RequestParameters(timeouts Timeouts) RequestParameters {
+	if r.SignRequest != nil {
+		return RequestParameters{
+			AlertText: "Incoming SSH request. Open Kryptonite to continue.",
+			Timeout:   timeouts.Sign,
+		}
+	}
+	if r.GitSignRequest != nil {
+		return RequestParameters{
+			AlertText: "Incoming Git request. Open Kryptonite to continue.",
+			Timeout:   timeouts.Sign,
+		}
+	}
+	return RequestParameters{
+		AlertText: "Incoming Kryptonite request. ",
+		Timeout:   timeouts.Sign,
+	}
 }
 
 type Response struct {
@@ -74,14 +101,6 @@ type GitSignRequest struct {
 	Commit *CommitInfo `json:"commit,omitempty"`
 	Tag    *TagInfo    `json:"tag,omitempty"`
 	UserId string      `json:"user_id"`
-}
-
-func (gsr GitSignRequest) AnalyticsTag() string {
-	if gsr.Commit != nil {
-		return "git-commit-signature"
-	} else {
-		return "git-tag-signature"
-	}
 }
 
 type GitSignResponse struct {
@@ -157,3 +176,13 @@ type UnpairRequest struct{}
 type UnpairResponse struct{}
 
 type AckResponse struct{}
+
+func (r Response) Error() *string {
+	if r.GitSignResponse != nil {
+		return r.GitSignResponse.Error
+	}
+	if r.SignResponse != nil {
+		return r.SignResponse.Error
+	}
+	return nil
+}

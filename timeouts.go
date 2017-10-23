@@ -1,4 +1,4 @@
-package krd
+package kr
 
 import (
 	"time"
