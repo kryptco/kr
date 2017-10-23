@@ -67,6 +67,7 @@ type EnclaveClientI interface {
 	GetCachedMe() *kr.Profile
 	RequestSignature(kr.SignRequest, func()) (*kr.SignResponse, semver.Version, error)
 	RequestGitSignature(kr.GitSignRequest, func()) (*kr.GitSignResponse, semver.Version, error)
+	RequestBlobSignature(kr.BlobSignRequest, func()) (*kr.BlobSignResponse, semver.Version, error)
 	RequestNoOp() error
 }
 
@@ -424,6 +425,44 @@ func (client *EnclaveClient) RequestGitSignature(signRequest kr.GitSignRequest, 
 		client.postEvent(signRequest.AnalyticsTag(), "success", &callback.medium, &millis)
 		if signResponse.Error != nil {
 			client.log.Error("GitSignature error:", *signResponse.Error)
+		}
+	}
+	return
+}
+
+func (client *EnclaveClient) RequestBlobSignature(signRequest kr.BlobSignRequest, onACK func()) (signResponse *kr.BlobSignResponse, enclaveVersion semver.Version, err error) {
+	start := time.Now()
+	request, err := kr.NewRequest()
+	if err != nil {
+		client.log.Error(err)
+		return
+	}
+	request.BlobSignRequest = &signRequest
+	alertText := "Incoming Blob sign request. Open Kryptonite to continue."
+	ps := client.getPairingSecret()
+	if ps != nil {
+		alertText = "Request from " + ps.DisplayName()
+	}
+	callback, err := client.tryRequest(request, client.Timeouts.Sign.Fail, client.Timeouts.Sign.Alert, alertText, onACK)
+	if err != nil {
+		if err == ErrTimeout {
+			client.postEvent(signRequest.AnalyticsTag(), "timeout", nil, nil)
+		} else {
+			errStr := err.Error()
+			client.postEvent(signRequest.AnalyticsTag(), "error", &errStr, nil)
+		}
+		client.log.Error(err)
+		return
+	}
+	if callback != nil && callback.response.BlobSignResponse != nil {
+		response := callback.response
+		signResponse = response.BlobSignResponse
+		enclaveVersion = response.Version
+		millis := uint64(time.Since(start) / time.Millisecond)
+		client.log.Notice("BlobSignature response took", millis, "ms")
+		client.postEvent(signRequest.AnalyticsTag(), "success", &callback.medium, &millis)
+		if signResponse.Error != nil {
+			client.log.Error("BlobSignature error:", *signResponse.Error)
 		}
 	}
 	return
