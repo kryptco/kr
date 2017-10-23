@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -321,4 +323,99 @@ func uninstallCodesigning() {
 	exec.Command("git", "config", "--global", "--unset", "gpg.program").Run()
 	exec.Command("git", "config", "--global", "--unset", "commit.gpgSign").Run()
 	exec.Command("git", "config", "--global", "--unset", "tag.forceSignAnnotated").Run()
+}
+
+func pgpSignCommand(c *cli.Context) (err error) {
+	message := c.String("message")
+	sigType := c.String("sigType")
+	if sigType != "detach" && sigType != "attach" && sigType != "clearsign" {
+		err = errors.New("Invalid signature type!\n")
+		os.Stderr.WriteString(err.Error())
+		return
+	}
+
+	request, err := kr.NewRequest()
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return
+	}
+	startLogger(request.NotifyPrefix())
+	request.BlobSignRequest = &kr.BlobSignRequest{
+		Blob:    message,
+		SigType: sigType,
+	}
+
+	response, err := requestBlobSignature(request)
+	if err != nil {
+		return
+	}
+	sig, err := response.AsciiArmorSignature()
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return
+	}
+	os.Stdout.Write([]byte("\n"))
+	os.Stdout.WriteString(sig)
+	os.Stdout.Write([]byte("\n"))
+	os.Stdout.Close()
+	os.Exit(0)
+	return
+}
+
+func requestBlobSignature(request kr.Request) (sig kr.BlobSignResponse, err error) {
+	response, err := krdclient.RequestBlobSignature(request)
+	if err != nil {
+		switch err {
+		case kr.ErrNotPaired:
+			os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()) + "\r\n")
+			return
+		case kr.ErrConnectingToDaemon:
+			os.Stderr.WriteString(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\"\r\n"))
+			return
+		default:
+			os.Stderr.WriteString(kr.Red("Kryptonite ▶ Unknown error: " + err.Error() + "\r\n"))
+			return
+		}
+	}
+	if response.Error != nil {
+		switch *response.Error {
+		case "rejected":
+			os.Stderr.WriteString(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error() + "\r\n"))
+			err = fmt.Errorf("{}", *response.Error)
+			return
+		}
+	}
+	os.Stderr.WriteString(kr.Green("Kryptonite ▶ Success. Request Allowed ✔") + "\r\n")
+	return response, nil
+}
+
+func startLogger(prefix string) (r kr.NotificationReader, err error) {
+	r, err = kr.OpenNotificationReader(prefix)
+	if err != nil {
+		return
+	}
+	go func() {
+		if prefix != "" {
+			defer os.Remove(r.Name())
+		}
+
+		printedNotifications := map[string]bool{}
+		for {
+			notification, err := r.Read()
+			switch err {
+			case nil:
+				notificationStr := string(notification)
+				if _, ok := printedNotifications[notificationStr]; ok {
+					continue
+				}
+				os.Stderr.WriteString(notificationStr)
+				printedNotifications[notificationStr] = true
+			case io.EOF:
+				<-time.After(50 * time.Millisecond)
+			default:
+				return
+			}
+		}
+	}()
+	return
 }

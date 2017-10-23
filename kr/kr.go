@@ -596,6 +596,23 @@ func main() {
 			},
 		},
 		cli.Command{
+			Name:   "pgp-sign",
+			Usage:  "Sign a message with your PGP private key.",
+			Action: pgpSignCommand,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "message, m",
+					Value: "Kryptonite Test",
+					Usage: "The message to sign.",
+				},
+				cli.StringFlag{
+					Name:  "sigType, s",
+					Value: "clearsign",
+					Usage: "The signature type (detach|attach|clearsign).",
+				},
+			},
+		},
+		cli.Command{
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard.",
 			Action: copyCommand,
