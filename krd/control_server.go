@@ -145,12 +145,12 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if enclaveRequest.SignRequest != nil {
-		cs.handleEnclaveSign(w, enclaveRequest)
+		cs.handleEnclaveGeneric(w, enclaveRequest)
 		return
 	}
 
 	if enclaveRequest.GitSignRequest != nil {
-		cs.handleEnclaveGitSign(w, enclaveRequest)
+		cs.handleEnclaveGeneric(w, enclaveRequest)
 		return
 	}
 
@@ -199,41 +199,15 @@ func (cs *ControlServer) handleEnclaveMe(w http.ResponseWriter, enclaveRequest k
 	}
 }
 
-func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest kr.Request) {
-	signResponse, _, err := cs.enclaveClient.RequestSignature(*enclaveRequest.SignRequest, nil)
-	if err != nil {
-		cs.log.Error("signature request error:", err)
-		switch err {
-		case ErrNotPaired:
-			w.WriteHeader(http.StatusNotFound)
-		default:
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-		return
-	}
-	if signResponse != nil {
-		response := kr.Response{
-			RequestID:    enclaveRequest.RequestID,
-			SignResponse: signResponse,
-		}
-		err = json.NewEncoder(w).Encode(response)
-		if err != nil {
-			cs.log.Error(err)
-			return
-		}
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-	}
-}
-func (cs *ControlServer) handleEnclaveGitSign(w http.ResponseWriter, enclaveRequest kr.Request) {
-	signResponse, _, err := cs.enclaveClient.RequestGitSignature(
-		*enclaveRequest.GitSignRequest,
+func (cs *ControlServer) handleEnclaveGeneric(w http.ResponseWriter, enclaveRequest kr.Request) {
+	response, err := cs.enclaveClient.RequestGeneric(
+		enclaveRequest,
 		func() {
 			cs.notify(enclaveRequest.NotifyPrefix(), kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
 		})
 
 	if err != nil {
-		cs.log.Error("signature request error:", err)
+		cs.log.Error("request error:", err)
 		switch err {
 		case ErrNotPaired:
 			w.WriteHeader(http.StatusNotFound)
@@ -242,20 +216,12 @@ func (cs *ControlServer) handleEnclaveGitSign(w http.ResponseWriter, enclaveRequ
 		}
 		return
 	}
-	if signResponse != nil {
-		response := kr.Response{
-			RequestID:       enclaveRequest.RequestID,
-			GitSignResponse: signResponse,
-		}
-		err = json.NewEncoder(w).Encode(response)
-		if err != nil {
-			cs.log.Error(err)
-			return
-		}
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-	}
 
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		cs.log.Error(err)
+		return
+	}
 }
 
 func (cs *ControlServer) handlePing(w http.ResponseWriter, r *http.Request) {
