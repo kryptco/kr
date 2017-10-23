@@ -602,12 +602,11 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "message, m",
-					Value: "Kryptonite Test",
 					Usage: "The message to sign.",
 				},
 				cli.StringFlag{
 					Name:  "sigType, s",
-					Value: "clearsign",
+					Value: "detach",
 					Usage: "The signature type (detach|attach|clearsign).",
 				},
 			},

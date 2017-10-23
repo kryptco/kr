@@ -327,9 +327,31 @@ func uninstallCodesigning() {
 
 func pgpSignCommand(c *cli.Context) (err error) {
 	message := c.String("message")
+	if message == "" {
+		stat, err := os.Stdin.Stat()
+		if err != nil {
+			os.Stderr.WriteString("error reading stdin: ")
+			os.Stderr.WriteString(err.Error())
+			os.Exit(1)
+			return err
+		}
+		if (stat.Mode() & os.ModeCharDevice) == 0 {
+			_, err = fmt.Scanf("%s", &message)
+			if err != nil {
+				os.Stderr.WriteString("error reading stdin: ")
+				os.Stderr.WriteString(err.Error())
+				os.Exit(1)
+				return err
+			}
+		}
+		if message == "" {
+			cli.ShowCommandHelp(c, "pgp-sign")
+			return err
+		}
+	}
 	sigType := c.String("sigType")
 	if sigType != "detach" && sigType != "attach" && sigType != "clearsign" {
-		err = errors.New("Invalid signature type!\n")
+		err = errors.New("invalid signature type")
 		os.Stderr.WriteString(err.Error())
 		return
 	}
@@ -355,6 +377,11 @@ func pgpSignCommand(c *cli.Context) (err error) {
 		return
 	}
 	os.Stdout.Write([]byte("\n"))
+	if sigType == "clearsign" {
+		os.Stdout.WriteString("-----BEGIN PGP SIGNED MESSAGE-----\n")
+		os.Stdout.WriteString("Hash: SHA512\n\n")
+		os.Stdout.WriteString(message + "\n")
+	}
 	os.Stdout.WriteString(sig)
 	os.Stdout.Write([]byte("\n"))
 	os.Stdout.Close()

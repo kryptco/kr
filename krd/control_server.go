@@ -264,6 +264,7 @@ func (cs *ControlServer) handleEnclaveGitSign(w http.ResponseWriter, enclaveRequ
 }
 
 func (cs *ControlServer) handleEnclaveBlobSign(w http.ResponseWriter, enclaveRequest kr.Request) {
+	cs.notify(enclaveRequest.NotifyPrefix(), kr.Cyan("Kryptonite ▶ Requesting a PGP blob signature from phone"))
 	signResponse, _, err := cs.enclaveClient.RequestBlobSignature(
 		*enclaveRequest.BlobSignRequest,
 		func() {
