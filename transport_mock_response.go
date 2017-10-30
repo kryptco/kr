@@ -70,6 +70,15 @@ func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte, ackSen
 				Signature: &sig,
 			}
 		}
+		if request.BlobSignRequest != nil {
+			sig, err := sk.Sign(rand.Reader, []byte(request.BlobSignRequest.Blob), crypto.SHA512)
+			if err != nil {
+				t.T.Fatal(err)
+			}
+			response.BlobSignResponse = &BlobSignResponse{
+				Signature: &sig,
+			}
+		}
 	}
 	respJson, err := json.Marshal(response)
 	if err != nil {
