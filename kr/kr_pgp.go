@@ -333,13 +333,13 @@ func pgpSignCommand(c *cli.Context) (err error) {
 			return err
 		}
 		if (stat.Mode() & os.ModeCharDevice) == 0 {
-			_, err = fmt.Scanf("%s", &message)
+			messageBytes, err := ioutil.ReadAll(os.Stdin)
 			if err != nil {
 				PrintFatal(os.Stderr, "error reading stdin: "+err.Error())
 				return err
 			}
-		}
-		if message == "" {
+			message = string(messageBytes)
+		} else {
 			cli.ShowCommandHelp(c, "pgp-sign")
 			return err
 		}
