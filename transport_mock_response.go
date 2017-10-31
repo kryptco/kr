@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/openpgp/packet"
 )
 
 var SHORT_ACK_DELAY = 500 * time.Millisecond
@@ -71,10 +73,24 @@ func (t *ResponseTransport) respondToMessage(ps *PairingSecret, m []byte, ackSen
 			}
 		}
 		if request.BlobSignRequest != nil {
-			sig, err := sk.Sign(rand.Reader, []byte(request.BlobSignRequest.Blob), crypto.SHA512)
+			signature := packet.Signature{
+				PubKeyAlgo: packet.PubKeyAlgoRSA,
+				Hash:       crypto.SHA512,
+			}
+			priv := packet.NewRSAPrivateKey(time.Now(), sk)
+			h := signature.Hash.New()
+			_, err = h.Write([]byte(request.BlobSignRequest.Blob))
 			if err != nil {
 				t.T.Fatal(err)
 			}
+
+			err = signature.Sign(h, priv, nil)
+			if err != nil {
+				t.T.Fatal(err)
+			}
+			var sigBytes bytes.Buffer
+			signature.Serialize(&sigBytes)
+			sig := sigBytes.Bytes()
 			response.BlobSignResponse = &BlobSignResponse{
 				Signature: &sig,
 			}
