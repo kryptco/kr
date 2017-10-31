@@ -154,6 +154,11 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if enclaveRequest.BlobSignRequest != nil {
+		cs.handleEnclaveBlobSign(w, enclaveRequest)
+		return
+	}
+
 	cs.enclaveClient.RequestNoOp()
 
 	w.WriteHeader(http.StatusOK)
@@ -225,6 +230,7 @@ func (cs *ControlServer) handleEnclaveSign(w http.ResponseWriter, enclaveRequest
 		w.WriteHeader(http.StatusNotFound)
 	}
 }
+
 func (cs *ControlServer) handleEnclaveGitSign(w http.ResponseWriter, enclaveRequest kr.Request) {
 	signResponse, _, err := cs.enclaveClient.RequestGitSignature(
 		*enclaveRequest.GitSignRequest,
@@ -255,7 +261,39 @@ func (cs *ControlServer) handleEnclaveGitSign(w http.ResponseWriter, enclaveRequ
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
+}
 
+func (cs *ControlServer) handleEnclaveBlobSign(w http.ResponseWriter, enclaveRequest kr.Request) {
+	cs.notify(enclaveRequest.NotifyPrefix(), kr.Cyan("Kryptonite ▶ Requesting a PGP blob signature from phone"))
+	signResponse, _, err := cs.enclaveClient.RequestBlobSignature(
+		*enclaveRequest.BlobSignRequest,
+		func() {
+			cs.notify(enclaveRequest.NotifyPrefix(), kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
+		})
+
+	if err != nil {
+		cs.log.Error("signature request error:", err)
+		switch err {
+		case ErrNotPaired:
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
+	if signResponse != nil {
+		response := kr.Response{
+			RequestID:        enclaveRequest.RequestID,
+			BlobSignResponse: signResponse,
+		}
+		err = json.NewEncoder(w).Encode(response)
+		if err != nil {
+			cs.log.Error(err)
+			return
+		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
 func (cs *ControlServer) handlePing(w http.ResponseWriter, r *http.Request) {

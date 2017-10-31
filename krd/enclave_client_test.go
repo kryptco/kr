@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/kryptco/kr"
+	"golang.org/x/crypto/openpgp/packet"
 )
 
 func TestPair(t *testing.T) {
@@ -171,4 +172,80 @@ func TestNoOp(t *testing.T) {
 	kr.TrueBefore(t, func() bool {
 		return transport.GetSentNoOps() > 0
 	}, time.Now().Add(time.Second))
+}
+
+func TestBlobSignature(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t}
+	ec := NewTestEnclaveClient(transport)
+	testBlobSignatureSuccess(t, ec)
+}
+
+func TestBlobSignatureAlert(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, RespondToAlertOnly: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	testBlobSignatureSuccess(t, ec)
+}
+
+func TestBlobSignatureTimeout(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, DoNotRespond: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	resp, err := testBlobSignature(t, ec)
+	if resp != nil && err != ErrTimeout {
+		t.Fatal("expected nil response or timeout")
+	}
+}
+
+func TestBlobSignatureAckDelayWithResponse(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, Ack: true, SendAfterHalfAckDelay: true}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	testBlobSignatureSuccess(t, ec)
+}
+
+func TestBlobSignatureAckDelayWithoutResponse(t *testing.T) {
+	transport := &kr.ResponseTransport{T: t, Ack: true, SendAfterHalfAckDelay: false}
+	ec := NewTestEnclaveClientShortTimeouts(transport)
+	resp, err := testBlobSignature(t, ec)
+	if resp != nil && err != ErrTimeout {
+		t.Fatal("expected nil response or timeout")
+	}
+}
+
+func testBlobSignatureSuccess(t *testing.T, ec EnclaveClientI) {
+	_, sk, _ := kr.TestMe(t)
+	blobSignResponse, err := testBlobSignature(t, ec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if blobSignResponse == nil || blobSignResponse.Signature == nil {
+		t.Fatal("invalid blob sign response")
+	}
+
+	sigPacket, err := packet.Read(bytes.NewReader(*blobSignResponse.Signature))
+	if err != nil {
+		t.Fatal("invalid blob signature")
+	}
+	sig, ok := sigPacket.(*packet.Signature)
+	if !ok {
+		t.Fatal("invalid blob signature")
+	}
+	h := crypto.SHA512.New()
+	_, err = h.Write([]byte("test message"))
+	pk := packet.NewRSAPublicKey(time.Now(), &sk.PublicKey)
+	err = pk.VerifySignature(h, sig)
+	if err != nil {
+		t.Fatal("invalid blob signature")
+	}
+}
+
+func testBlobSignature(t *testing.T, ec EnclaveClientI) (resp *kr.BlobSignResponse, err error) {
+	PairClient(t, ec)
+	defer ec.Stop()
+
+	blobSignResponse, _, err := ec.RequestBlobSignature(kr.BlobSignRequest{
+		Blob:    "test message",
+		SigType: "detach",
+	},
+		nil,
+	)
+	return blobSignResponse, err
 }

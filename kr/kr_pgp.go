@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -321,4 +322,90 @@ func uninstallCodesigning() {
 	exec.Command("git", "config", "--global", "--unset", "gpg.program").Run()
 	exec.Command("git", "config", "--global", "--unset", "commit.gpgSign").Run()
 	exec.Command("git", "config", "--global", "--unset", "tag.forceSignAnnotated").Run()
+}
+
+func pgpSignCommand(c *cli.Context) (err error) {
+	message := c.String("message")
+	if message == "" {
+		stat, err := os.Stdin.Stat()
+		if err != nil {
+			PrintFatal(os.Stderr, "error reading stdin: "+err.Error())
+			return err
+		}
+		if (stat.Mode() & os.ModeCharDevice) == 0 {
+			messageBytes, err := ioutil.ReadAll(os.Stdin)
+			if err != nil {
+				PrintFatal(os.Stderr, "error reading stdin: "+err.Error())
+				return err
+			}
+			message = string(messageBytes)
+		} else {
+			cli.ShowCommandHelp(c, "pgp-sign")
+			return err
+		}
+	}
+	sigType := c.String("sigType")
+	if sigType != "detach" && sigType != "attach" && sigType != "clearsign" {
+		err = errors.New("invalid signature type")
+		PrintFatal(os.Stderr, err.Error())
+		return
+	}
+
+	request, err := kr.NewRequest()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+		return
+	}
+	kr.StartControlServerLogger(request.NotifyPrefix())
+	request.BlobSignRequest = &kr.BlobSignRequest{
+		Blob:    message,
+		SigType: sigType,
+	}
+
+	response, err := requestBlobSignature(request)
+	if err != nil {
+		return
+	}
+	sig, err := kr.CreateAsciiArmorSignature(response.Signature)
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+		return
+	}
+	os.Stderr.Write([]byte("\n"))
+	if sigType == "clearsign" {
+		os.Stdout.WriteString("-----BEGIN PGP SIGNED MESSAGE-----\n")
+		os.Stdout.WriteString("Hash: SHA512\n\n")
+		os.Stdout.WriteString(message + "\n")
+	}
+	os.Stdout.WriteString(sig)
+	os.Stdout.Write([]byte("\n"))
+	os.Stdout.Close()
+	return
+}
+
+func requestBlobSignature(request kr.Request) (sig kr.BlobSignResponse, err error) {
+	response, err := krdclient.RequestBlobSignature(request)
+	if err != nil {
+		switch err {
+		case kr.ErrNotPaired:
+			PrintFatal(os.Stderr, kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error())+"\r\n")
+			return
+		case kr.ErrConnectingToDaemon:
+			PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+kr.ErrConnectingToDaemon.Error())+"\r\n")
+			return
+		default:
+			PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ Unknown error: "+err.Error()+"\r\n"))
+			return
+		}
+	}
+	if response.Error != nil {
+		switch *response.Error {
+		case "rejected":
+			PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+kr.ErrRejected.Error()+"\r\n"))
+			err = fmt.Errorf("{}", *response.Error)
+			return
+		}
+	}
+	os.Stderr.WriteString(kr.Green("Kryptonite ▶ Success. Request Allowed ✔") + "\r\n")
+	return response, nil
 }
