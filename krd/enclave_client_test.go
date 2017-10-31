@@ -6,11 +6,11 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/kryptco/kr"
+	"golang.org/x/crypto/openpgp/packet"
 )
 
 func TestPair(t *testing.T) {
@@ -216,14 +216,25 @@ func testBlobSignatureSuccess(t *testing.T, ec EnclaveClientI) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(sk)
-	// if signResponse == nil || signResponse.Signature == nil || rsa.VerifyPKCS1v15(&sk.PublicKey, crypto.SHA256, digest[:], *signResponse.Signature) != nil {
-	// 	t.Fatal("invalid sign response")
-	// }
-	if blobSignResponse == nil {
+	if blobSignResponse == nil || blobSignResponse.Signature == nil {
 		t.Fatal("invalid blob sign response")
 	}
-	t.Fatal("po")
+
+	sigPacket, err := packet.Read(bytes.NewReader(*blobSignResponse.Signature))
+	if err != nil {
+		t.Fatal("invalid blob signature")
+	}
+	sig, ok := sigPacket.(*packet.Signature)
+	if !ok {
+		t.Fatal("invalid blob signature")
+	}
+	h := crypto.SHA512.New()
+	_, err = h.Write([]byte("test message"))
+	pk := packet.NewRSAPublicKey(time.Now(), &sk.PublicKey)
+	err = pk.VerifySignature(h, sig)
+	if err != nil {
+		t.Fatal("invalid blob signature")
+	}
 }
 
 func testBlobSignature(t *testing.T, ec EnclaveClientI) (resp *kr.BlobSignResponse, err error) {

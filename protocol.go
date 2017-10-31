@@ -165,7 +165,7 @@ func (request Request) HTTPRequest() (httpRequest *http.Request, err error) {
 }
 
 func (request Request) IsNoOp() bool {
-	return request.SignRequest == nil && request.MeRequest == nil && request.UnpairRequest == nil
+	return request.SignRequest == nil && request.MeRequest == nil && request.UnpairRequest == nil && request.BlobSignRequest == nil
 }
 
 type UnpairRequest struct{}
