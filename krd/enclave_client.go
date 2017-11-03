@@ -218,9 +218,6 @@ func (ec *EnclaveClient) activatePairing() (err error) {
 func (ec *EnclaveClient) Stop() (err error) {
 	ec.Lock()
 	defer ec.Unlock()
-	if ec.pairingSecret != nil {
-		ec.deactivatePairing(ec.pairingSecret)
-	}
 	if ec.bt != nil {
 		ec.bt.Stop()
 	}
@@ -681,7 +678,12 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 		if client.bt == nil {
 			return
 		}
-		err := client.bt.Write(ciphertext)
+		uuid, err := pairingSecret.DeriveUUID()
+		if err != nil {
+			client.log.Error("error deriving UUID", err)
+			return
+		}
+		err = client.bt.Write(uuid, ciphertext)
 		if err != nil {
 			client.log.Error("error writing to Bluetooth", err)
 		}

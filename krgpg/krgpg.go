@@ -316,7 +316,7 @@ func requestSignature(request kr.Request) (sig kr.GitSignResponse, err error) {
 		switch *response.Error {
 		case "rejected":
 			stderr.WriteString(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error() + "\r\n"))
-			err = fmt.Errorf("{}", *response.Error)
+			err = fmt.Errorf("%s", *response.Error)
 			return
 		}
 	}

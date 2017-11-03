@@ -26,7 +26,7 @@ func (bt *BluetoothDriver) ReadChan() (readChan chan []byte, err error) {
 	close(readChan)
 	return
 }
-func (bt *BluetoothDriver) Write(data []byte) (err error) {
+func (bt *BluetoothDriver) Write(serviceUUID uuid.UUID, data []byte) (err error) {
 	return
 }
 
