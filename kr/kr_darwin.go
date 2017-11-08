@@ -110,8 +110,11 @@ func copyEnvToLaunchctl(varName string) {
 	_, _ = runCommandTmuxFriendly("launchctl", "setenv", varName, os.Getenv(varName))
 }
 
-func restartCommand(c *cli.Context) (err error) {
-	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
+func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
+	if isUserInitiated {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
+	}
+
 	err = copyPlist()
 	if err != nil {
 		return
@@ -125,7 +128,9 @@ func restartCommand(c *cli.Context) (err error) {
 		return
 	}
 
-	fmt.Println("Restarted Kryptonite daemon.")
+	if isUserInitiated {
+		fmt.Println("Restarted Kryptonite daemon.")
+	}
 	return
 }
 

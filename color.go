@@ -16,6 +16,12 @@ func Green(s string) string {
 	return green.SprintFunc()(s)
 }
 
+func Magenta(s string) string {
+	magenta := color.New(color.FgHiMagenta)
+	magenta.EnableColor()
+	return magenta.SprintFunc()(s)
+}
+
 func Yellow(s string) string {
 	yellow := color.New(color.FgHiYellow)
 	yellow.EnableColor()

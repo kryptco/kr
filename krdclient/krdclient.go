@@ -184,6 +184,43 @@ func RequestGitSignature(request kr.Request) (response kr.GitSignResponse, err e
 	return
 }
 
+func RequestHostsOver(request kr.Request, conn net.Conn) (hostsResponse kr.HostsResponse, err error) {
+	response, err := makeRequestWithJsonResponse(conn, request)
+	if err != nil {
+		return
+	}
+
+	if response.HostsResponse != nil {
+		hostsResponse = *response.HostsResponse
+		return
+	}
+	err = fmt.Errorf("Response missing HostsResponse")
+	return
+}
+
+func RequestHosts() (response kr.HostsResponse, err error) {
+	request, err := kr.NewRequest()
+	if err != nil {
+		return
+	}
+	kr.StartControlServerLogger(request.NotifyPrefix())
+	request.HostsRequest = &kr.HostsRequest{}
+
+	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	defer daemonConn.Close()
+	response, err = RequestHostsOver(request, daemonConn)
+	return
+}
+
 func makeRequestWithJsonResponse(conn net.Conn, request kr.Request) (response kr.Response, err error) {
 	httpRequest, err := request.HTTPRequest()
 	if err != nil {

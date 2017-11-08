@@ -2,6 +2,7 @@ package kr
 
 import (
 	"bufio"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -100,4 +101,35 @@ func StartNotifyCleanup() {
 			<-time.After(1 * time.Hour)
 		}
 	}()
+}
+
+func StartControlServerLogger(prefix string) (r NotificationReader, err error) {
+	r, err = OpenNotificationReader(prefix)
+	if err != nil {
+		return
+	}
+	go func() {
+		if prefix != "" {
+			defer os.Remove(r.Name())
+		}
+
+		printedNotifications := map[string]bool{}
+		for {
+			notification, err := r.Read()
+			switch err {
+			case nil:
+				notificationStr := string(notification)
+				if _, ok := printedNotifications[notificationStr]; ok {
+					continue
+				}
+				os.Stderr.WriteString(notificationStr)
+				printedNotifications[notificationStr] = true
+			case io.EOF:
+				<-time.After(50 * time.Millisecond)
+			default:
+				return
+			}
+		}
+	}()
+	return
 }

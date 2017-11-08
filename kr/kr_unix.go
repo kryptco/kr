@@ -20,11 +20,17 @@ func getPrefix() string {
 	return prefix
 }
 
-func restartCommand(c *cli.Context) (err error) {
-	kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
+func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
+	if isUserInitiated {
+		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
+	}
+
 	exec.Command("pkill", "krd").Run()
 	startKrd()
-	PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
+
+	if isUserInitiated {
+		PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
+	}
 	return
 }
 

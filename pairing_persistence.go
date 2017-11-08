@@ -1,6 +1,10 @@
 package kr
 
 const PAIRING_FILENAME = "pairing.json"
+const ID_KRYPTONITE_FILENAME = "id_kryptonite.pub"
+
+const PAIRING_TRANSFER_OLD_FILENAME = "pairing_transfer_old.json"
+const PAIRING_TRANSFER_NEW_FILENAME = "pairing_transfer_new.json"
 
 type persistedPairing struct {
 	EnclavePublicKey     *[]byte

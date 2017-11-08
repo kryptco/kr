@@ -84,6 +84,25 @@ func pairCommand(c *cli.Context) (err error) {
 	return pairOver(kr.DaemonSocketOrFatal(), c.Bool("force"), nameOpt, os.Stdout, os.Stderr)
 }
 
+func pairCommandForce() (err error) {
+	if !isKrdRunning() {
+		err = startKrd()
+		if err != nil {
+			return
+		}
+		<-time.After(time.Second)
+	}
+	err = autoEditSSHConfig()
+	if err != nil {
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error verifying SSH config: "+err.Error()))
+		<-time.After(2 * time.Second)
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Continuing with pairing..."))
+		<-time.After(2 * time.Second)
+	}
+
+	return pairOver(kr.DaemonSocketOrFatal(), true, nil, os.Stdout, os.Stderr)
+}
+
 func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWriter, stderr io.ReadWriter) (err error) {
 	//	Listen for incompatible enclave notifications
 	go func() {
@@ -474,7 +493,7 @@ func herokuCommand(c *cli.Context) (err error) {
 		PrintFatal(os.Stderr, "Failed to retrieve your public key:", err)
 	}
 	PrintErr(os.Stderr, "Adding your SSH public key using heroku toolbelt.")
-	addKeyCmd := exec.Command("heroku", "keys:add", filepath.Join(os.Getenv("HOME"), ".ssh", "id_kryptonite.pub"))
+	addKeyCmd := exec.Command("heroku", "keys:add", filepath.Join(os.Getenv("HOME"), ".ssh", kr.ID_KRYPTONITE_FILENAME))
 	addKeyCmd.Stdin = os.Stdin
 	addKeyCmd.Stdout = os.Stdout
 	addKeyCmd.Stderr = os.Stderr
@@ -526,6 +545,14 @@ func envCommand(c *cli.Context) (err error) {
 	KR_LOG_SYSLOG=true		Force krssh to log to system log`
 	os.Stderr.WriteString(ENV_VAR_USAGE + "\n")
 	return
+}
+
+func transferCommand(c *cli.Context) (err error) {
+	return transferAuthority(c)
+}
+
+func restartCommand(c *cli.Context) (err error) {
+	return restartCommandOptions(c, true)
 }
 
 func main() {
@@ -624,6 +651,17 @@ func main() {
 				cli.BoolFlag{
 					Name:  "force",
 					Usage: "Force append the Kryptonite SSH config block even if other Kryptonite-related lines are present.",
+				},
+			},
+		},
+		cli.Command{
+			Name:   "transfer",
+			Usage:  "Transfer authority to a new Kryptonite public key (authorize a new Kryptonite device's public key to servers)",
+			Action: transferCommand,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "dry-run, d",
+					Usage: "Do a dry-run and preview all servers that kr will try to add the new public key too.",
 				},
 			},
 		},
