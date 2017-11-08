@@ -24,9 +24,9 @@ func debugAWSCommand(c *cli.Context) (_ error) {
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
-	queueURL := ""
+
 	timeFunc("Create SQS Queue", func() {
-		queueURL, err = kr.CreateQueue(queueName)
+		_, err = kr.CreateQueue(queueName)
 		if err != nil {
 			PrintFatal(os.Stderr, err.Error())
 		}

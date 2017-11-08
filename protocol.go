@@ -23,6 +23,7 @@ type Request struct {
 	GitSignRequest *GitSignRequest `json:"git_sign_request,omitempty"`
 	MeRequest      *MeRequest      `json:"me_request,omitempty"`
 	UnpairRequest  *UnpairRequest  `json:"unpair_request,omitempty"`
+	HostsRequest   *HostsRequest   `json:"hosts_request,omitempty"`
 }
 
 func NewRequest() (request Request, err error) {
@@ -64,6 +65,14 @@ func (r Request) RequestParameters(timeouts Timeouts) RequestParameters {
 			Timeout:   timeouts.Sign,
 		}
 	}
+
+	if r.HostsRequest != nil {
+		return RequestParameters{
+			AlertText: "Incoming host list request. Open Kryptonite to continue.",
+			Timeout:   timeouts.Sign,
+		}
+	}
+
 	return RequestParameters{
 		AlertText: "Incoming Kryptonite request. ",
 		Timeout:   timeouts.Sign,
@@ -80,6 +89,7 @@ type Response struct {
 	AckResponse     *AckResponse     `json:"ack_response,omitempty"`
 	SNSEndpointARN  *string          `json:"sns_endpoint_arn,omitempty"`
 	TrackingID      *string          `json:"tracking_id,omitempty"`
+	HostsResponse   *HostsResponse   `json:"hosts_response,omitempty"`
 }
 
 type SignRequest struct {
@@ -105,6 +115,22 @@ type GitSignRequest struct {
 type GitSignResponse struct {
 	Signature *[]byte `json:"signature,omitempty"`
 	Error     *string `json:"error,omitempty"`
+}
+
+type HostsRequest struct{}
+
+type UserAndHost struct {
+	User string `json:"user"`
+	Host string `json:"host"`
+}
+
+type HostInfo struct {
+	Hosts      []UserAndHost `json:"hosts"`
+	PGPUserIDs []string      `json:"pgp_user_ids"`
+}
+type HostsResponse struct {
+	HostInfo *HostInfo `json:"host_info,omitempty"`
+	Error    *string   `json:"error,omitempty"`
 }
 
 func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
@@ -183,5 +209,9 @@ func (r Response) Error() *string {
 	if r.SignResponse != nil {
 		return r.SignResponse.Error
 	}
+	if r.HostsResponse != nil {
+		return r.HostsResponse.Error
+	}
+
 	return nil
 }
