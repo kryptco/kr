@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/satori/go.uuid"
 )
@@ -21,7 +20,6 @@ type PairingSecret struct {
 	workstationSecretKey []byte
 	WorkstationName      string `json:"n"`
 	snsEndpointARN       *string
-	ApprovedUntil        *int64 `json:"-"`
 	trackingID           *string
 	Version              string `json:"v"`
 	sync.Mutex
@@ -164,13 +162,6 @@ func (ps *PairingSecret) IsPaired() bool {
 	ps.Lock()
 	defer ps.Unlock()
 	return ps.EnclavePublicKey != nil
-}
-
-func (ps *PairingSecret) RequiresApproval() bool {
-	if ps.ApprovedUntil == nil {
-		return true
-	}
-	return *ps.ApprovedUntil < time.Now().Unix()
 }
 
 func (ps *PairingSecret) DisplayName() string {

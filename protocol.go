@@ -79,7 +79,6 @@ type Response struct {
 	UnpairResponse  *UnpairResponse  `json:"unpair_response,omitempty"`
 	AckResponse     *AckResponse     `json:"ack_response,omitempty"`
 	SNSEndpointARN  *string          `json:"sns_endpoint_arn,omitempty"`
-	ApprovedUntil   *int64           `json:"approved_until,omitempty"`
 	TrackingID      *string          `json:"tracking_id,omitempty"`
 }
 

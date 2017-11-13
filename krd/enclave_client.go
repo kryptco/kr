@@ -732,10 +732,6 @@ func (client *EnclaveClient) handleMessage(fromPairing *kr.PairingSecret, messag
 			client.pairingSecret.SetSNSEndpointARN(response.SNSEndpointARN)
 			client.Persister.SavePairing(client.pairingSecret)
 		}
-		if response.ApprovedUntil != client.pairingSecret.ApprovedUntil {
-			client.pairingSecret.ApprovedUntil = response.ApprovedUntil
-			client.Persister.SavePairing(client.pairingSecret)
-		}
 
 		oldTID := client.pairingSecret.GetTrackingID()
 		if response.TrackingID != nil && (oldTID == nil || *response.TrackingID != *oldTID) {

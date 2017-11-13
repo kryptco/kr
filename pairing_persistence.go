@@ -8,7 +8,6 @@ type persistedPairing struct {
 	WorkstationSecretKey []byte
 	WorkstationName      string
 	SNSEndpointARN       *string
-	ApprovedUntil        *int64
 	TrackingID           *string
 }
 
@@ -19,7 +18,6 @@ func pairingToPersisted(ps *PairingSecret) persistedPairing {
 		WorkstationSecretKey: ps.workstationSecretKey,
 		WorkstationName:      ps.WorkstationName,
 		SNSEndpointARN:       ps.snsEndpointARN,
-		ApprovedUntil:        ps.ApprovedUntil,
 		TrackingID:           ps.trackingID,
 	}
 }
@@ -31,7 +29,6 @@ func pairingFromPersisted(pp *persistedPairing) *PairingSecret {
 		workstationSecretKey: pp.WorkstationSecretKey,
 		WorkstationName:      pp.WorkstationName,
 		snsEndpointARN:       pp.SNSEndpointARN,
-		ApprovedUntil:        pp.ApprovedUntil,
 		trackingID:           pp.TrackingID,
 	}
 }
