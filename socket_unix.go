@@ -20,7 +20,7 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	if err != nil {
 		//	restart then try again
 		os.Stderr.WriteString(Yellow("Kryptonite ▶ Restarting krd...\r\n"))
-		exec.Command("pkill", "krd").Start()
+		exec.Command("killall", "krd").Start()
 		exec.Command("nohup", "krd").Run()
 		<-time.After(250 * time.Millisecond)
 		conn, err = net.Dial("unix", unixFile)

@@ -54,7 +54,7 @@ endif
 	kr restart
 
 uninstall:
-	pkill krd
+	killall krd
 	$(SUDO) rm -f $(DSTBIN)/kr
 	$(SUDO) rm -f $(DSTBIN)/krd
 	$(SUDO) rm -f $(DSTBIN)/krssh

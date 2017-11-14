@@ -25,7 +25,7 @@ func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
 	}
 
-	exec.Command("pkill", "krd").Run()
+	exec.Command("killall", "krd").Run()
 	startKrd()
 
 	if isUserInitiated {
@@ -64,7 +64,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	}()
 	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation? (same as sudo apt-get/yum remove kr)")
 
-	exec.Command("pkill", "krd").Run()
+	exec.Command("killall", "krd").Run()
 
 	if hasAptGet() {
 		uninstallCmd := exec.Command("sudo", "apt-get", "remove", "kr", "-y")
