@@ -97,7 +97,7 @@ func isKrdRunning() bool {
 
 func killKrd() (err error) {
 	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
-	_, _ = runCommandTmuxFriendly("pkill", "krd")
+	_, _ = runCommandTmuxFriendly("killall", "krd")
 	return
 }
 
