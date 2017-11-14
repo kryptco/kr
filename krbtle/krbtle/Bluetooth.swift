@@ -87,7 +87,7 @@ class BluetoothManager {
     required init() {
         self.bluetoothDelegate = BluetoothDelegate(queue: queue)
         if #available(OSX 10.13, *) {
-            self.centralManager = CBCentralManager(delegate: bluetoothDelegate, queue: queue, options: [CBCentralManagerOptionRestoreIdentifierKey: "bluetoothCentralManager"])
+            self.centralManager = CBCentralManager(delegate: bluetoothDelegate, queue: queue)
         } else {
             self.centralManager = CBCentralManager(delegate: bluetoothDelegate, queue: queue)
         }
@@ -208,23 +208,6 @@ class BluetoothDelegate : NSObject, CBCentralManagerDelegate, CBPeripheralDelega
             }
         }
         scanLogic(scanEpoch)
-    }
-
-    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        mutex.lock()
-        defer{ mutex.unlock() }
-        log("\(dict)")
-        self.central = central
-        if #available(OSX 10.13, *) {
-            if let restoredPeripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
-                for peripheral in restoredPeripherals {
-                    peripheral.delegate = self
-                    restorePeripheralLocked(central, peripheral)
-                }
-            }
-        } else {
-            // Fallback on earlier versions
-        }
     }
 
     //  re-initialize a peripheral being restored from background or from Bluetooth being toggled back on
