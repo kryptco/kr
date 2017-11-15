@@ -283,18 +283,6 @@
 			"revisionTime": "2016-06-16T19:48:14Z"
 		},
 		{
-			"checksumSHA1": "Ni79F3uE8yJJWHCm0hYanLSm3yE=",
-			"path": "github.com/vanadium/go.ref/lib/discovery/plugins/ble",
-			"revision": "601bdc2db0377781f0f0ef382735147dc83dd211",
-			"revisionTime": "2016-09-18T21:59:10Z"
-		},
-		{
-			"checksumSHA1": "wy9KcY+mP43BpRj5LdTvPDQpp0I=",
-			"path": "github.com/vanadium/go.v23/context",
-			"revision": "efa0d0ce143575ebb2ef6974158f2e756645ef80",
-			"revisionTime": "2016-08-01T16:52:45Z"
-		},
-		{
 			"checksumSHA1": "shXkK7zCsmzBXzxPPtZgAb0Rs1k=",
 			"path": "github.com/youtube/vitess/go/ioutil2",
 			"revision": "caa3bbb9a9347d251fd8a6cba90d46a0d28201e6",
