@@ -28,6 +28,11 @@ const PLIST_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>GOTRACEBACK</key>
+		<string>crash</string>
+	</dict>
 	<key>Label</key>
 	<string>co.krypt.krd</string>
 	<key>ProgramArguments</key>
@@ -36,6 +41,10 @@ const PLIST_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
+	<key>StandardOutPath</key>
+	<string>%s/krd_stdout.log</string>
+	<key>StandardErrorPath</key>
+	<string>%s/krd_stderr.log</string>
 </dict>
 </plist>`
 
@@ -45,7 +54,12 @@ func copyPlist() (err error) {
 		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Could not find krd on PATH, make sure krd is installed"))
 		return
 	}
-	plistContents := fmt.Sprintf(PLIST_TEMPLATE, strings.TrimSpace(string(output)))
+	krdir, err := kr.KrDir()
+	if err != nil {
+		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error finding ~/.kr folder: "+err.Error()))
+		return
+	}
+	plistContents := fmt.Sprintf(PLIST_TEMPLATE, strings.TrimSpace(string(output)), krdir, krdir)
 	_ = os.MkdirAll(homePlistDir, 0700)
 	err = ioutil.WriteFile(homePlist, []byte(plistContents), 0700)
 	if err != nil {

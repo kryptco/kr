@@ -86,11 +86,7 @@ class BluetoothManager {
     
     required init() {
         self.bluetoothDelegate = BluetoothDelegate(queue: queue)
-        if #available(OSX 10.13, *) {
-            self.centralManager = CBCentralManager(delegate: bluetoothDelegate, queue: queue)
-        } else {
-            self.centralManager = CBCentralManager(delegate: bluetoothDelegate, queue: queue)
-        }
+        self.centralManager = CBCentralManager(delegate: bluetoothDelegate, queue: queue)
         self.bluetoothDelegate.onReceive = onBluetoothReceive
         self.bluetoothDelegate.central = self.centralManager
         log("initialized")
@@ -422,7 +418,9 @@ class BluetoothDelegate : NSObject, CBCentralManagerDelegate, CBPeripheralDelega
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         mutex.lock()
         defer { mutex.unlock() }
-        log("Discovered \(String(describing: peripheral.name)) \(peripheral) at RSSI \(RSSI)")
+        if let name = peripheral.name {
+            log("Discovered \(name) \(peripheral) at RSSI \(RSSI)")
+        }
         log("\(advertisementData)")
         guard shouldConnectPeripheral(central, peripheral, advertisementData) else {
             return
@@ -590,8 +588,8 @@ class BluetoothDelegate : NSObject, CBCentralManagerDelegate, CBPeripheralDelega
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        guard error == nil else {
-            log("Error reading characteristic: \(error!.localizedDescription)", .error)
+        if let error = error {
+            log("Error reading characteristic: \(error)", .error)
             return
         }
 
@@ -681,11 +679,14 @@ class BluetoothDelegate : NSObject, CBCentralManagerDelegate, CBPeripheralDelega
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         mutex.lock()
         defer { mutex.unlock() }
-        if #available(OSX 10.13, *) {
-            log("Peripheral \(peripheral.identifier) disconnected, error \(String(describing: error))")
-        } else {
-            // Fallback on earlier versions
-            log("Peripheral \(peripheral) disconnected, error \(String(describing: error))")
+        //  Without destructuring the optional error, the objc runtime crashes from double-releasing it
+        if let error = error {
+            if #available(OSX 10.13, *) {
+                log("Peripheral \(peripheral.identifier) disconnected, error \(error))")
+            } else {
+                // Fallback on earlier versions
+                log("Peripheral \(peripheral) disconnected, error \(error)")
+            }
         }
 
         removePeripheralLocked(central: central, peripheral: peripheral)
