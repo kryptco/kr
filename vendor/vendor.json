@@ -165,12 +165,6 @@
 			"revisionTime": "2016-07-01T05:46:53Z"
 		},
 		{
-			"checksumSHA1": "fazUXuuuqf29mSju2q30sB+zNNU=",
-			"path": "github.com/cosnicolaou/llog",
-			"revision": "afed407739a24b4fec02a5a214defc813ffc750c",
-			"revisionTime": "2015-11-10T21:10:03Z"
-		},
-		{
 			"checksumSHA1": "lEuAuEXh42xoG+Ygw90K3EF99Xo=",
 			"path": "github.com/fatih/color",
 			"revision": "dea9d3a26a087187530244679c1cfb3a42937794",
@@ -182,13 +176,6 @@
 			"path": "github.com/go-ini/ini",
 			"revision": "26d4122e877bd86f43d528ad7fbde237dbbd3fa9",
 			"revisionTime": "2017-05-25T22:27:35Z"
-		},
-		{
-			"checksumSHA1": "Bra/9XucW0ivjIalL27XqSw2dTk=",
-			"origin": "github.com/kryptco/kr/krd/vendor/github.com/golang/groupcache/lru",
-			"path": "github.com/golang/groupcache/lru",
-			"revision": "2bf00a8c679f0c9056d2e53cdcd01701bdc537d7",
-			"revisionTime": "2017-07-09T21:24:37Z"
 		},
 		{
 			"checksumSHA1": "d9PxF1XQGLMJZRct2R8qVM/eYlE=",
@@ -228,13 +215,6 @@
 			"revisionTime": "2017-04-10T21:23:53Z"
 		},
 		{
-			"checksumSHA1": "JBBsKS0O0xw5Pi861aveoUsMHrE=",
-			"origin": "github.com/kryptco/kr/krd/vendor/github.com/kryptco/go.corebluetooth",
-			"path": "github.com/kryptco/go.corebluetooth",
-			"revision": "2bf00a8c679f0c9056d2e53cdcd01701bdc537d7",
-			"revisionTime": "2017-07-09T21:24:37Z"
-		},
-		{
 			"checksumSHA1": "1FNUYeTxvldrwoTRD7mLx9Zi1M4=",
 			"path": "github.com/kryptco/qr",
 			"revision": "eb334d7d50ea58421480ecf53dc234df6bcc35e9",
@@ -265,12 +245,6 @@
 			"revisionTime": "2016-03-15T20:05:05Z"
 		},
 		{
-			"checksumSHA1": "mhvIMH8oAtOiEyg37zWKmgb+6v4=",
-			"path": "github.com/pborman/uuid",
-			"revision": "b984ec7fa9ff9e428bd0cf0abf429384dfbe3e37",
-			"revisionTime": "2016-08-24T21:06:00Z"
-		},
-		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
 			"path": "github.com/satori/go.uuid",
 			"revision": "0aa62d5ddceb50dbcb909d790b5345affd3669b6",
@@ -287,12 +261,6 @@
 			"path": "github.com/youtube/vitess/go/ioutil2",
 			"revision": "caa3bbb9a9347d251fd8a6cba90d46a0d28201e6",
 			"revisionTime": "2016-10-26T21:37:19Z"
-		},
-		{
-			"checksumSHA1": "61pIqubta1X760RrCgZtW9mRyMo=",
-			"path": "golang.org/x/crypto/bn256",
-			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
-			"revisionTime": "2017-05-24T20:39:50Z"
 		},
 		{
 			"checksumSHA1": "TT1rac6kpQp2vz24m5yDGUNQ/QQ=",
