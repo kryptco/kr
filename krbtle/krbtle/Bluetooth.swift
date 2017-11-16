@@ -518,6 +518,9 @@ class BluetoothDelegate : NSObject, CBCentralManagerDelegate, CBPeripheralDelega
                 log("disconnected peripheral with no relevant services \(peripheral)")
             }
             central?.cancelPeripheralConnection(peripheral)
+            if let peripheralUUID = getPeripheralIdentifierHack(peripheral) {
+                cachedPeripheralUUIDS = cachedPeripheralUUIDS.filter({$0 != peripheralUUID })
+            }
         }
         scanLogic(scanEpoch)
     }
@@ -555,7 +558,7 @@ class BluetoothDelegate : NSObject, CBCentralManagerDelegate, CBPeripheralDelega
             }
             log("discovered krSSH characteristic")
             peripheralCharacteristics[peripheral] = char
-            if (!char.isNotifying) {
+            if !char.isNotifying {
                 peripheral.setNotifyValue(true, for: char)
             }
         }
