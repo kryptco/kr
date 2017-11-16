@@ -410,8 +410,8 @@ class BluetoothDelegate : NSObject, CBCentralManagerDelegate, CBPeripheralDelega
         }
         removeServiceUUIDLocked(uuid: uuid)
         allServiceUUIDS.insert(uuid)
-        startFullScanAfterUnixSeconds = nowUnixSeconds()
-        scanStartedUnixSeconds = nil
+        startFullScanAfterUnixSeconds = nowUnixSeconds() + 3
+        scanStartedUnixSeconds = nowUnixSeconds()
         scanLogic(scanEpoch)
     }
 
