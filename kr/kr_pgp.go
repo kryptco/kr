@@ -102,7 +102,7 @@ func codesignOnCommand(c *cli.Context) (err error) {
 
 func codesignOffCommand(c *cli.Context) (err error) {
 	exec.Command("git", "config", "--global", "--unset", "commit.gpgSign").Run()
-	PrintErr(os.Stderr, "Automatic commit signing disabled. Sign a new commit by running "+kr.Cyan("git commit -S")+" or sign your last commit by running "+kr.Cyan("git commit --amend -S")+"\r\nRe-enable automatic commit signing by running "+kr.Cyan("kr codesign off"))
+	PrintErr(os.Stderr, "Automatic commit signing disabled. Sign a new commit by running "+kr.Cyan("git commit -S")+" or sign your last commit by running "+kr.Cyan("git commit --amend -S")+"\r\nRe-enable automatic commit signing by running "+kr.Cyan("kr codesign on"))
 	return
 }
 
