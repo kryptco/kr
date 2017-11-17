@@ -136,7 +136,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 	}
 
 	switch key.Type() {
-	case ssh.KeyAlgoRSA, ssh.KeyAlgoED25519:
+	case ssh.KeyAlgoRSA, ssh.KeyAlgoED25519, ssh.KeyAlgoECDSA256:
 		var dataWithoutPubkey []byte
 		//	strip pubkey since it is redundant
 		dataWithoutPubkey, err = stripPubkeyFromSignaturePayload(data)
