@@ -81,13 +81,13 @@ install: all
 	mkdir -p $(DSTLIB)
 ifeq ($(UNAME_S),Darwin)
 	mkdir -p $(DSTFRAMEWORK)
-	$(SUDO) ln -sf $(SRCLIB)/krbtle.framework $(DSTFRAMEWORK)/krbtle.framework
+	$(SUDO) cp -R $(SRCLIB)/krbtle.framework $(DSTFRAMEWORK)/krbtle.framework
 endif
-	$(SUDO) ln -sf $(SRCBIN)/kr $(DSTBIN)/kr
-	$(SUDO) ln -sf $(SRCBIN)/krd $(DSTBIN)/krd
-	$(SUDO) ln -sf $(SRCBIN)/krssh $(DSTBIN)/krssh
-	$(SUDO) ln -sf $(SRCBIN)/krgpg $(DSTBIN)/krgpg
-	$(SUDO) ln -sf $(SRCLIB)/kr-pkcs11.so $(DSTLIB)/kr-pkcs11.so
+	$(SUDO) install $(SRCBIN)/kr $(DSTBIN)
+	$(SUDO) install $(SRCBIN)/krd $(DSTBIN)
+	$(SUDO) install $(SRCBIN)/krssh $(DSTBIN)
+	$(SUDO) install $(SRCBIN)/krgpg $(DSTBIN)
+	$(SUDO) install $(SRCLIB)/kr-pkcs11.so $(DSTLIB)
 	mkdir -m 700 -p ~/.ssh
 	touch ~/.ssh/config
 	chmod 0600 ~/.ssh/config
