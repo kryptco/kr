@@ -81,7 +81,8 @@ install: all
 	mkdir -p $(DSTLIB)
 ifeq ($(UNAME_S),Darwin)
 	mkdir -p $(DSTFRAMEWORK)
-	$(SUDO) cp -R $(SRCLIB)/krbtle.framework $(DSTFRAMEWORK)/krbtle.framework
+	-rm -rf $(DSTFRAMEWORK)/krbtle.framework
+	cp -R $(SRCLIB)/krbtle.framework $(DSTFRAMEWORK)/krbtle.framework
 endif
 	$(SUDO) install $(SRCBIN)/kr $(DSTBIN)
 	$(SUDO) install $(SRCBIN)/krd $(DSTBIN)
