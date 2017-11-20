@@ -189,11 +189,13 @@ func uninstallCommand(c *cli.Context) (err error) {
 	_, _ = runCommandTmuxFriendly("brew", "uninstall", "kr")
 	_, _ = runCommandTmuxFriendly("npm", "uninstall", "-g", "krd")
 	prefix := getPrefix()
-	for _, file := range []string{"/bin/kr", "/bin/krssh", "/bin/krd", "/bin/krgpg", "/lib/kr-pkcs11.so", "/share/kr"} {
+	for _, file := range []string{"/bin/kr", "/bin/krssh", "/bin/krd", "/bin/krgpg", "/lib/kr-pkcs11.so", "/share/kr", "/Frameworks/krbtle.framework"} {
 		rmErr := exec.Command("rm", "-rf", prefix+file).Run()
 		if rmErr != nil {
-			PrintErr(os.Stderr, "sudo rm -rf "+prefix+file)
-			runCommandWithUserInteraction("sudo", "rm", "-rf", prefix+file)
+			if os.IsPermission(rmErr) {
+				PrintErr(os.Stderr, "sudo rm -rf "+prefix+file)
+				runCommandWithUserInteraction("sudo", "rm", "-rf", prefix+file)
+			}
 		}
 	}
 	runCommandTmuxFriendly("launchctl", "unload", homePlist)
