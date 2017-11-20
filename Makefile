@@ -80,9 +80,11 @@ install: all
 	mkdir -p $(DSTBIN)
 	mkdir -p $(DSTLIB)
 ifeq ($(UNAME_S),Darwin)
+ifeq ($(shell expr $(OSXRELEASE) \>= 16), 1)
 	mkdir -p $(DSTFRAMEWORK)
 	-rm -rf $(DSTFRAMEWORK)/krbtle.framework
 	cp -R $(SRCLIB)/krbtle.framework $(DSTFRAMEWORK)/krbtle.framework
+endif
 endif
 	$(SUDO) install $(SRCBIN)/kr $(DSTBIN)
 	$(SUDO) install $(SRCBIN)/krd $(DSTBIN)
