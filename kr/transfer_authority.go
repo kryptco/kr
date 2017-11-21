@@ -309,6 +309,9 @@ func transferAuthorizePublicKey(userAndHost kr.UserAndHost, authorizedPublicKeyS
 	if port != "" {
 		args = append(args, "-p "+port)
 	}
+	//	disable host key checking in case this workstation does not have the target host in its known_hosts
+	//	note that Kryptonite still validates the host key when granting access
+	args = append(args, "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null\"")
 
 	// inspired by ssh-copy-id
 	args = append(args, "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1 ; if type restorecon >/dev/null 2>&1 ; then restorecon -F .ssh .ssh/authorized_keys ; fi'")
@@ -318,7 +321,9 @@ func transferAuthorizePublicKey(userAndHost kr.UserAndHost, authorizedPublicKeyS
 	sshCommand.Stderr = os.Stderr
 	err = sshCommand.Run()
 
-	os.Stderr.WriteString(kr.Green("Success, access granted to ") + userAndHost.User + " @ " + userAndHost.Host + "\r\n")
+	if err == nil {
+		os.Stderr.WriteString(kr.Green("Success, access granted to ") + userAndHost.User + " @ " + userAndHost.Host + "\r\n")
+	}
 
 	return
 }
