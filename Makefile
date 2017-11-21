@@ -53,6 +53,7 @@ DSTFRAMEWORK = $(PREFIX)/Frameworks
 CONFIGURATION ?= Release
 
 all:
+	-rm -rf bin lib Frameworks
 	-mkdir -p bin
 	-mkdir -p lib
 	-mkdir -p Frameworks
