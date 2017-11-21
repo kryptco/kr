@@ -1,6 +1,7 @@
 *.swp
 bin/
 lib/
+Frameworks/
 .idea
 
 # Created by https://www.gitignore.io/api/swift,xcode,objective-c

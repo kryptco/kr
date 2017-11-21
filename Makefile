@@ -31,7 +31,8 @@ ifeq ($(UNAME_S),Darwin)
 		OSXVER = "Lion"
 	endif
 	ifeq ($(shell expr $(OSXRELEASE) \>= 16), 1)
-		CGO_LDFLAGS += -F$(PWD)/lib -Wl,-rpath -Wl,$(PREFIX)/Frameworks -Wl,-rpath -Wl,$(PWD)/lib -framework krbtle
+		CGO_TEST_LDFLAGS += -F${PWD}/Frameworks -Wl,-rpath,${PWD}/Frameworks -framework krbtle 
+		CGO_LDFLAGS += -F${PWD}/Frameworks -Wl,-rpath,@executable_path/../Frameworks -framework krbtle 
 	else
 		GO_TAGS = -tags nobluetooth
 	endif
@@ -46,6 +47,7 @@ DSTBIN = $(PREFIX)/bin
 SRCLIB = $(PWD)/lib
 DSTLIB = $(PREFIX)/lib
 
+SRCFRAMEWORK = $(PWD)/Frameworks
 DSTFRAMEWORK = $(PREFIX)/Frameworks
 
 CONFIGURATION ?= Release
@@ -53,11 +55,12 @@ CONFIGURATION ?= Release
 all:
 	-mkdir -p bin
 	-mkdir -p lib
+	-mkdir -p Frameworks
 ifeq ($(UNAME_S),Darwin)
 ifeq ($(shell expr $(OSXRELEASE) \>= 16), 1)
-		cd krbtle && xcodebuild -configuration $(CONFIGURATION) -archivePath $(SRCLIB) -scheme krbtle-Package
-		-rm -rf $(SRCLIB)/krbtle.framework
-		cp -R krbtle/build/$(CONFIGURATION)/krbtle.framework $(SRCLIB)/krbtle.framework
+		cd krbtle && xcodebuild -configuration $(CONFIGURATION) -archivePath $(SRCFRAMEWORK) -scheme krbtle-Package
+		-rm -rf $(SRCFRAMEWORK)/krbtle.framework
+		cp -R krbtle/build/$(CONFIGURATION)/krbtle.framework $(SRCFRAMEWORK)/krbtle.framework
 endif
 endif
 	cd kr; go build $(GO_TAGS) -o ../bin/kr
@@ -70,7 +73,7 @@ clean:
 	rm -rf bin/
 
 check: vet
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" go test $(GO_TAGS) github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krd/main github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg
+	CGO_LDFLAGS="$(CGO_TEST_LDFLAGS)" go test $(GO_TAGS) github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krd/main github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg
 	cd pkcs11shim; cargo test
 
 vet:
@@ -83,7 +86,7 @@ ifeq ($(UNAME_S),Darwin)
 ifeq ($(shell expr $(OSXRELEASE) \>= 16), 1)
 	mkdir -p $(DSTFRAMEWORK)
 	-rm -rf $(DSTFRAMEWORK)/krbtle.framework
-	cp -R $(SRCLIB)/krbtle.framework $(DSTFRAMEWORK)/krbtle.framework
+	cp -R $(SRCFRAMEWORK)/krbtle.framework $(DSTFRAMEWORK)/krbtle.framework
 endif
 endif
 	$(SUDO) install $(SRCBIN)/kr $(DSTBIN)
