@@ -53,6 +53,7 @@ var unsetAWSEnvVarsOnce sync.Once
 func getAWSSession() (conf client.ConfigProvider, err error) {
 	unsetAWSEnvVarsOnce.Do(unsetAWSEnvVars)
 
+	//	Public restricted credentials for SQS/SNS
 	creds := credentials.NewStaticCredentials("AKIAJMZJ3X6MHMXRF7QQ", "0hincCnlm2XvpdpSD+LBs6NSwfF0250pEnEyYJ49", "")
 	_, err = creds.Get()
 	if err != nil {
