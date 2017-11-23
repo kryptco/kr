@@ -197,11 +197,11 @@ func RequestHosts() (response kr.HostsResponse, err error) {
 	if err != nil {
 		return
 	}
-	if response.HostsResponse == nil {
+	if genericResponse.HostsResponse == nil {
 		err = fmt.Errorf("no HostsResponse found")
 		return
 	}
-	response = genericResponse.HostsResponse
+	response = *genericResponse.HostsResponse
 	return
 }
 
