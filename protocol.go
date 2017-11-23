@@ -89,17 +89,16 @@ func (r Request) RequestParameters(timeouts Timeouts) RequestParameters {
 }
 
 type Response struct {
-	RequestID        string            `json:"request_id"`
-	Version          semver.Version    `json:"v"`
-	SignResponse     *SignResponse     `json:"sign_response,omitempty"`
-	GitSignResponse  *GitSignResponse  `json:"git_sign_response,omitempty"`
-	MeResponse       *MeResponse       `json:"me_response,omitempty"`
-	UnpairResponse   *UnpairResponse   `json:"unpair_response,omitempty"`
-	AckResponse      *AckResponse      `json:"ack_response,omitempty"`
-	HostsResponse    *HostsResponse    `json:"hosts_response,omitempty"`
-	AdminKeyResponse *AdminKeyResponse `json:"admin_key_response,omitempty"`
-	SNSEndpointARN   *string           `json:"sns_endpoint_arn,omitempty"`
-	TrackingID       *string           `json:"tracking_id,omitempty"`
+	RequestID       string           `json:"request_id"`
+	Version         semver.Version   `json:"v"`
+	SignResponse    *SignResponse    `json:"sign_response,omitempty"`
+	GitSignResponse *GitSignResponse `json:"git_sign_response,omitempty"`
+	MeResponse      *MeResponse      `json:"me_response,omitempty"`
+	UnpairResponse  *UnpairResponse  `json:"unpair_response,omitempty"`
+	AckResponse     *AckResponse     `json:"ack_response,omitempty"`
+	HostsResponse   *HostsResponse   `json:"hosts_response,omitempty"`
+	SNSEndpointARN  *string          `json:"sns_endpoint_arn,omitempty"`
+	TrackingID      *string          `json:"tracking_id,omitempty"`
 
 	CreateTeamResponse    *TeamCheckpoint        `json:"create_team_response,omitempty"`
 	ReadTeamResponse      *ReadTeamResponse      `json:"read_team_response,omitempty"`
