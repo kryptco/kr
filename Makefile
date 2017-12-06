@@ -95,10 +95,6 @@ endif
 	$(SUDO) install $(SRCBIN)/krssh $(DSTBIN)
 	$(SUDO) install $(SRCBIN)/krgpg $(DSTBIN)
 	$(SUDO) install $(SRCLIB)/kr-pkcs11.so $(DSTLIB)
-	mkdir -m 700 -p ~/.ssh
-	touch ~/.ssh/config
-	chmod 0600 ~/.ssh/config
-	perl -0777 -ne '/# Added by Kryptonite\nHost \*\n\tPKCS11Provider $(subst /,\/,$(PREFIX))\/lib\/kr-pkcs11.so\n\tProxyCommand $(subst /,\/,$(PREFIX))\/bin\/krssh %h %p\n\tIdentityFile ~\/.ssh\/id_kryptonite\n\tIdentityFile ~\/.ssh\/id_ed25519\n\tIdentityFile ~\/.ssh\/id_rsa\n\tIdentityFile ~\/.ssh\/id_ecdsa\n\tIdentityFile ~\/.ssh\/id_dsa/ || exit(1)' ~/.ssh/config || printf '\n# Added by Kryptonite\nHost *\n\tPKCS11Provider $(PREFIX)/lib/kr-pkcs11.so\n\tProxyCommand $(PREFIX)/bin/krssh %%h %%p\n\tIdentityFile ~/.ssh/id_kryptonite\n\tIdentityFile ~/.ssh/id_ed25519\n\tIdentityFile ~/.ssh/id_rsa\n\tIdentityFile ~/.ssh/id_ecdsa\n\tIdentityFile ~/.ssh/id_dsa' >> ~/.ssh/config
 
 start:
 ifeq ($(UNAME_S),Darwin)
@@ -109,10 +105,9 @@ endif
 
 uninstall:
 	killall krd
+	kr uninstall
 	$(SUDO) rm -f $(DSTBIN)/kr
 	$(SUDO) rm -f $(DSTBIN)/krd
 	$(SUDO) rm -f $(DSTBIN)/krssh
 	$(SUDO) rm -f $(DSTBIN)/krgpg
 	$(SUDO) rm -f $(DSTLIB)/kr-pkcs11.so
-	perl -0777 -p -i.kr.bak -e 's/\s*# Added by Kryptonite\nHost \*\n\tPKCS11Provider $(subst /,\/,$(PREFIX))\/lib\/kr-pkcs11.so\n\tProxyCommand $(subst /,\/,$(PREFIX))\/bin\/krssh %h %p\n\tIdentityFile ~\/.ssh\/id_kryptonite\n\tIdentityFile ~\/.ssh\/id_ed25519\n\tIdentityFile ~\/.ssh\/id_rsa\n\tIdentityFile ~\/.ssh\/id_ecdsa\n\tIdentityFile ~\/.ssh\/id_dsa//g' ~/.ssh/config 
-	kr uninstall
