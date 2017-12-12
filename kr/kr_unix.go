@@ -58,6 +58,10 @@ func hasYum() bool {
 	return exec.Command("which", "yum").Run() == nil
 }
 
+func hasYaourt() bool {
+	return exec.Command("which", "yaourt").Run() == nil
+}
+
 func uninstallCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "uninstall", nil, nil)
@@ -78,6 +82,10 @@ func uninstallCommand(c *cli.Context) (err error) {
 		uninstallCmd.Stdout = os.Stdout
 		uninstallCmd.Stderr = os.Stderr
 		uninstallCmd.Run()
+	}
+
+	if hasYaourt() {
+		runCommandWithUserInteraction("sudo", "yaourt", "-R", "kr")
 	}
 
 	uninstallCodesigning()
@@ -106,5 +114,9 @@ func upgradeCommand(c *cli.Context) (err error) {
 		runCommandWithUserInteraction("sudo", "yum", "clean", "expire-cache")
 		runCommandWithUserInteraction("sudo", "yum", "upgrade", "kr", "-y")
 	}
+	if hasYaourt() {
+		runCommandWithUserInteraction("sudo", "yaourt", "-Sy", "kr")
+	}
+
 	return
 }
