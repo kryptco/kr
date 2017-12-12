@@ -168,19 +168,38 @@ func onboardAutoCommitSign(interactive bool) {
 }
 
 func shellRCFileAndGPG_TTYExport() (file string, export string) {
+	exists := func(file string) bool {
+		_, err := os.Stat(file)
+		return err == nil
+	}
 	shell := os.Getenv("SHELL")
+	home := os.Getenv("HOME")
+
+	zshrc := filepath.Join(home, ".zshrc")
+	bashProfile := filepath.Join(home, ".bash_profile")
+	bashRc := filepath.Join(home, ".bashrc")
+	bashLogin := filepath.Join(home, ".bash_login")
+	profile := filepath.Join(home, ".profile")
+
+	kshRc := filepath.Join(home, ".kshrc")
+	cshRc := filepath.Join(home, ".cshrc")
+	fishConfig := filepath.Join(home, ".config", "fish", "config.fish")
 	if strings.Contains(shell, "zsh") {
-		return filepath.Join(os.Getenv("HOME"), ".zshrc"), "export GPG_TTY=$(tty)"
-	} else if strings.Contains(shell, "bash") {
-		return filepath.Join(os.Getenv("HOME"), ".bash_profile"), "export GPG_TTY=$(tty)"
+		return zshrc, "export GPG_TTY=$(tty)"
+	} else if strings.Contains(shell, "bash") && exists(bashProfile) {
+		return bashProfile, "export GPG_TTY=$(tty)"
+	} else if strings.Contains(shell, "bash") && exists(bashLogin) {
+		return bashLogin, "export GPG_TTY=$(tty)"
+	} else if strings.Contains(shell, "bash") && exists(bashRc) {
+		return bashRc, "export GPG_TTY=$(tty)"
 	} else if strings.Contains(shell, "ksh") {
-		return filepath.Join(os.Getenv("HOME"), ".kshrc"), "export GPG_TTY=$(tty)"
+		return kshRc, "export GPG_TTY=$(tty)"
 	} else if strings.Contains(shell, "csh") {
-		return filepath.Join(os.Getenv("HOME"), ".cshrc"), "setenv GPG_TTY `tty`"
+		return cshRc, "setenv GPG_TTY `tty`"
 	} else if strings.Contains(shell, "fish") {
-		return filepath.Join(os.Getenv("HOME"), ".config", "fish", "config.fish"), "set -x GPG_TTY (tty)"
+		return fishConfig, "set -x GPG_TTY (tty)"
 	} else {
-		return filepath.Join(os.Getenv("HOME"), ".profile"), "export GPG_TTY=$(tty)"
+		return profile, "export GPG_TTY=$(tty)"
 	}
 }
 
