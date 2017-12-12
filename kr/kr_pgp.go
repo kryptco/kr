@@ -217,7 +217,7 @@ func addGPG_TTYExportToCurrentShellIfNotPresent() (path, cmd string) {
 	}
 	//	seek to end
 	rcFile.Seek(0, 2)
-	rcFile.WriteString("\n" + cmd + "\n")
+	rcFile.WriteString("\n# Added by Kryptonite\n" + cmd + "\n")
 	rcFile.Close()
 	return
 }
