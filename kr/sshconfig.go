@@ -22,12 +22,6 @@ Host *
 	IdentityFile ~/.ssh/id_ecdsa
 	IdentityFile ~/.ssh/id_dsa`
 
-func replaceKryptoniteWithKrypton(in []byte) []byte {
-	commentReplaced := bytes.Replace(in, []byte("# Added by Kryptonite"), []byte("# Added by Krypton"), -1)
-	identityFileReplaced := bytes.Replace(commentReplaced, []byte("~/.ssh/id_kryptonite"), []byte("~/.ssh/id_krypton"), -1)
-	return identityFileReplaced
-}
-
 const KR_SKIP_SSH_CONFIG = "KR_SKIP_SSH_CONFIG"
 
 func getKrSSHConfigBlock() string {
@@ -49,32 +43,6 @@ func autoEditSSHConfig() (err error) {
 		return
 	}
 	return editSSHConfig(false, false)
-}
-
-func upgradeSSHConfig() (err error) {
-	sshDirPath := os.Getenv("HOME") + "/.ssh"
-	_ = os.MkdirAll(sshDirPath, 0700)
-	sshConfigPath := sshDirPath + "/config"
-
-	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0700)
-	if err != nil {
-		return
-	}
-	defer sshConfigFile.Close()
-	currentConfigContents, err := ioutil.ReadAll(sshConfigFile)
-	if err != nil {
-		return
-	}
-
-	//	update Kryptonite to Krypton without prompting
-	updatedContents := replaceKryptoniteWithKrypton(currentConfigContents)
-	if !bytes.Equal(updatedContents, currentConfigContents) {
-		err = ioutil.WriteFile(sshConfigPath, updatedContents, 0700)
-		if err != nil {
-			return
-		}
-	}
-	return
 }
 
 func editSSHConfig(prompt bool, forceAppend bool) (err error) {

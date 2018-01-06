@@ -33,6 +33,12 @@ func main() {
 		}
 	}()
 
+	err := upgradeSSHConfig()
+	if err != nil {
+		log.Error(err)
+		err = nil
+	}
+
 	notifier, err := kr.OpenNotifier("")
 	if err != nil {
 		log.Fatal(err)

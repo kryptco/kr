@@ -552,7 +552,6 @@ func transferCommand(c *cli.Context) (err error) {
 }
 
 func restartCommand(c *cli.Context) (err error) {
-	upgradeSSHConfig()
 	return restartCommandOptions(c, true)
 }
 
