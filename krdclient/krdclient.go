@@ -81,7 +81,7 @@ func RequestMeForceRefresh(userID *string) (me kr.Profile, err error) {
 }
 
 func RequestMeForceRefreshOver(conn net.Conn, userID *string) (me kr.Profile, err error) {
-	meRequestJSON, err := json.Marshal(kr.MeRequest{userID})
+	meRequestJSON, err := json.Marshal(kr.MeRequest{PGPUserId: userID})
 	if err != nil {
 		return
 	}
