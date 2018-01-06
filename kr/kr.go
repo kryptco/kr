@@ -71,9 +71,9 @@ func pairCommand(c *cli.Context) (err error) {
 	}
 	err = autoEditSSHConfig()
 	if err != nil {
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error verifying SSH config: "+err.Error()))
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Error verifying SSH config: "+err.Error()))
 		<-time.After(2 * time.Second)
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Continuing with pairing..."))
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Continuing with pairing..."))
 		<-time.After(2 * time.Second)
 	}
 	name := c.String("name")
@@ -94,9 +94,9 @@ func pairCommandForce() (err error) {
 	}
 	err = autoEditSSHConfig()
 	if err != nil {
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error verifying SSH config: "+err.Error()))
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Error verifying SSH config: "+err.Error()))
 		<-time.After(2 * time.Second)
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Continuing with pairing..."))
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Continuing with pairing..."))
 		<-time.After(2 * time.Second)
 	}
 
@@ -132,7 +132,7 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 	if !forceUnpair {
 		meConn, err := kr.DaemonDialWithTimeout(unixFile)
 		if err != nil {
-			PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
+			PrintFatal(stderr, "Could not connect to Krypton daemon. Make sure it is running by typing \"kr restart\".")
 		}
 		_, err = krdclient.RequestMeOver(meConn)
 		if err == nil {
@@ -141,7 +141,7 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 	}
 	putConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
-		PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
+		PrintFatal(stderr, "Could not connect to Krypton daemon. Make sure it is running by typing \"kr restart\".")
 	}
 	defer putConn.Close()
 
@@ -183,13 +183,13 @@ func pairOver(unixFile string, forceUnpair bool, name *string, stdout io.ReadWri
 	stdout.Write([]byte("\r\n"))
 	stdout.Write([]byte(qr.Terminal))
 	stdout.Write([]byte("\r\n"))
-	stdout.Write([]byte("Scan this QR Code with the Kryptonite mobile app to connect it with this workstation. Maximize the window and/or lower your font size if the QR code does not fit."))
+	stdout.Write([]byte("Scan this QR Code with the Krypton mobile app to connect it with this workstation. Maximize the window and/or lower your font size if the QR code does not fit."))
 	stdout.Write([]byte("\r\n"))
 
 	//	Check/wait for pairing
 	getConn, err := kr.DaemonDialWithTimeout(unixFile)
 	if err != nil {
-		PrintFatal(stderr, "Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".")
+		PrintFatal(stderr, "Could not connect to Krypton daemon. Make sure it is running by typing \"kr restart\".")
 	}
 	defer putConn.Close()
 	me, err := krdclient.RequestMeForceRefreshOver(getConn, nil)
@@ -241,12 +241,12 @@ func unpairOver(unixFile string, stdout io.ReadWriter, stderr io.ReadWriter) (er
 	}
 	switch response.StatusCode {
 	case http.StatusNotFound, http.StatusInternalServerError:
-		PrintFatal(stderr, "Unpair failed, ensure the Kryptonite daemon is running with \"kr restart\".")
+		PrintFatal(stderr, "Unpair failed, ensure the Krypton daemon is running with \"kr restart\".")
 	case http.StatusOK:
 	default:
 		PrintFatal(stderr, "Unpair failed with error %d", response.StatusCode)
 	}
-	stdout.Write([]byte("Unpaired Kryptonite.\r\n"))
+	stdout.Write([]byte("Unpaired Krypton.\r\n"))
 	return
 }
 
@@ -275,7 +275,7 @@ func mePGPCommand(c *cli.Context) (err error) {
 
 	pgp, err := me.AsciiArmorPGPPublicKey()
 	if err != nil {
-		PrintFatal(os.Stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and that you have run "+kr.Cyan("kr codesign")+" successfully.")
+		PrintFatal(os.Stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Krypton app and that you have run "+kr.Cyan("kr codesign")+" successfully.")
 	}
 	fmt.Println(pgp)
 
@@ -338,7 +338,7 @@ func copyPGPKeyNonFatalOnClipboardError() (me kr.Profile, pk string, err error) 
 	}
 	pk, err = me.AsciiArmorPGPPublicKey()
 	if err != nil {
-		PrintFatal(os.Stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and that you have run "+kr.Cyan("kr codesign")+" successfully.")
+		PrintFatal(os.Stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Krypton app and that you have run "+kr.Cyan("kr codesign")+" successfully.")
 	}
 	err = clipboard.WriteAll(pk)
 	return
@@ -493,7 +493,7 @@ func herokuCommand(c *cli.Context) (err error) {
 		PrintFatal(os.Stderr, "Failed to retrieve your public key:", err)
 	}
 	PrintErr(os.Stderr, "Adding your SSH public key using heroku toolbelt.")
-	addKeyCmd := exec.Command("heroku", "keys:add", filepath.Join(os.Getenv("HOME"), ".ssh", kr.ID_KRYPTONITE_FILENAME))
+	addKeyCmd := exec.Command("heroku", "keys:add", filepath.Join(os.Getenv("HOME"), ".ssh", kr.ID_KRYPTON_FILENAME))
 	addKeyCmd.Stdin = os.Stdin
 	addKeyCmd.Stdout = os.Stdout
 	addKeyCmd.Stderr = os.Stderr
@@ -552,19 +552,20 @@ func transferCommand(c *cli.Context) (err error) {
 }
 
 func restartCommand(c *cli.Context) (err error) {
+	upgradeSSHConfig()
 	return restartCommandOptions(c, true)
 }
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "kr"
-	app.Usage = "communicate with Kryptonite and krd - the Kryptonite daemon"
+	app.Usage = "communicate with Krypton and krd - the Krypton daemon"
 	app.Version = kr.CURRENT_VERSION.String()
 	app.Flags = []cli.Flag{}
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name:  "pair",
-			Usage: "Initiate pairing of this workstation with a phone running Kryptonite.",
+			Usage: "Initiate pairing of this workstation with a phone running Krypton.",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "force",
@@ -591,7 +592,7 @@ func main() {
 		},
 		cli.Command{
 			Name:  "codesign",
-			Usage: "Setup Kryptonite to sign git commits.",
+			Usage: "Setup Krypton to sign git commits.",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "interactive,i",
@@ -602,12 +603,12 @@ func main() {
 			Subcommands: []cli.Command{
 				cli.Command{
 					Name:   "uninstall",
-					Usage:  "Uninstall Kryptonite codesigning.",
+					Usage:  "Uninstall Krypton codesigning.",
 					Action: codesignUninstallCommand,
 				},
 				cli.Command{
 					Name:   "test",
-					Usage:  "Test Kryptonite codesigning.",
+					Usage:  "Test Krypton codesigning.",
 					Action: codesignTestCommand,
 				},
 				cli.Command{
@@ -641,22 +642,22 @@ func main() {
 		},
 		cli.Command{
 			Name:   "sshconfig",
-			Usage:  "Verify SSH is configured to use Kryptonite.",
+			Usage:  "Verify SSH is configured to use Krypton.",
 			Action: sshConfigCommand,
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "print",
-					Usage: "Print Kryptonite SSH config block.",
+					Usage: "Print Krypton SSH config block.",
 				},
 				cli.BoolFlag{
 					Name:  "force",
-					Usage: "Force append the Kryptonite SSH config block even if other Kryptonite-related lines are present.",
+					Usage: "Force append the Krypton SSH config block even if other Krypton-related lines are present.",
 				},
 			},
 		},
 		cli.Command{
 			Name:   "transfer",
-			Usage:  "Transfer authority to a new Kryptonite public key (authorize a new Kryptonite device's public key to servers)",
+			Usage:  "Transfer authority to a new Krypton public key (authorize a new Krypton device's public key to servers)",
 			Action: transferCommand,
 			Flags: []cli.Flag{
 				cli.BoolFlag{
@@ -751,7 +752,7 @@ func main() {
 		},
 		cli.Command{
 			Name:   "add",
-			Usage:  "kr add <user@server or SSH alias> -- add your Kryptonite SSH public key to the server.",
+			Usage:  "kr add <user@server or SSH alias> -- add your Krypton SSH public key to the server.",
 			Action: addCommand,
 			Flags: []cli.Flag{
 				cli.StringFlag{
@@ -762,22 +763,22 @@ func main() {
 		},
 		cli.Command{
 			Name:   "restart",
-			Usage:  "Restart the Kryptonite daemon.",
+			Usage:  "Restart the Krypton daemon.",
 			Action: restartCommand,
 		},
 		cli.Command{
 			Name:   "upgrade",
-			Usage:  "Upgrade Kryptonite on this workstation.",
+			Usage:  "Upgrade Krypton on this workstation.",
 			Action: upgradeCommand,
 		},
 		cli.Command{
 			Name:   "unpair",
-			Usage:  "Unpair this workstation from a phone running Kryptonite.",
+			Usage:  "Unpair this workstation from a phone running Krypton.",
 			Action: unpairCommand,
 		},
 		cli.Command{
 			Name:   "uninstall",
-			Usage:  "Uninstall Kryptonite from this workstation.",
+			Usage:  "Uninstall Krypton from this workstation.",
 			Action: uninstallCommand,
 		},
 		cli.Command{

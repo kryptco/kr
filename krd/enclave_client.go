@@ -330,7 +330,7 @@ func (client *EnclaveClient) RequestMe(meSubrequest kr.MeRequest, isPairing bool
 	if isPairing {
 		timeout = client.Timeouts.Pair.Fail
 	}
-	callback, err := client.tryRequest(meRequest, timeout, client.Timeouts.Me.Alert, "Incoming kr me request. Open Kryptonite to continue.", nil)
+	callback, err := client.tryRequest(meRequest, timeout, client.Timeouts.Me.Alert, "Incoming kr me request. Open Krypton to continue.", nil)
 	if err != nil {
 		client.log.Error(err)
 		return
@@ -501,7 +501,7 @@ func (client *EnclaveClient) tryRequest(request kr.Request, timeout time.Duratio
 				}
 				if ps != nil {
 					client.log.Notice("pushing alert for request " + request.RequestID)
-					client.Transport.PushAlert(ps, "Kryptonite Request", requestJson)
+					client.Transport.PushAlert(ps, "Krypton Request", requestJson)
 				}
 			}
 		}
@@ -596,7 +596,7 @@ func (client *EnclaveClient) handleCiphertext(ciphertext []byte, medium string) 
 	unwrappedCiphertext, didUnwrapKey, err := pairingSecret.UnwrapKeyIfPresent(ciphertext)
 	if err != nil {
 		if err == kr.ErrWrappedKeyUnsupported && client.notifier != nil {
-			client.notifier.Notify(append([]byte(kr.Red("You are running an old version of the Kryptonite app. Please upgrade Kryptonite on your mobile phone before pairing by visiting get.krypt.co.")), '\r', '\n'))
+			client.notifier.Notify(append([]byte(kr.Red("You are running an old version of the Krypton app. Please upgrade Krypton on your mobile phone before pairing by visiting get.krypt.co.")), '\r', '\n'))
 		}
 		err = &ProtoError{err}
 		return
@@ -690,7 +690,7 @@ func (client *EnclaveClient) sendMessage(pairingSecret *kr.PairingSecret, messag
 	}()
 
 	if alertFirst && alertAllowed {
-		err = client.Transport.PushAlert(pairingSecret, "Kryptonite Request", message)
+		err = client.Transport.PushAlert(pairingSecret, "Krypton Request", message)
 		if err != nil {
 			err = &SendError{err}
 			return

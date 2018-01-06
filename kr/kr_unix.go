@@ -29,7 +29,7 @@ func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 	startKrd()
 
 	if isUserInitiated {
-		PrintErr(os.Stderr, "Restarted Kryptonite daemon.")
+		PrintErr(os.Stderr, "Restarted Krypton daemon.")
 	}
 	return
 }
@@ -66,7 +66,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "uninstall", nil, nil)
 	}()
-	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation? (same as sudo apt-get/yum remove kr)")
+	confirmOrFatal(os.Stderr, "Uninstall Krypton from this workstation? (same as sudo apt-get/yum remove kr)")
 
 	exec.Command("killall", "krd").Run()
 
@@ -89,7 +89,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	}
 
 	uninstallCodesigning()
-	PrintErr(os.Stderr, "Kryptonite uninstalled.")
+	PrintErr(os.Stderr, "Krypton uninstalled.")
 	return
 }
 
@@ -97,7 +97,7 @@ func upgradeCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "upgrade", nil, nil)
 	}()
-	confirmOrFatal(os.Stderr, "Upgrade Kryptonite on this workstation?")
+	confirmOrFatal(os.Stderr, "Upgrade Krypton on this workstation?")
 	if hasAptGet() {
 		update := exec.Command("sudo", "apt-get", "update")
 		update.Stdout = os.Stdout

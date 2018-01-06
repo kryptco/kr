@@ -51,19 +51,19 @@ const PLIST_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 func copyPlist() (err error) {
 	output, err := exec.Command("which", "krd").Output()
 	if err != nil {
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Could not find krd on PATH, make sure krd is installed"))
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Could not find krd on PATH, make sure krd is installed"))
 		return
 	}
 	krdir, err := kr.KrDir()
 	if err != nil {
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error finding ~/.kr folder: "+err.Error()))
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Error finding ~/.kr folder: "+err.Error()))
 		return
 	}
 	plistContents := fmt.Sprintf(PLIST_TEMPLATE, strings.TrimSpace(string(output)), krdir, krdir)
 	_ = os.MkdirAll(homePlistDir, 0700)
 	err = ioutil.WriteFile(homePlist, []byte(plistContents), 0700)
 	if err != nil {
-		PrintErr(os.Stderr, kr.Red("Kryptonite ▶ Error writing krd plist: "+err.Error()))
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Error writing krd plist: "+err.Error()))
 		return
 	}
 	return
@@ -77,7 +77,7 @@ func runCommandTmuxFriendly(cmd string, args ...string) (output string, err erro
 		outputBytes, err = exec.Command("reattach-to-user-namespace", "-l", "bash", "-c", subcommandArgs).CombinedOutput()
 		if err != nil {
 			if execErr, ok := err.(*exec.Error); ok && execErr.Err == exec.ErrNotFound {
-				PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ Running tmux-friendly command failed. Make sure \"reattach-to-user-namespace\" is installed with \"brew install reattach-to-user-namespace\"\r\n"))
+				PrintFatal(os.Stderr, kr.Red("Krypton ▶ Running tmux-friendly command failed. Make sure \"reattach-to-user-namespace\" is installed with \"brew install reattach-to-user-namespace\"\r\n"))
 			}
 		}
 	} else {
@@ -98,7 +98,7 @@ func startKrd() (err error) {
 	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
 	output, err := runCommandTmuxFriendly("launchctl", "load", homePlist)
 	if len(output) > 0 || err != nil {
-		err = fmt.Errorf(kr.Red("Kryptonite ▶ Error starting krd with launchctl: " + string(output)))
+		err = fmt.Errorf(kr.Red("Krypton ▶ Error starting krd with launchctl: " + string(output)))
 		PrintErr(os.Stderr, err.Error())
 		return
 	}
@@ -143,7 +143,7 @@ func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 	}
 
 	if isUserInitiated {
-		fmt.Println("Restarted Kryptonite daemon.")
+		fmt.Println("Restarted Krypton daemon.")
 	}
 	return
 }
@@ -153,7 +153,7 @@ func openBrowser(url string) {
 }
 
 func cleanSSHConfig() (err error) {
-	configBlock := []byte(getKryptoniteSSHConfigBlock())
+	configBlock := []byte(getKrSSHConfigBlock())
 	sshDirPath := os.Getenv("HOME") + "/.ssh"
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr.uninstall"
@@ -162,6 +162,7 @@ func cleanSSHConfig() (err error) {
 	if err != nil {
 		return
 	}
+	defer sshConfigFile.Close()
 	currentConfigContents, err := ioutil.ReadAll(sshConfigFile)
 	if err != nil {
 		return
@@ -185,7 +186,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "uninstall", nil, nil)
 	}()
-	confirmOrFatal(os.Stderr, "Uninstall Kryptonite from this workstation?")
+	confirmOrFatal(os.Stderr, "Uninstall Krypton from this workstation?")
 	_, _ = runCommandTmuxFriendly("brew", "uninstall", "kr")
 	_, _ = runCommandTmuxFriendly("npm", "uninstall", "-g", "krd")
 	prefix := getPrefix()
@@ -202,7 +203,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	os.Remove(homePlist)
 	cleanSSHConfig()
 	uninstallCodesigning()
-	PrintErr(os.Stderr, "Kryptonite uninstalled.")
+	PrintErr(os.Stderr, "Krypton uninstalled.")
 	return
 }
 
@@ -220,7 +221,7 @@ func upgradeCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "upgrade", nil, nil)
 	}()
-	confirmOrFatal(os.Stderr, "Upgrade Kryptonite on this workstation?")
+	confirmOrFatal(os.Stderr, "Upgrade Krypton on this workstation?")
 	var cmd *exec.Cmd
 	if installedWithBrew() {
 		cmd = exec.Command("brew", "upgrade", "kryptco/tap/kr")

@@ -208,7 +208,7 @@ func (cs *ControlServer) handleEnclaveGeneric(w http.ResponseWriter, enclaveRequ
 	response, err := cs.enclaveClient.RequestGeneric(
 		enclaveRequest,
 		func() {
-			cs.notify(enclaveRequest.NotifyPrefix(), kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
+			cs.notify(enclaveRequest.NotifyPrefix(), kr.Yellow("Krypton ▶ Phone approval required. Respond using the Krypton app"))
 		})
 
 	if err != nil {

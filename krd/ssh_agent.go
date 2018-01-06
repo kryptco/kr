@@ -86,7 +86,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 				Comment: cachedProfile.Email,
 			})
 	} else {
-		a.notify("", kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()))
+		a.notify("", kr.Yellow("Krypton ▶ "+kr.ErrNotPaired.Error()))
 	}
 
 	a.withOriginalAgent(func(fallbackAgent agent.Agent) {
@@ -151,7 +151,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		return
 	}
 
-	a.notify(notifyPrefix, notifyPrefix+kr.Cyan("Kryptonite ▶ Requesting SSH authentication from phone"))
+	a.notify(notifyPrefix, notifyPrefix+kr.Cyan("Krypton ▶ Requesting SSH authentication from phone"))
 
 	signRequest := kr.SignRequest{
 		PublicKeyFingerprint: keyFingerprint[:],
@@ -159,16 +159,16 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		HostAuth:             hostAuth,
 	}
 	signResponse, enclaveVersion, err := a.client.RequestSignature(signRequest, func() {
-		a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Kryptonite ▶ Phone approval required. Respond using the Kryptonite app"))
+		a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Krypton ▶ Phone approval required. Respond using the Krypton app"))
 	})
 	if err != nil {
 		a.log.Error(err.Error())
 		switch err {
 		case ErrNotPaired:
-			a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()))
+			a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Krypton ▶ "+kr.ErrNotPaired.Error()))
 		case ErrTimeout:
-			a.notify(notifyPrefix, notifyPrefix+kr.Red("Kryptonite ▶ "+kr.ErrTimedOut.Error()))
-			a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Kryptonite ▶ Falling back to local keys."))
+			a.notify(notifyPrefix, notifyPrefix+kr.Red("Krypton ▶ "+kr.ErrTimedOut.Error()))
+			a.notify(notifyPrefix, notifyPrefix+kr.Yellow("Krypton ▶ Falling back to local keys."))
 		}
 		return
 	}
@@ -193,7 +193,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 			a.notify(notifyPrefix, notifyPrefix+"HOST_KEY_MISMATCH")
 			<-time.After(1 * time.Second)
 		} else {
-			a.notify(notifyPrefix, notifyPrefix+kr.Red("Kryptonite ▶ "+kr.ErrSigning.Error()))
+			a.notify(notifyPrefix, notifyPrefix+kr.Red("Krypton ▶ "+kr.ErrSigning.Error()))
 		}
 		if notifyPrefix != "" {
 			a.notify(notifyPrefix, notifyPrefix+"STOP")
@@ -208,7 +208,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 		}
 		return
 	}
-	a.notify(notifyPrefix, notifyPrefix+kr.Green("Kryptonite ▶ Success. Request Allowed ✔"))
+	a.notify(notifyPrefix, notifyPrefix+kr.Green("Krypton ▶ Success. Request Allowed ✔"))
 	signature := *signResponse.Signature
 	format := algo
 	//	FIXME: sunset backwards compatibility

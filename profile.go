@@ -47,6 +47,7 @@ func (p Profile) Equal(other Profile) bool {
 }
 
 var KRYPTONITE_ASCII_ARMOR_HEADERS = map[string]string{"Comment": "Created with Kryptonite"}
+var KRYPTON_ASCII_ARMOR_HEADERS = map[string]string{"Comment": "Created with Krypton"}
 
 func (p Profile) AsciiArmorPGPPublicKey() (s string, err error) {
 	if p.PGPPublicKey == nil {
@@ -54,7 +55,7 @@ func (p Profile) AsciiArmorPGPPublicKey() (s string, err error) {
 		return
 	}
 	output := &bytes.Buffer{}
-	input, err := armor.Encode(output, "PGP PUBLIC KEY BLOCK", KRYPTONITE_ASCII_ARMOR_HEADERS)
+	input, err := armor.Encode(output, "PGP PUBLIC KEY BLOCK", KRYPTON_ASCII_ARMOR_HEADERS)
 	if err != nil {
 		return
 	}

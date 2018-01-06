@@ -52,7 +52,7 @@ type kexECDHReplyMsg struct {
 func sendHostAuth(hostAuth kr.HostAuth) {
 	conn, err := kr.HostAuthDial()
 	if err != nil {
-		os.Stderr.WriteString(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\".\r\n"))
+		os.Stderr.WriteString(kr.Red("Krypton ▶ Could not connect to Krypton daemon. Make sure it is running by typing \"kr restart\".\r\n"))
 		return
 	}
 	defer conn.Close()
@@ -111,7 +111,7 @@ func startLogger(prefix string, checkForUpdate bool) (r kr.NotificationReader, e
 
 		go func() {
 			if checkForUpdate && !silenceWarnings && krd.CheckIfUpdateAvailable(logger) {
-				os.Stderr.WriteString(kr.Yellow("Kryptonite ▶ A new version of Kryptonite is available. Run \"kr upgrade\" to install it. You can view the changelog at https://krypt.co/app/krd_changelog/\r\n"))
+				os.Stderr.WriteString(kr.Yellow("Krypton ▶ A new version of Krypton is available. Run \"kr upgrade\" to install it. You can view the changelog at https://krypt.co/app/krd_changelog/\r\n"))
 			}
 		}()
 
@@ -137,12 +137,12 @@ func startLogger(prefix string, checkForUpdate bool) (r kr.NotificationReader, e
 						}
 						if strings.HasPrefix(trimmed, "HOST_KEY_MISMATCH") {
 							os.Stderr.WriteString(kr.Red(
-								fmt.Sprintf("Kryptonite ▶ Public key for %s does not match pinned key. If the host key has actually changed, remove the pinned key in Kryptonite.\r\n", host),
+								fmt.Sprintf("Krypton ▶ Public key for %s does not match pinned key. If the host key has actually changed, remove the pinned key in Krypton.\r\n", host),
 							))
 							os.Exit(1)
 						}
 						if strings.HasPrefix(trimmed, "REJECTED") {
-							os.Stderr.WriteString(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error() + "\r\n"))
+							os.Stderr.WriteString(kr.Red("Krypton ▶ " + kr.ErrRejected.Error() + "\r\n"))
 							os.Exit(1)
 						}
 						os.Stderr.WriteString(trimmed)

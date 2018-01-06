@@ -77,7 +77,7 @@ func notifyIfSignatureExpiredErr(err error, notifier *Notifier) {
 		return
 	}
 	if strings.Contains(err.Error(), "Signature expired") {
-		notifier.Notify([]byte(Red("Kryptonite ▶ Your system time is out of sync! Kryptonite will not work until you have synchronized your system time. Please run ") + Yellow(NTP_UPDATE_CMD) + Red(" and try again.") + "\r\n"))
+		notifier.Notify([]byte(Red("Krypton ▶ Your system time is out of sync! Krypton will not work until you have synchronized your system time. Please run ") + Yellow(NTP_UPDATE_CMD) + Red(" and try again.") + "\r\n"))
 	}
 }
 

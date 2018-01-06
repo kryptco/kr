@@ -154,21 +154,20 @@ func RequestMe() (me kr.Profile, err error) {
 	return
 }
 
-func RequestGitSignatureOver(request kr.Request, conn net.Conn) (gitSignResponse kr.GitSignResponse, err error) {
-	response, err := makeRequestWithJsonResponse(conn, request)
+func RequestGitSignatureOver(request kr.Request, conn net.Conn) (response kr.Response, err error) {
+	response, err = makeRequestWithJsonResponse(conn, request)
 	if err != nil {
 		return
 	}
 
-	if response.GitSignResponse != nil {
-		gitSignResponse = *response.GitSignResponse
+	if response.GitSignResponse == nil {
+		err = fmt.Errorf("Response missing GitSignResponse")
 		return
 	}
-	err = fmt.Errorf("Response missing GitSignResponse")
 	return
 }
 
-func RequestGitSignature(request kr.Request) (response kr.GitSignResponse, err error) {
+func RequestGitSignature(request kr.Request) (response kr.Response, err error) {
 	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
 	if err != nil {
 		err = kr.ErrConnectingToDaemon

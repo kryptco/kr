@@ -13,6 +13,7 @@ import (
 
 //	Previous enclave versions assume SHA1 for all RSA keys regardless of the PubKeyAlgorithm specified in the signature payload
 var ENCLAVE_VERSION_SUPPORTS_RSA_SHA2_256_512 = semver.MustParse("2.1.0")
+var ENCLAVE_VERSION_SUPPORTS_KRYPTON_ASCII_ARMOR_HEADERS = semver.MustParse("2.3.1")
 
 type Request struct {
 	RequestID      string          `json:"request_id"`
@@ -55,26 +56,26 @@ type RequestParameters struct {
 func (r Request) RequestParameters(timeouts Timeouts) RequestParameters {
 	if r.SignRequest != nil {
 		return RequestParameters{
-			AlertText: "Incoming SSH request. Open Kryptonite to continue.",
+			AlertText: "Incoming SSH request. Open Krypton to continue.",
 			Timeout:   timeouts.Sign,
 		}
 	}
 	if r.GitSignRequest != nil {
 		return RequestParameters{
-			AlertText: "Incoming Git request. Open Kryptonite to continue.",
+			AlertText: "Incoming Git request. Open Krypton to continue.",
 			Timeout:   timeouts.Sign,
 		}
 	}
 
 	if r.HostsRequest != nil {
 		return RequestParameters{
-			AlertText: "Incoming host list request. Open Kryptonite to continue.",
+			AlertText: "Incoming host list request. Open Krypton to continue.",
 			Timeout:   timeouts.Sign,
 		}
 	}
 
 	return RequestParameters{
-		AlertText: "Incoming Kryptonite request. ",
+		AlertText: "Incoming Krypton request. ",
 		Timeout:   timeouts.Sign,
 	}
 }
@@ -133,13 +134,18 @@ type HostsResponse struct {
 	Error    *string   `json:"error,omitempty"`
 }
 
-func (gsr GitSignResponse) AsciiArmorSignature() (s string, err error) {
+func (gsr GitSignResponse) AsciiArmorSignature(protocolVersion semver.Version) (s string, err error) {
 	if gsr.Signature == nil {
 		err = fmt.Errorf("no signature")
 		return
 	}
 	output := &bytes.Buffer{}
-	input, err := armor.Encode(output, "PGP SIGNATURE", KRYPTONITE_ASCII_ARMOR_HEADERS)
+	headers := KRYPTON_ASCII_ARMOR_HEADERS
+	//  FIXME: sunset backwards compatibility
+	if protocolVersion.LT(ENCLAVE_VERSION_SUPPORTS_KRYPTON_ASCII_ARMOR_HEADERS) {
+		headers = KRYPTONITE_ASCII_ARMOR_HEADERS
+	}
+	input, err := armor.Encode(output, "PGP SIGNATURE", headers)
 	if err != nil {
 		return
 	}

@@ -49,7 +49,7 @@ func main() {
 	setupTTY()
 	app := cli.NewApp()
 	app.Name = "krgpg"
-	app.Usage = "Sign git commits with your Kryptonite key"
+	app.Usage = "Sign git commits with your Krypton key"
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:  "a",
@@ -143,7 +143,7 @@ func signGit() {
 	}
 	if err != nil {
 		if kr.HasGPG() {
-			stderr.WriteString(kr.Yellow("Kryptonite ▶ Falling back to local gpg keychain") + "\r\n")
+			stderr.WriteString(kr.Yellow("Krypton ▶ Falling back to local gpg keychain") + "\r\n")
 			stderr.WriteString(string(stdinBytes))
 			redirectToGPG(bytes.NewReader(stdinBytes))
 		} else {
@@ -219,12 +219,12 @@ func signGitCommit(tree string, reader *bufio.Reader) (err error) {
 		Commit: &commit,
 		UserId: os.Args[len(os.Args)-1],
 	}
-	stderr.WriteString(kr.Cyan("Kryptonite ▶ Requesting git commit signature from phone") + "\r\n")
+	stderr.WriteString(kr.Cyan("Krypton ▶ Requesting git commit signature from phone") + "\r\n")
 	response, err := requestSignature(request)
 	if err != nil {
 		return
 	}
-	sig, err := response.AsciiArmorSignature()
+	sig, err := response.GitSignResponse.AsciiArmorSignature(response.Version)
 	if err != nil {
 		stderr.WriteString(err.Error())
 		return
@@ -279,12 +279,12 @@ func signGitTag(object string, reader *bufio.Reader) (err error) {
 		Tag:    &tagInfo,
 		UserId: os.Args[len(os.Args)-1],
 	}
-	stderr.WriteString(kr.Cyan("Kryptonite ▶ Requesting git tag signature from phone") + "\r\n")
+	stderr.WriteString(kr.Cyan("Krypton ▶ Requesting git tag signature from phone") + "\r\n")
 	response, err := requestSignature(request)
 	if err != nil {
 		return
 	}
-	sig, err := response.AsciiArmorSignature()
+	sig, err := response.GitSignResponse.AsciiArmorSignature(response.Version)
 	if err != nil {
 		stderr.WriteString(err.Error())
 		return
@@ -297,30 +297,35 @@ func signGitTag(object string, reader *bufio.Reader) (err error) {
 	return
 }
 
-func requestSignature(request kr.Request) (sig kr.GitSignResponse, err error) {
+func requestSignature(request kr.Request) (sig kr.Response, err error) {
 	response, err := krdclient.RequestGitSignature(request)
 	if err != nil {
 		switch err {
 		case kr.ErrNotPaired:
-			stderr.WriteString(kr.Yellow("Kryptonite ▶ "+kr.ErrNotPaired.Error()) + "\r\n")
+			stderr.WriteString(kr.Yellow("Krypton ▶ "+kr.ErrNotPaired.Error()) + "\r\n")
 			return
 		case kr.ErrConnectingToDaemon:
-			stderr.WriteString(kr.Red("Kryptonite ▶ Could not connect to Kryptonite daemon. Make sure it is running by typing \"kr restart\"\r\n"))
+			stderr.WriteString(kr.Red("Krypton ▶ Could not connect to Krypton daemon. Make sure it is running by typing \"kr restart\"\r\n"))
 			return
 		default:
-			stderr.WriteString(kr.Red("Kryptonite ▶ Unknown error: " + err.Error() + "\r\n"))
+			stderr.WriteString(kr.Red("Krypton ▶ Unknown error: " + err.Error() + "\r\n"))
 			return
 		}
 	}
-	if response.Error != nil {
-		switch *response.Error {
+	if response.GitSignResponse == nil {
+		err = fmt.Errorf("no GitSignResponse")
+		return
+	}
+	gitSignResponse := response.GitSignResponse
+	if gitSignResponse.Error != nil {
+		switch *gitSignResponse.Error {
 		case "rejected":
-			stderr.WriteString(kr.Red("Kryptonite ▶ " + kr.ErrRejected.Error() + "\r\n"))
-			err = fmt.Errorf("%s", *response.Error)
+			stderr.WriteString(kr.Red("Krypton ▶ " + kr.ErrRejected.Error() + "\r\n"))
+			err = fmt.Errorf("%s", *gitSignResponse.Error)
 			return
 		}
 	}
-	stderr.WriteString(kr.Green("Kryptonite ▶ Success. Request Allowed ✔") + "\r\n")
+	stderr.WriteString(kr.Green("Krypton ▶ Success. Request Allowed ✔") + "\r\n")
 	return response, nil
 }
 

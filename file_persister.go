@@ -63,7 +63,7 @@ func (fp FilePersister) SaveMySSHPubKey(me Profile) (err error) {
 	if err != nil {
 		return
 	}
-	err = ioutil.WriteFile(filepath.Join(fp.SSHDir, ID_KRYPTONITE_FILENAME), []byte(authString), 0700)
+	err = ioutil.WriteFile(filepath.Join(fp.SSHDir, ID_KRYPTON_FILENAME), []byte(authString), 0700)
 	return
 }
 

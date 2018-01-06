@@ -56,7 +56,7 @@ func codesignCommand(c *cli.Context) (err error) {
 
 	pk, err := me.AsciiArmorPGPPublicKey()
 	if err != nil {
-		PrintFatal(stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Kryptonite app and try again.")
+		PrintFatal(stderr, "You do not yet have a PGP public key. Make sure you have the latest version of the Krypton app and try again.")
 	}
 
 	whichKrGPG, err := exec.Command("which", "krgpg").Output()
@@ -117,13 +117,13 @@ func codesignTestCommand(c *cli.Context) (err error) {
 	os.Setenv("GIT_WORK_DIR", dir+"/repo")
 	runCommandWithOutputOrFatal(exec.Command("git", "init", dir+"/repo"))
 	runCommandWithOutputOrFatal(exec.Command("git", "commit", "-S", "--allow-empty", "-m", "Testing your first signed commit"))
-	PrintErr(os.Stderr, kr.Green("Kryptonite ▶ Codesigning successful ✔"))
+	PrintErr(os.Stderr, kr.Green("Krypton ▶ Codesigning successful ✔"))
 	return
 }
 
 func codesignUninstallCommand(c *cli.Context) (err error) {
 	uninstallCodesigning()
-	os.Stderr.WriteString("Kryptonite codesigning uninstalled... run " + kr.Cyan("kr codesign") + " to reinstall.\r\n")
+	os.Stderr.WriteString("Krypton codesigning uninstalled... run " + kr.Cyan("kr codesign") + " to reinstall.\r\n")
 	return
 }
 
@@ -134,7 +134,7 @@ func onboardGithub(pk string) {
 	if in[0] == 'y' {
 		copyPGPKey()
 		<-time.After(1000 * time.Millisecond)
-		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to open your browser to GitHub settings. Then click " + kr.Cyan("New GPG key") + " and paste your Kryptonite PGP public key.\r\n")
+		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to open your browser to GitHub settings. Then click " + kr.Cyan("New GPG key") + " and paste your Krypton PGP public key.\r\n")
 		os.Stdin.Read([]byte{0})
 		openBrowser("https://github.com/settings/keys")
 	}
@@ -217,7 +217,7 @@ func addGPG_TTYExportToCurrentShellIfNotPresent() (path, cmd string) {
 	}
 	//	seek to end
 	rcFile.Seek(0, 2)
-	rcFile.WriteString("\n# Added by Kryptonite\n" + cmd + "\n")
+	rcFile.WriteString("\n# Added by Krypton\n" + cmd + "\n")
 	rcFile.Close()
 	return
 }
@@ -226,7 +226,7 @@ func onboardGPG_TTY(interactive bool) {
 	cmd := "export GPG_TTY=$(tty); "
 	if os.Getenv("GPG_TTY") == "" {
 		if interactive {
-			os.Stderr.WriteString("\r\n" + kr.Red("WARNING:") + " In order to see Kryptonite log messages when requesting a git signature, add " + kr.Yellow("export GPG_TTY=$(tty)") + " to your shell startup (~/.bash_profile, ~/.zshrc, etc.) and restart your terminal.\r\n")
+			os.Stderr.WriteString("\r\n" + kr.Red("WARNING:") + " In order to see Krypton log messages when requesting a git signature, add " + kr.Yellow("export GPG_TTY=$(tty)") + " to your shell startup (~/.bash_profile, ~/.zshrc, etc.) and restart your terminal.\r\n")
 			os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to continue")
 			os.Stdin.Read([]byte{0})
 			os.Stderr.WriteString("\r\n")
@@ -318,7 +318,7 @@ func checkGitLocation() {
 	}
 	gitLocationStr := strings.TrimSpace(string(gitLocation))
 
-	PrintErr(os.Stderr, "git must be linked to /usr/bin or /usr/local/bin to work with Kryptonite (current location "+gitLocationStr+")")
+	PrintErr(os.Stderr, "git must be linked to /usr/bin or /usr/local/bin to work with Krypton (current location "+gitLocationStr+")")
 	if confirm(os.Stderr, "Link git to /usr/local/bin?") {
 
 		linkGitCmd := exec.Command("ln", "-s", gitLocationStr, "/usr/local/bin/git")

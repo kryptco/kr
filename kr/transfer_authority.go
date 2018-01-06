@@ -53,7 +53,7 @@ func getFilePersister() (files kr.FilePersister, err error) {
 }
 
 func doRequestHostInfo() (hostInfo kr.HostInfo, err error) {
-	os.Stderr.WriteString(kr.Cyan("Kryptonite ▶ Requesting logs from phone") + "\r\n")
+	os.Stderr.WriteString(kr.Cyan("Krypton ▶ Requesting logs from phone") + "\r\n")
 
 	response, err := krdclient.RequestHosts()
 	if err != nil {
@@ -70,13 +70,13 @@ func doRequestHostInfo() (hostInfo kr.HostInfo, err error) {
 		return
 	}
 
-	os.Stderr.WriteString(kr.Green("Kryptonite ▶ Obtained host list successfully ✔") + "\r\n")
+	os.Stderr.WriteString(kr.Green("Krypton ▶ Obtained host list successfully ✔") + "\r\n")
 	hostInfo = *response.HostInfo
 
 	return
 }
 
-func doManualRePairWithNewKryptonite(c *cli.Context, newProfile kr.Profile) (err error) {
+func doManualRePairWithNewKrypton(c *cli.Context, newProfile kr.Profile) (err error) {
 	files, err := getFilePersister()
 	if err != nil {
 		return
@@ -126,7 +126,7 @@ func doManualRePairWithNewKryptonite(c *cli.Context, newProfile kr.Profile) (err
 	return
 }
 
-func doManualRePairWithOldKryptonite(c *cli.Context, oldProfile kr.Profile) (err error) {
+func doManualRePairWithOldKrypton(c *cli.Context, oldProfile kr.Profile) (err error) {
 	files, err := getFilePersister()
 	if err != nil {
 		return
@@ -187,8 +187,8 @@ func doManualRePairWithOldKryptonite(c *cli.Context, oldProfile kr.Profile) (err
 	return
 }
 
-/// pair with the new Kryptonite device
-func doPairNewKryptoniteDevice(c *cli.Context) (newProfile kr.Profile, err error) {
+/// pair with the new Krypton device
+func doPairNewKryptonDevice(c *cli.Context) (newProfile kr.Profile, err error) {
 	pairingFilePath, err := kr.KrDirFile(kr.PAIRING_FILENAME)
 	if err != nil {
 		return
@@ -220,8 +220,8 @@ func doPairNewKryptoniteDevice(c *cli.Context) (newProfile kr.Profile, err error
 	///TODO: fix workaround sleep
 	<-time.After(time.Second)
 
-	// 2. pair with the new kryptonite device to get it's public key
-	os.Stderr.WriteString(kr.Magenta("\nNext, pair with your ") + kr.Green("NEW") + kr.Magenta(" Kryptonite device. ") + "\r\n")
+	// 2. pair with the new Krypton device to get it's public key
+	os.Stderr.WriteString(kr.Magenta("\nNext, pair with your ") + kr.Green("NEW") + kr.Magenta(" Krypton device. ") + "\r\n")
 
 	err = pairCommandForce()
 	if err != nil {
@@ -236,8 +236,8 @@ func doPairNewKryptoniteDevice(c *cli.Context) (newProfile kr.Profile, err error
 	return
 }
 
-/// Pair krd with the old Kryptonite device
-func doPairOldKryptoniteDevice(c *cli.Context) (oldProfile kr.Profile, err error) {
+/// Pair krd with the old Krypton device
+func doPairOldKryptonDevice(c *cli.Context) (oldProfile kr.Profile, err error) {
 	/// pair with **old** device first
 	err = pairCommandForce()
 	if err != nil {
@@ -310,7 +310,7 @@ func transferAuthorizePublicKey(userAndHost kr.UserAndHost, authorizedPublicKeyS
 		args = append(args, "-p "+port)
 	}
 	//	disable host key checking in case this workstation does not have the target host in its known_hosts
-	//	note that Kryptonite still validates the host key when granting access
+	//	note that Krypton still validates the host key when granting access
 	args = append(args, "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null\"")
 
 	// inspired by ssh-copy-id
@@ -341,26 +341,26 @@ func transferAuthorityMain(c *cli.Context) (err error) {
 
 	isDryRun := c.Bool("d")
 
-	os.Stderr.WriteString(kr.Magenta("Preparing to transfer authority to a new Kryptonite public key. ") + "\r\n")
+	os.Stderr.WriteString(kr.Magenta("Preparing to transfer authority to a new Krypton public key. ") + "\r\n")
 	if isDryRun {
 		os.Stderr.WriteString(kr.Yellow("WARNING: this is only a dry run.") + "\r\n\n")
 	}
 
-	os.Stderr.WriteString("\n" + kr.Magenta("First, pair with your ") + kr.Yellow("old") + kr.Magenta(" Kryptonite device.") + "\r\n")
+	os.Stderr.WriteString("\n" + kr.Magenta("First, pair with your ") + kr.Yellow("old") + kr.Magenta(" Krypton device.") + "\r\n")
 
 	<-time.After(2 * time.Second)
 
-	/// pair with old kryptonite
-	oldProfile, err := doPairOldKryptoniteDevice(c)
+	/// pair with old Krypton
+	oldProfile, err := doPairOldKryptonDevice(c)
 	if err != nil {
 		return
 	}
-	os.Stderr.WriteString(kr.Green("Success, paired with OLD Kryptonite device ✔") + "\r\n")
+	os.Stderr.WriteString(kr.Green("Success, paired with OLD Krypton device ✔") + "\r\n")
 
 	// pause
 	<-time.After(time.Second)
 
-	os.Stderr.WriteString("\n" + "Next, kr will request user@hostname access logs from Kryptonite to get a list of hosts that you will need to authorize for your new Kryptonite public-key." + "\r\n")
+	os.Stderr.WriteString("\n" + "Next, kr will request user@hostname access logs from Krypton to get a list of hosts that you will need to authorize for your new Krypton public-key." + "\r\n")
 
 	// pause
 	<-time.After(time.Second)
@@ -385,12 +385,12 @@ func transferAuthorityMain(c *cli.Context) (err error) {
 		return
 	}
 
-	/// pair with new Kryptonite to get new session and new public key
-	newProfile, err := doPairNewKryptoniteDevice(c)
+	/// pair with new Krypton to get new session and new public key
+	newProfile, err := doPairNewKryptonDevice(c)
 	if err != nil {
 		return
 	}
-	os.Stderr.WriteString("\n" + kr.Green("Success, paired with NEW Kryptonite device ✔") + "\r\n")
+	os.Stderr.WriteString("\n" + kr.Green("Success, paired with NEW Krypton device ✔") + "\r\n")
 
 	newAuthorizedPublicKey, err := newProfile.AuthorizedKeyString()
 	if err != nil {
@@ -398,7 +398,7 @@ func transferAuthorityMain(c *cli.Context) (err error) {
 	}
 
 	/// manually re-pair with old session
-	err = doManualRePairWithOldKryptonite(c, oldProfile)
+	err = doManualRePairWithOldKrypton(c, oldProfile)
 	if err != nil {
 		return
 	}
@@ -429,7 +429,7 @@ func transferAuthorityMain(c *cli.Context) (err error) {
 	handleFailures(failedHosts)
 
 	/// manually re-pair with new session
-	err = doManualRePairWithNewKryptonite(c, newProfile)
+	err = doManualRePairWithNewKrypton(c, newProfile)
 	if err != nil {
 		return
 	}
@@ -437,7 +437,7 @@ func transferAuthorityMain(c *cli.Context) (err error) {
 	// perform special cases (i.e. GitHub, etc)
 	handleSpecialCases(c, specialCases, pgpUserIDs)
 
-	os.Stderr.WriteString(kr.Green("\nDone. Your new Kryptonite public-key is authorized and ready to use ✔") + "\r\n\n")
+	os.Stderr.WriteString(kr.Green("\nDone. Your new Krypton public-key is authorized and ready to use ✔") + "\r\n\n")
 
 	return
 }
