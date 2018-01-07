@@ -88,8 +88,9 @@ func uninstallCommand(c *cli.Context) (err error) {
 		runCommandWithUserInteraction("sudo", "yaourt", "-R", "kr")
 	}
 
+	cleanSSHConfig()
 	uninstallCodesigning()
-	PrintErr(os.Stderr, "Krypton uninstalled.")
+	PrintErr(os.Stderr, "Krypton uninstalled. If you experience any issues, please refer to https://krypt.co/docs/start/installation.html#uninstalling-kr")
 	return
 }
 

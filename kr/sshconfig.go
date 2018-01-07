@@ -104,3 +104,33 @@ func editSSHConfig(prompt bool, forceAppend bool) (err error) {
 	}
 	return
 }
+
+func cleanSSHConfig() (err error) {
+	configBlock := []byte(getKrSSHConfigBlock())
+	sshDirPath := os.Getenv("HOME") + "/.ssh"
+	sshConfigPath := sshDirPath + "/config"
+	sshConfigBackupPath := sshConfigPath + ".bak.kr.uninstall"
+
+	sshConfigFile, err := os.Open(sshConfigPath)
+	if err != nil {
+		return
+	}
+	defer sshConfigFile.Close()
+	currentConfigContents, err := ioutil.ReadAll(sshConfigFile)
+	if err != nil {
+		return
+	}
+	if len(currentConfigContents) > 0 {
+		err = ioutil.WriteFile(sshConfigBackupPath, currentConfigContents, 0700)
+		if err != nil {
+			return
+		}
+	}
+
+	newConfigContents := bytes.Replace(currentConfigContents, configBlock, []byte{}, -1)
+	err = ioutil.WriteFile(sshConfigPath, newConfigContents, 0700)
+	if err != nil {
+		return
+	}
+	return
+}

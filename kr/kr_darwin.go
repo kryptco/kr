@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -152,36 +151,6 @@ func openBrowser(url string) {
 	exec.Command("open", url).Run()
 }
 
-func cleanSSHConfig() (err error) {
-	configBlock := []byte(getKrSSHConfigBlock())
-	sshDirPath := os.Getenv("HOME") + "/.ssh"
-	sshConfigPath := sshDirPath + "/config"
-	sshConfigBackupPath := sshConfigPath + ".bak.kr.uninstall"
-
-	sshConfigFile, err := os.Open(sshConfigPath)
-	if err != nil {
-		return
-	}
-	defer sshConfigFile.Close()
-	currentConfigContents, err := ioutil.ReadAll(sshConfigFile)
-	if err != nil {
-		return
-	}
-	if len(currentConfigContents) > 0 {
-		err = ioutil.WriteFile(sshConfigBackupPath, currentConfigContents, 0700)
-		if err != nil {
-			return
-		}
-	}
-
-	newConfigContents := bytes.Replace(currentConfigContents, configBlock, []byte{}, -1)
-	err = ioutil.WriteFile(sshConfigPath, newConfigContents, 0700)
-	if err != nil {
-		return
-	}
-	return
-}
-
 func uninstallCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "uninstall", nil, nil)
@@ -203,7 +172,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	os.Remove(homePlist)
 	cleanSSHConfig()
 	uninstallCodesigning()
-	PrintErr(os.Stderr, "Krypton uninstalled.")
+	PrintErr(os.Stderr, "Krypton uninstalled. If you experience any issues, please refer to https://krypt.co/docs/start/installation.html#uninstalling-kr")
 	return
 }
 
