@@ -236,6 +236,7 @@ func (ec *EnclaveClient) Start() (err error) {
 
 	if loadedMe, loadMeErr := ec.Persister.LoadMe(); loadMeErr == nil {
 		ec.cachedMe = &loadedMe
+		ec.Persister.SaveMySSHPubKey(*ec.cachedMe)
 	} else {
 		ec.log.Notice("me not loaded:", loadErr)
 	}
