@@ -1,10 +1,10 @@
 [![Build Status](https://travis-ci.org/kryptco/kr.svg?branch=master)](https://travis-ci.org/kryptco/kr)
 
 # kr
-__kr__ enables SSH to authenticate with a key stored in a __Kryptonite__
-([iOS](https://github.com/kryptco/kryptonite-ios) or
-[Android](https://github.com/kryptco/kryptonite-android)) mobile app. __kr__
-runs as an SSH agent, called __krd__. When a __Kryptonite__ private key
+__kr__ enables SSH to authenticate with a key stored in a __Krypton__
+([iOS](https://github.com/kryptco/krypton-ios) or
+[Android](https://github.com/kryptco/krypton-android)) mobile app. __kr__
+runs as an SSH agent, called __krd__. When a __Krypton__ private key
 operation is needed for authentication, __krd__ routes this request to the
 paired mobile phone, where the user decides whether to allow the operation or
 not. _The private key never leaves the phone._
@@ -35,7 +35,7 @@ kr pair
 Check out `CONTRIBUTING.md`
 
 # Security Disclosure Policy
-__Kryptonite__ follows a 7-day disclosure policy. If you find a security flaw,
+__Krypton__ follows a 7-day disclosure policy. If you find a security flaw,
 please send it to `disclose@krypt.co` encrypted to the PGP key with fingerprint
 `B873685251A928262210E094A70D71BE0646732C` (full key below). We ask that you
 delay publication of the flaw until we have published a fix, or seven days have
@@ -97,5 +97,5 @@ C6kMeRvyJtlm/+OvMe2MUvyKnQpbXo6Zj2HXBiuegvgKUTydpwx10/g+odIR
 ```
 
 # LICENSE
-We are currently working on a new license for Kryptonite. For now, the code
+We are currently working on a new license for Krypton. For now, the code
 is released under All Rights Reserved.
