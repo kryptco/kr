@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -186,9 +187,10 @@ func shellRCFileAndGPG_TTYExport() (file string, export string) {
 	fishConfig := filepath.Join(home, ".config", "fish", "config.fish")
 	if strings.Contains(shell, "zsh") {
 		return zshrc, "export GPG_TTY=$(tty)"
-	} else if strings.Contains(shell, "bash") && exists(bashProfile) {
+		// On MacOS, most terminal sessions are login shells, so use bash_profile
+	} else if strings.Contains(shell, "bash") && strings.Contains(runtime.GOOS, "darwin") && exists(bashProfile) {
 		return bashProfile, "export GPG_TTY=$(tty)"
-	} else if strings.Contains(shell, "bash") && exists(bashLogin) {
+	} else if strings.Contains(shell, "bash") && strings.Contains(runtime.GOOS, "darwin") && exists(bashLogin) {
 		return bashLogin, "export GPG_TTY=$(tty)"
 	} else if strings.Contains(shell, "bash") && exists(bashRc) {
 		return bashRc, "export GPG_TTY=$(tty)"
