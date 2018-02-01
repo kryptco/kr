@@ -14,8 +14,9 @@ type TeamOperationRequest struct {
 }
 
 type TeamOperationResponse struct {
-	PostedBlockHash []byte                     `json:"posted_block_hash"`
+	PostedBlockHash *[]byte                    `json:"posted_block_hash"`
 	Data            *TeamOperationResponseData `json:"data,omitempty"`
+	Error           *string                    `json:"error,omitempty"`
 }
 
 type TeamOperationResponseData struct {
