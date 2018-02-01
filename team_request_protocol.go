@@ -1,5 +1,7 @@
 package kr
 
+import "encoding/json"
+
 type CreateTeamRequest struct {
 	TeamInfo TeamInfo `json:"team_info"`
 }
@@ -43,7 +45,9 @@ type TimeToken struct {
 }
 
 type RequestableTeamOperation struct {
-	Invite       *struct{} `json:"invite,omitempty"`
+	DirectInvite   *json.RawMessage `json:"direct_invite,omitempty"`
+	IndirectInvite *json.RawMessage `json:"indirect_invite,omitempty"`
+
 	CancelInvite *struct{} `json:"cancel_invite,omitempty"`
 
 	RemoveMember *[]byte `json:"remove_member,omitempty"`
