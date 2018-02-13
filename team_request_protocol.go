@@ -48,9 +48,9 @@ type RequestableTeamOperation struct {
 	DirectInvite   *json.RawMessage `json:"direct_invite,omitempty"`
 	IndirectInvite *json.RawMessage `json:"indirect_invite,omitempty"`
 
-	CancelInvite *struct{} `json:"cancel_invite,omitempty"`
+	CloseInvitations *json.RawMessage `json:"close_invitations,omitempty"`
 
-	RemoveMember *[]byte `json:"remove_member,omitempty"`
+	Remove *json.RawMessage `json:"remove,omitempty"`
 
 	SetPolicy   *Policy   `json:"set_policy,omitempty"`
 	SetTeamInfo *TeamInfo `json:"set_team_info,omitempty"`
@@ -61,8 +61,8 @@ type RequestableTeamOperation struct {
 	AddLoggingEndpoint    *LoggingEndpoint `json:"add_logging_endpoint,omitempty"`
 	RemoveLoggingEndpoint *LoggingEndpoint `json:"remove_logging_endpoint,omitempty"`
 
-	AddAdmin    *[]byte `json:"add_admin,omitempty"`
-	RemoveAdmin *[]byte `json:"remove_admin,omitempty"`
+	Promote *json.RawMessage `json:"promote,omitempty"`
+	Demote  *json.RawMessage `json:"demote,omitempty"`
 }
 
 type LogDecryptionResponse struct {
