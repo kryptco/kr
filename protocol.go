@@ -29,7 +29,7 @@ type Request struct {
 	CreateTeamRequest    *CreateTeamRequest    `json:"create_team_request,omitempty"`
 	ReadTeamRequest      *ReadTeamRequest      `json:"read_team_request,omitempty"`
 	TeamOperationRequest *TeamOperationRequest `json:"team_operation_request,omitempty"`
-	LogDecryptionRequest *LogDecryptionRequest `json:"log_decryption_request,omitempty"`
+	LogDecryptionRequest *json.RawMessage      `json:"log_decryption_request,omitempty"`
 }
 
 func NewRequest() (request Request, err error) {

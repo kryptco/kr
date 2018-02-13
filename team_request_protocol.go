@@ -61,10 +61,6 @@ type RequestableTeamOperation struct {
 	RemoveAdmin *[]byte `json:"remove_admin,omitempty"`
 }
 
-type LogDecryptionRequest struct {
-	WrappedKey WrappedKey `json:"wrapped_key"`
-}
-
 type LogDecryptionResponse struct {
 	LogDecryptionKey []byte `json:"log_decryption_key"`
 }
@@ -75,11 +71,6 @@ type Policy struct {
 
 type TeamInfo struct {
 	Name string `json:"name,omitempty"`
-}
-
-type WrappedKey struct {
-	PublicKey  []byte `json:"public_key"`
-	Ciphertext []byte `json:"ciphertext"`
 }
 
 type SSHHostKey struct {
