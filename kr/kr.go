@@ -798,19 +798,8 @@ func main() {
 		},
 		cli.Command{
 			Name:  "team",
-			Usage: "View or manage your Kryptonite Command team.",
+			Usage: "Krypton Teams settings",
 			Subcommands: []cli.Command{
-				cli.Command{
-					Name:   "create",
-					Usage:  "Create a team.",
-					Action: createTeamCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "name,n",
-							Usage: "team name",
-						},
-					},
-				},
 				cli.Command{
 					Name:   "set-name",
 					Usage:  "Change the name of your team.",
@@ -824,13 +813,23 @@ func main() {
 				},
 				cli.Command{
 					Name:   "invite",
-					Usage:  "Create a secret invitatation URL to share with your team.",
+					Usage:  "Create a secret invite link (with email restrictions) to share with your team. ",
 					Action: createInviteCommand,
+					Flags: []cli.Flag{
+						cli.StringSliceFlag{
+							Name:  "emails,e",
+							Usage: "Restrict to individual email addresses",
+						},
+						cli.StringFlag{
+							Name:  "domain,d",
+							Usage: "Restrict to an email domain wildcard",
+						},
+					},
 				},
 				cli.Command{
-					Name:   "cancel-invite",
-					Usage:  "Cancel any open team invitations.",
-					Action: cancelInviteCommand,
+					Name:   "close-invitations",
+					Usage:  "Close all outstanding invitation links.",
+					Action: closeInvitationsCommand,
 				},
 				cli.Command{
 					Name:   "members",
@@ -856,30 +855,30 @@ func main() {
 					Usage: "List or manage your team's admins.",
 					Subcommands: []cli.Command{
 						cli.Command{
-							Name:   "add",
-							Usage:  "Grant a team member admin privileges.",
+							Name:   "promote",
+							Usage:  "Promote a team member to 'Admin'.",
 							Action: addAdminCommand,
 							Flags: []cli.Flag{
 								cli.StringFlag{
 									Name:  "email",
-									Usage: "Team member's email.",
+									Usage: "Member's email.",
 								},
 							},
 						},
 						cli.Command{
-							Name:   "remove",
-							Usage:  "Revoke a team member's admin privileges.",
+							Name:   "Demote",
+							Usage:  "Demote an admin to 'Member'.",
 							Action: removeAdminCommand,
 							Flags: []cli.Flag{
 								cli.StringFlag{
 									Name:  "email",
-									Usage: "Team member's email.",
+									Usage: "Admin's email.",
 								},
 							},
 						},
 						cli.Command{
 							Name:   "list",
-							Usage:  "List your team's admins.",
+							Usage:  "List the team admins.",
 							Action: getAdminsCommand,
 						},
 					},
@@ -890,12 +889,12 @@ func main() {
 					Subcommands: []cli.Command{
 						cli.Command{
 							Name:   "set",
-							Usage:  "Set your team's policy.",
+							Usage:  "Set your team's auto-approval policy.",
 							Action: setPolicyCommand,
 							Flags: []cli.Flag{
 								cli.StringFlag{
 									Name:  "window,w",
-									Usage: "temporary approval window in seconds, or \"\" to not override Kryptonite's default",
+									Usage: "temporary approval window in seconds, or \"\" to not override Krypton's default",
 								},
 							},
 						},
@@ -967,6 +966,11 @@ func main() {
 							Action: logsCommand,
 						},
 					},
+				},
+				cli.Command{
+					Name:   "billing",
+					Usage:  "Manage Krypton Teams billing.",
+					Action: teamBillingCommand,
 				},
 			},
 		},

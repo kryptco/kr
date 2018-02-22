@@ -7,14 +7,27 @@ package kr
 #include <stdlib.h>
 #include "krcommand/target/include/krcommand.h"
 */
-import "C"
+import (
+	"C"
+)
+import "strings"
 
 func AdminSeedAndTeamCheckpointExists() bool {
 	return bool(C.team_public_key_and_checkpoint_exists())
 }
 
-func CreateInvite() {
-	C.create_invite()
+func InviteEmails(emails []string) {
+	emailsStringSlice := []byte(strings.Join(emails, ","))
+	bytes := C.CBytes(emailsStringSlice)
+	C.create_indirect_emails_invite((*C.uint8_t)(bytes), C.uintptr_t(len(emailsStringSlice)))
+	C.free(bytes)
+}
+
+func InviteDomain(domain string) {
+	domainSlice := []byte(domain)
+	bytes := C.CBytes(domainSlice)
+	C.create_indirect_domain_invite((*C.uint8_t)(bytes), C.uintptr_t(len(domainSlice)))
+	C.free(bytes)
 }
 
 func CancelInvite() {

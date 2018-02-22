@@ -8,22 +8,10 @@ import (
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
 	"github.com/urfave/cli"
+
+	"net/mail"
 )
 
-func createTeamCommand(c *cli.Context) (err error) {
-	_, err = krdclient.RequestMe()
-	if err != nil {
-		PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+err.Error()))
-		return
-	}
-
-	name := c.String("name")
-	if name == "" {
-		PrintFatal(os.Stderr, "--name flag required")
-	}
-	kr.CreateTeam(name)
-	return
-}
 func setTeamNameCommand(c *cli.Context) (err error) {
 	_, err = krdclient.RequestMe()
 	if err != nil {
@@ -40,11 +28,46 @@ func setTeamNameCommand(c *cli.Context) (err error) {
 }
 
 func createInviteCommand(c *cli.Context) (err error) {
-	kr.CreateInvite()
+
+	emails := c.StringSlice("emails")
+	domain := c.String("domain")
+	if domain != "" {
+
+		domain := c.String("domain")
+		if domain == "" {
+			PrintFatal(os.Stderr, "Supply a valid email domain")
+			return
+		}
+		_, err := mail.ParseAddress("x@" + domain)
+		if err != nil {
+			PrintFatal(os.Stderr, "Email domain "+domain+" is invalid.")
+			return err
+		}
+
+		kr.InviteDomain(domain)
+
+	} else if len(emails) > 0 {
+		var verifed_addresses []string
+
+		for _, email := range emails {
+			address, err := mail.ParseAddress(email)
+			if err != nil {
+				PrintFatal(os.Stderr, "Email "+email+" is invalid.")
+				return err
+			}
+			verifed_addresses = append(verifed_addresses, address.Address)
+		}
+
+		kr.InviteEmails(verifed_addresses)
+
+	} else {
+		PrintFatal(os.Stderr, "--emails or --domain are required")
+	}
+
 	return
 }
 
-func cancelInviteCommand(c *cli.Context) (err error) {
+func closeInvitationsCommand(c *cli.Context) (err error) {
 	kr.CancelInvite()
 	return
 }
@@ -133,6 +156,11 @@ func enableLoggingCommand(c *cli.Context) (err error) {
 }
 
 func logsCommand(c *cli.Context) (err error) {
+	kr.UpdateTeamLogs()
+	return
+}
+
+func teamBillingCommand(c *cli.Context) (err error) {
 	kr.UpdateTeamLogs()
 	return
 }
