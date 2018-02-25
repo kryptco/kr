@@ -2,10 +2,10 @@ package kr
 
 /*
 #cgo darwin LDFLAGS: -lsodium -lsqlite3 -framework Security -framework Security -framework CoreFoundation -lSystem -lresolv -lc -lm
-#cgo LDFLAGS: -L ${SRCDIR}/krcommand/target/debug -lkrcommand
+#cgo LDFLAGS: -L ${SRCDIR}/sigchain/target/debug -lsigchain_client
 
 #include <stdlib.h>
-#include "krcommand/target/include/krcommand.h"
+#include "sigchain/target/include/sigchain_client.h"
 */
 import (
 	"C"
