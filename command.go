@@ -140,3 +140,7 @@ func EnableLogging() {
 func UpdateTeamLogs() {
 	C.update_team_logs()
 }
+
+func OpenBilling() {
+	C.open_billing()
+}

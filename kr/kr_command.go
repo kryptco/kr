@@ -161,6 +161,6 @@ func logsCommand(c *cli.Context) (err error) {
 }
 
 func teamBillingCommand(c *cli.Context) (err error) {
-	kr.UpdateTeamLogs()
+	kr.OpenBilling()
 	return
 }
