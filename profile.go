@@ -43,6 +43,10 @@ func (p Profile) PublicKeyFingerprint() []byte {
 	return digest[:]
 }
 
+func (p Profile) IsOnTeam() bool {
+	return p.TeamCheckpoint != nil
+}
+
 func (p Profile) Equal(other Profile) bool {
 	return bytes.Equal(p.SSHWirePublicKey, other.SSHWirePublicKey) && p.Email == other.Email
 }

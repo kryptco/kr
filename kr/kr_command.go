@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"os"
 	"strconv"
 
@@ -12,7 +13,21 @@ import (
 	"net/mail"
 )
 
+func exitIfNotOnTeam() {
+	me, err := krdclient.RequestMe()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
+
+	if !me.IsOnTeam() {
+		fmt.Println(kr.Red("This is a Krypton for Teams feature, but you're not on a team yet."))
+		PrintFatal(os.Stderr, kr.Yellow("To get started with Krypton for Teams, go to https://www.krypt.co/docs/teams/getting-started.html"))
+	}
+}
+
 func setTeamNameCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	_, err = krdclient.RequestMe()
 	if err != nil {
 		PrintFatal(os.Stderr, kr.Red("Kryptonite ▶ "+err.Error()))
@@ -28,6 +43,7 @@ func setTeamNameCommand(c *cli.Context) (err error) {
 }
 
 func createInviteCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
 
 	emails := c.StringSlice("emails")
 	domain := c.String("domain")
@@ -68,17 +84,23 @@ func createInviteCommand(c *cli.Context) (err error) {
 }
 
 func closeInvitationsCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	kr.CancelInvite()
 	return
 }
 
 func viewLogs(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	query := c.String("q")
 	kr.ViewLogs(query)
 	return
 }
 
 func setPolicyCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	var window *int64
 	if c.String("window") != "" {
 		windowInt, err := strconv.ParseInt(c.String("window"), 10, 64)
@@ -92,6 +114,8 @@ func setPolicyCommand(c *cli.Context) (err error) {
 }
 
 func getMembersCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	var query *string
 	if c.String("query") != "" {
 		queryStr := c.String("query")
@@ -102,6 +126,8 @@ func getMembersCommand(c *cli.Context) (err error) {
 }
 
 func addAdminCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	email := c.String("email")
 	if email == "" {
 		PrintFatal(os.Stderr, "--email required")
@@ -111,6 +137,8 @@ func addAdminCommand(c *cli.Context) (err error) {
 }
 
 func removeAdminCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	email := c.String("email")
 	if email == "" {
 		PrintFatal(os.Stderr, "--email required")
@@ -120,11 +148,15 @@ func removeAdminCommand(c *cli.Context) (err error) {
 }
 
 func getAdminsCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	kr.GetAdmins()
 	return
 }
 
 func pinHostKeyCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	if c.String("public-key") == "" {
 		kr.PinKnownHostKeys(c.String("host"), c.Bool("update-from-server"))
 		return
@@ -138,6 +170,8 @@ func pinHostKeyCommand(c *cli.Context) (err error) {
 }
 
 func unpinHostKeyCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	pk, err := base64.StdEncoding.DecodeString(c.String("public-key"))
 	if err != nil {
 		PrintFatal(os.Stderr, "error decoding public-key, make sure it is base64 encoded without the key type prefix (i.e. no 'ssh-rsa' or 'ssh-ed25519') "+err.Error())
@@ -147,6 +181,8 @@ func unpinHostKeyCommand(c *cli.Context) (err error) {
 }
 
 func listPinnedKeysCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	host := c.String("host")
 	if host == "" {
 		kr.GetAllPinnedHostKeys()
@@ -157,16 +193,22 @@ func listPinnedKeysCommand(c *cli.Context) (err error) {
 }
 
 func enableLoggingCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	kr.EnableLogging()
 	return
 }
 
 func logsCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	kr.UpdateTeamLogs()
 	return
 }
 
 func teamBillingCommand(c *cli.Context) (err error) {
+	exitIfNotOnTeam()
+
 	kr.OpenBilling()
 	return
 }

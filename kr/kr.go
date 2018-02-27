@@ -633,11 +633,198 @@ func main() {
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard.",
 			Action: copyCommand,
+		},
+		cli.Command{
+			Name:  "hosts",
+			Usage: "Distribute & manage SSH known hosts for your team.",
 			Subcommands: []cli.Command{
 				cli.Command{
-					Name:   "pgp",
-					Usage:  "Copy your PGP public key to the clipboard.",
-					Action: copyPGPCommand,
+					Name:   "list",
+					Usage:  "List pinned host SSH public keys.",
+					Action: listPinnedKeysCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned.",
+						},
+						cli.BoolFlag{
+							Name:  "search",
+							Usage: "(Optional) Treats --host flag as a search instead of exact match.",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "pin",
+					Usage:  "Pin a host's SSH public keys.",
+					Action: pinHostKeyCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "(Required) Host name or SSH alias",
+						},
+						cli.StringFlag{
+							Name:  "public-key",
+							Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file.",
+						},
+						cli.BoolFlag{
+							Name:  "update-from-server",
+							Usage: "(Optional) Update list of known keys from this server before pinning.",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "unpin",
+					Usage:  "Unpin a host SSH public key.",
+					Action: unpinHostKeyCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "Host name",
+						},
+						cli.StringFlag{
+							Name:  "public-key",
+							Usage: "Public key",
+						},
+					},
+				},
+			},
+		},
+		cli.Command{
+			Name:  "team",
+			Usage: "Krypton Teams settings",
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "set-name",
+					Usage:  "Change the name of your team.",
+					Action: setTeamNameCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "name,n",
+							Usage: "team name",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "invite",
+					Usage:  "Create a secret invite link (with email restrictions) to share with your team. ",
+					Action: createInviteCommand,
+					Flags: []cli.Flag{
+						cli.StringSliceFlag{
+							Name:  "emails,e",
+							Usage: "Restrict to individual email addresses",
+						},
+						cli.StringFlag{
+							Name:  "domain,d",
+							Usage: "Restrict to an email domain wildcard",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "close-invitations",
+					Usage:  "Close all outstanding invitation links.",
+					Action: closeInvitationsCommand,
+				},
+				cli.Command{
+					Name:   "members",
+					Usage:  "List your team members' emails and public keys.",
+					Action: getMembersCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "query,q",
+							Usage: "Filter by email",
+						},
+						cli.BoolFlag{
+							Name:  "ssh,s",
+							Usage: "Print SSH public keys",
+						},
+						cli.BoolFlag{
+							Name:  "pgp,p",
+							Usage: "Print PGP public keys",
+						},
+					},
+				},
+				cli.Command{
+					Name:  "admin",
+					Usage: "List or manage your team's admins.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "promote",
+							Usage:  "Promote a team member to 'Admin'.",
+							Action: addAdminCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "email",
+									Usage: "Member's email.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "Demote",
+							Usage:  "Demote an admin to 'Member'.",
+							Action: removeAdminCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "email",
+									Usage: "Admin's email.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "list",
+							Usage:  "List the team admins.",
+							Action: getAdminsCommand,
+						},
+					},
+				},
+				cli.Command{
+					Name:  "policy",
+					Usage: "View your team's policy.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "set",
+							Usage:  "Set your team's auto-approval policy.",
+							Action: setPolicyCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "window,w",
+									Usage: "temporary approval window in seconds, or \"\" to not override Krypton's default",
+								},
+							},
+						},
+					},
+				},
+
+				cli.Command{
+					Name:   "logs",
+					Usage:  "Stream team audit logs.",
+					Action: viewLogs,
+					// Flags: []cli.Flag{
+					// 	cli.StringFlag{
+					// 		Name:  "query,q",
+					// 		Usage: "Filter logs with a query string",
+					// 	},
+					// },
+				},
+				cli.Command{
+					Name:  "edit-logging",
+					Usage: "Manage team audit logging preferences.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "enable",
+							Usage:  "Enable logging of encrypted logs.",
+							Action: enableLoggingCommand,
+						},
+						cli.Command{
+							Name:   "update",
+							Usage:  "Update locally stored team logs.",
+							Action: logsCommand,
+						},
+					},
+				},
+				cli.Command{
+					Name:   "billing",
+					Usage:  "Manage Krypton Teams billing.",
+					Action: teamBillingCommand,
 				},
 			},
 		},
@@ -795,195 +982,6 @@ func main() {
 			Name:   "debugaws",
 			Usage:  "Check connectivity to AWS SQS.",
 			Action: debugAWSCommand,
-		},
-		cli.Command{
-			Name:  "team",
-			Usage: "Krypton Teams settings",
-			Subcommands: []cli.Command{
-				cli.Command{
-					Name:   "set-name",
-					Usage:  "Change the name of your team.",
-					Action: setTeamNameCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "name,n",
-							Usage: "team name",
-						},
-					},
-				},
-				cli.Command{
-					Name:   "invite",
-					Usage:  "Create a secret invite link (with email restrictions) to share with your team. ",
-					Action: createInviteCommand,
-					Flags: []cli.Flag{
-						cli.StringSliceFlag{
-							Name:  "emails,e",
-							Usage: "Restrict to individual email addresses",
-						},
-						cli.StringFlag{
-							Name:  "domain,d",
-							Usage: "Restrict to an email domain wildcard",
-						},
-					},
-				},
-				cli.Command{
-					Name:   "close-invitations",
-					Usage:  "Close all outstanding invitation links.",
-					Action: closeInvitationsCommand,
-				},
-				cli.Command{
-					Name:   "members",
-					Usage:  "List your team members' emails and public keys.",
-					Action: getMembersCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "query,q",
-							Usage: "Filter by email",
-						},
-						cli.BoolFlag{
-							Name:  "ssh,s",
-							Usage: "Print SSH public keys",
-						},
-						cli.BoolFlag{
-							Name:  "pgp,p",
-							Usage: "Print PGP public keys",
-						},
-					},
-				},
-				cli.Command{
-					Name:  "admin",
-					Usage: "List or manage your team's admins.",
-					Subcommands: []cli.Command{
-						cli.Command{
-							Name:   "promote",
-							Usage:  "Promote a team member to 'Admin'.",
-							Action: addAdminCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "email",
-									Usage: "Member's email.",
-								},
-							},
-						},
-						cli.Command{
-							Name:   "Demote",
-							Usage:  "Demote an admin to 'Member'.",
-							Action: removeAdminCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "email",
-									Usage: "Admin's email.",
-								},
-							},
-						},
-						cli.Command{
-							Name:   "list",
-							Usage:  "List the team admins.",
-							Action: getAdminsCommand,
-						},
-					},
-				},
-				cli.Command{
-					Name:  "policy",
-					Usage: "View your team's policy.",
-					Subcommands: []cli.Command{
-						cli.Command{
-							Name:   "set",
-							Usage:  "Set your team's auto-approval policy.",
-							Action: setPolicyCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "window,w",
-									Usage: "temporary approval window in seconds, or \"\" to not override Krypton's default",
-								},
-							},
-						},
-					},
-				},
-				cli.Command{
-					Name:   "pin",
-					Usage:  "Pin a host's SSH public keys.",
-					Action: pinHostKeyCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "host",
-							Usage: "(Required) Host name or SSH alias",
-						},
-						cli.StringFlag{
-							Name:  "public-key",
-							Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file.",
-						},
-						cli.BoolFlag{
-							Name:  "update-from-server",
-							Usage: "(Optional) Update list of known keys from this server before pinning.",
-						},
-					},
-					Subcommands: []cli.Command{
-						cli.Command{
-							Name:   "list",
-							Usage:  "List pinned host SSH public keys.",
-							Action: listPinnedKeysCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "host",
-									Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned.",
-								},
-								cli.BoolFlag{
-									Name:  "search",
-									Usage: "(Optional) Treats --host flag as a search instead of exact match.",
-								},
-							},
-						},
-					},
-				},
-				cli.Command{
-					Name:   "unpin",
-					Usage:  "Unpin a host SSH public key.",
-					Action: unpinHostKeyCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "host",
-							Usage: "Host name",
-						},
-						cli.StringFlag{
-							Name:  "public-key",
-							Usage: "Public key",
-						},
-					},
-				},
-				cli.Command{
-					Name:   "logs",
-					Usage:  "Stream team audit logs.",
-					Action: viewLogs,
-					// Flags: []cli.Flag{
-					// 	cli.StringFlag{
-					// 		Name:  "query,q",
-					// 		Usage: "Filter logs with a query string",
-					// 	},
-					// },
-				},
-				cli.Command{
-					Name:  "edit-logging",
-					Usage: "Manage team audit logging preferences.",
-					Subcommands: []cli.Command{
-						cli.Command{
-							Name:   "enable",
-							Usage:  "Enable logging of encrypted logs.",
-							Action: enableLoggingCommand,
-						},
-						cli.Command{
-							Name:   "update",
-							Usage:  "Update locally stored team logs.",
-							Action: logsCommand,
-						},
-					},
-				},
-				cli.Command{
-					Name:   "billing",
-					Usage:  "Manage Krypton Teams billing.",
-					Action: teamBillingCommand,
-				},
-			},
 		},
 	}
 	app.Run(os.Args)
