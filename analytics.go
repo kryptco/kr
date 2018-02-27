@@ -89,10 +89,6 @@ func (r Request) AnalyticsTag() *string {
 		tag := "signature"
 		return &tag
 	}
-	if r.CreateTeamRequest != nil {
-		tag := "create-team"
-		return &tag
-	}
 	return nil
 }
 

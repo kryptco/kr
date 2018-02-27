@@ -34,13 +34,6 @@ func CancelInvite() {
 	C.cancel_invite()
 }
 
-func CreateTeam(name string) {
-	nameSlice := []byte(name)
-	bytes := C.CBytes(nameSlice)
-	C.create_team((*C.uint8_t)(bytes), C.uintptr_t(len(nameSlice)))
-	C.free(bytes)
-}
-
 func SetTeamName(name string) {
 	nameSlice := []byte(name)
 	bytes := C.CBytes(nameSlice)

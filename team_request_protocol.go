@@ -7,9 +7,14 @@ type CreateTeamRequest struct {
 }
 
 type TeamCheckpoint struct {
-	PublicKey     []byte `json:"public_key"`
-	TeamPublicKey []byte `json:"team_public_key"`
-	LastBlockHash []byte `json:"last_block_hash"`
+	PublicKey       []byte          `json:"public_key"`
+	TeamPublicKey   []byte          `json:"team_public_key"`
+	LastBlockHash   []byte          `json:"last_block_hash"`
+	ServerEndpoints ServerEndpoints `json:"server_endpoints"`
+}
+type ServerEndpoints struct {
+	ApiHost     string `json:"api_host"`
+	BillingHost string `json:"billing_host"`
 }
 type TeamOperationRequest struct {
 	Operation RequestableTeamOperation `json:"operation"`

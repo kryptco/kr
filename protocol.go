@@ -26,7 +26,6 @@ type Request struct {
 	UnpairRequest  *UnpairRequest  `json:"unpair_request,omitempty"`
 	HostsRequest   *HostsRequest   `json:"hosts_request,omitempty"`
 
-	CreateTeamRequest    *CreateTeamRequest    `json:"create_team_request,omitempty"`
 	ReadTeamRequest      *ReadTeamRequest      `json:"read_team_request,omitempty"`
 	TeamOperationRequest *TeamOperationRequest `json:"team_operation_request,omitempty"`
 	LogDecryptionRequest *json.RawMessage      `json:"log_decryption_request,omitempty"`

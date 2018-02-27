@@ -25,6 +25,15 @@ func exitIfNotOnTeam() {
 	}
 }
 
+func createTeamCommand(c *cli.Context) (err error) {
+	fmt.Println(kr.Yellow("Creating a team is not yet supported from the command line."))
+	fmt.Println()
+	fmt.Println(kr.Yellow("Open the Krypton app and tap 'Create my team` on the Teams tab."))
+	fmt.Println()
+	fmt.Println(kr.Magenta("Learn more here to get started: https://www.krypt.co/docs/teams/getting-started.html"))
+	return
+}
+
 func setTeamNameCommand(c *cli.Context) (err error) {
 	exitIfNotOnTeam()
 

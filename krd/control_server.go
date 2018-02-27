@@ -147,7 +147,6 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 	if enclaveRequest.SignRequest != nil ||
 		enclaveRequest.GitSignRequest != nil ||
 		enclaveRequest.HostsRequest != nil ||
-		enclaveRequest.CreateTeamRequest != nil ||
 		enclaveRequest.ReadTeamRequest != nil ||
 		enclaveRequest.TeamOperationRequest != nil ||
 		enclaveRequest.LogDecryptionRequest != nil {

@@ -694,6 +694,12 @@ func main() {
 			Usage: "Krypton Teams settings",
 			Subcommands: []cli.Command{
 				cli.Command{
+					Name:   "create",
+					Usage:  "Create a Krypton Team.",
+					Action: createTeamCommand,
+				},
+
+				cli.Command{
 					Name:   "set-name",
 					Usage:  "Change the name of your team.",
 					Action: setTeamNameCommand,
@@ -850,7 +856,7 @@ func main() {
 		},
 		cli.Command{
 			Name:   "transfer",
-			Usage:  "Transfer authority to a new Krypton public key (authorize a new Krypton device's public key to servers)",
+			Usage:  "Authorize a new Krypton device to access of your servers.",
 			Action: transferCommand,
 			Flags: []cli.Flag{
 				cli.BoolFlag{
@@ -860,8 +866,8 @@ func main() {
 			},
 		},
 		cli.Command{
-			Name:  "aws,bitbucket,digitalocean,gcloud,github,ghe,gitlab,heroku",
-			Usage: "Upload your public key to this site. Copies your public key to the clipboard and opens the site's settings page.",
+			Name:  "aws,bitbucket,digitalocean,gcp,github,ghe,gitlab,heroku",
+			Usage: "Upload your public key this service.",
 		},
 		cli.Command{
 			Name:   "github",
@@ -938,14 +944,14 @@ func main() {
 			Hidden: true,
 		},
 		cli.Command{
-			Name:   "gcloud",
+			Name:   "gcp",
 			Usage:  "Upload your public key to Google Cloud. Copies your public key to the clipboard and opens the Google Cloud Console.",
 			Action: gcloudCommand,
 			Hidden: true,
 		},
 		cli.Command{
 			Name:   "add",
-			Usage:  "kr add <user@server or SSH alias> -- add your Krypton SSH public key to the server.",
+			Usage:  "Add your Krypton SSH public key to a < user@server or SSH alias >",
 			Action: addCommand,
 			Flags: []cli.Flag{
 				cli.StringFlag{
