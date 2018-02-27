@@ -952,7 +952,18 @@ func main() {
 					},
 				},
 				cli.Command{
-					Name:  "logs",
+					Name:   "logs",
+					Usage:  "Stream team audit logs.",
+					Action: viewLogs,
+					// Flags: []cli.Flag{
+					// 	cli.StringFlag{
+					// 		Name:  "query,q",
+					// 		Usage: "Filter logs with a query string",
+					// 	},
+					// },
+				},
+				cli.Command{
+					Name:  "edit-logging",
 					Usage: "Manage team audit logging preferences.",
 					Subcommands: []cli.Command{
 						cli.Command{

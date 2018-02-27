@@ -72,6 +72,12 @@ func closeInvitationsCommand(c *cli.Context) (err error) {
 	return
 }
 
+func viewLogs(c *cli.Context) (err error) {
+	query := c.String("q")
+	kr.ViewLogs(query)
+	return
+}
+
 func setPolicyCommand(c *cli.Context) (err error) {
 	var window *int64
 	if c.String("window") != "" {

@@ -144,3 +144,10 @@ func UpdateTeamLogs() {
 func OpenBilling() {
 	C.open_billing()
 }
+
+func ViewLogs(query string) {
+	querySlice := []byte(query)
+	queryBytes := C.CBytes(querySlice)
+	defer C.free(queryBytes)
+	C.view_logs((*C.uint8_t)(queryBytes), C.uintptr_t(len(querySlice)), C._Bool(false), C._Bool(false))
+}
