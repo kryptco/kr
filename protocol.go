@@ -99,7 +99,6 @@ type Response struct {
 	SNSEndpointARN  *string          `json:"sns_endpoint_arn,omitempty"`
 	TrackingID      *string          `json:"tracking_id,omitempty"`
 
-	CreateTeamResponse    *TeamCheckpoint        `json:"create_team_response,omitempty"`
 	ReadTeamResponse      *ReadTeamResponse      `json:"read_team_response,omitempty"`
 	TeamOperationResponse *TeamOperationResponse `json:"team_operation_response,omitempty"`
 	LogDecryptionResponse *LogDecryptionResponse `json:"log_decryption_response,omitempty"`
