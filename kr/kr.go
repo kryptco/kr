@@ -348,18 +348,34 @@ func addCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "add", nil, nil)
 	}()
-	copyKey()
+
+	// ensure there's a user@server or alias to add to
 	if len(c.Args()) < 1 {
 		PrintFatal(os.Stderr, "kr add <user@server or SSH alias>")
 		return
 	}
+
 	server := c.Args()[0]
 
 	portFlag := c.String("port")
 	publicKeyFlag := c.String("public-key")
 
 	var authorizedKeyString string
-	if publicKeyFlag == "" {
+
+	// check if input is from stdin
+	fi, _ := os.Stdin.Stat()
+
+	if (fi.Mode() & os.ModeCharDevice) == 0 {
+		reader := bufio.NewReader(os.Stdin)
+		publicKeyStdin, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		authorizedKeyString = publicKeyStdin
+
+	} else if publicKeyFlag != "" {
+		authorizedKeyString = publicKeyFlag
+	} else {
 		me, err := krdclient.RequestMe()
 		if err != nil {
 			PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
@@ -369,13 +385,11 @@ func addCommand(c *cli.Context) (err error) {
 		if err != nil {
 			PrintFatal(os.Stderr, err.Error())
 		}
-	} else {
-		authorizedKeyString = publicKeyFlag
 	}
 
 	authorizedKey := append([]byte(authorizedKeyString), []byte("\n")...)
 
-	PrintErr(os.Stderr, "Adding your SSH public key to %s", server)
+	PrintErr(os.Stderr, "Adding SSH public key to %s", server)
 
 	authorizedKeyReader := bytes.NewReader(authorizedKey)
 	args := []string{server}
@@ -635,61 +649,6 @@ func main() {
 			Action: copyCommand,
 		},
 		cli.Command{
-			Name:  "hosts",
-			Usage: "Distribute & manage SSH known hosts for your team.",
-			Subcommands: []cli.Command{
-				cli.Command{
-					Name:   "list",
-					Usage:  "List pinned host SSH public keys.",
-					Action: listPinnedKeysCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "host",
-							Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned.",
-						},
-						cli.BoolFlag{
-							Name:  "search",
-							Usage: "(Optional) Treats --host flag as a search instead of exact match.",
-						},
-					},
-				},
-				cli.Command{
-					Name:   "pin",
-					Usage:  "Pin a host's SSH public keys.",
-					Action: pinHostKeyCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "host",
-							Usage: "(Required) Host name or SSH alias",
-						},
-						cli.StringFlag{
-							Name:  "public-key",
-							Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file.",
-						},
-						cli.BoolFlag{
-							Name:  "update-from-server",
-							Usage: "(Optional) Update list of known keys from this server before pinning.",
-						},
-					},
-				},
-				cli.Command{
-					Name:   "unpin",
-					Usage:  "Unpin a host SSH public key.",
-					Action: unpinHostKeyCommand,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "host",
-							Usage: "Host name",
-						},
-						cli.StringFlag{
-							Name:  "public-key",
-							Usage: "Public key",
-						},
-					},
-				},
-			},
-		},
-		cli.Command{
 			Name:  "team",
 			Usage: "Krypton Teams settings",
 			Subcommands: []cli.Command{
@@ -746,6 +705,61 @@ func main() {
 						cli.BoolFlag{
 							Name:  "pgp,p",
 							Usage: "Print PGP public keys",
+						},
+					},
+				},
+				cli.Command{
+					Name:  "hosts",
+					Usage: "Distribute & manage SSH known hosts for your team.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "list",
+							Usage:  "List pinned host SSH public keys.",
+							Action: listPinnedKeysCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "host",
+									Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned.",
+								},
+								cli.BoolFlag{
+									Name:  "search",
+									Usage: "(Optional) Treats --host flag as a search instead of exact match.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "pin",
+							Usage:  "Pin a host's SSH public keys.",
+							Action: pinHostKeyCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "host",
+									Usage: "(Required) Host name or SSH alias",
+								},
+								cli.StringFlag{
+									Name:  "public-key",
+									Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file.",
+								},
+								cli.BoolFlag{
+									Name:  "update-from-server",
+									Usage: "(Optional) Update list of known keys from this server before pinning.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "unpin",
+							Usage:  "Unpin a host SSH public key.",
+							Action: unpinHostKeyCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "host",
+									Usage: "Host name",
+								},
+								cli.StringFlag{
+									Name:  "public-key",
+									Usage: "Public key",
+								},
+							},
 						},
 					},
 				},
