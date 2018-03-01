@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -166,11 +167,25 @@ func getAdminsCommand(c *cli.Context) (err error) {
 func pinHostKeyCommand(c *cli.Context) (err error) {
 	exitIfNotOnTeam()
 
-	if c.String("public-key") == "" {
+	var publicKey string
+
+	// check if input is from stdin
+	fi, _ := os.Stdin.Stat()
+	if (fi.Mode() & os.ModeCharDevice) == 0 {
+		reader := bufio.NewReader(os.Stdin)
+		publicKeyStdin, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		publicKey = publicKeyStdin
+	} else if c.String("public-key") != "" {
+		publicKey = c.String("public-key")
+	} else {
 		kr.PinKnownHostKeys(c.String("host"), c.Bool("update-from-server"))
 		return
 	}
-	pk, err := base64.StdEncoding.DecodeString(c.String("public-key"))
+
+	pk, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
 		PrintFatal(os.Stderr, "error decoding public-key, make sure it is base64 encoded without the key type prefix (i.e. no 'ssh-rsa' or 'ssh-ed25519') "+err.Error())
 	}
@@ -181,7 +196,25 @@ func pinHostKeyCommand(c *cli.Context) (err error) {
 func unpinHostKeyCommand(c *cli.Context) (err error) {
 	exitIfNotOnTeam()
 
-	pk, err := base64.StdEncoding.DecodeString(c.String("public-key"))
+	var publicKey string
+
+	// check if input is from stdin
+	fi, _ := os.Stdin.Stat()
+	if (fi.Mode() & os.ModeCharDevice) == 0 {
+		reader := bufio.NewReader(os.Stdin)
+		publicKeyStdin, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		publicKey = publicKeyStdin
+	} else if c.String("public-key") != "" {
+		publicKey = c.String("public-key")
+	} else {
+		PrintFatal(os.Stderr, "you must supply a public-key")
+		return
+	}
+
+	pk, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
 		PrintFatal(os.Stderr, "error decoding public-key, make sure it is base64 encoded without the key type prefix (i.e. no 'ssh-rsa' or 'ssh-ed25519') "+err.Error())
 	}
