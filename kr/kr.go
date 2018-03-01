@@ -674,7 +674,7 @@ func main() {
 					Usage:  "Create a secret invite link (with email restrictions) to share with your team. ",
 					Action: createInviteCommand,
 					Flags: []cli.Flag{
-						cli.StringSliceFlag{
+						cli.StringFlag{
 							Name:  "emails,e",
 							Usage: "Restrict to individual email addresses",
 						},
@@ -779,7 +779,7 @@ func main() {
 							},
 						},
 						cli.Command{
-							Name:   "Demote",
+							Name:   "demote",
 							Usage:  "Demote an admin to 'Member'.",
 							Action: removeAdminCommand,
 							Flags: []cli.Flag{

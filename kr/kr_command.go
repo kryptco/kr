@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krdclient"
@@ -55,7 +56,7 @@ func setTeamNameCommand(c *cli.Context) (err error) {
 func createInviteCommand(c *cli.Context) (err error) {
 	exitIfNotOnTeam()
 
-	emails := c.StringSlice("emails")
+	emails := strings.Split(c.String("emails"), ",")
 	domain := c.String("domain")
 	if domain != "" {
 
