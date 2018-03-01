@@ -36,7 +36,7 @@ func codesignCommand(c *cli.Context) (err error) {
 	stderr := os.Stderr
 	latestKrdRunning, err := krdclient.IsLatestKrdRunning()
 	if err != nil || !latestKrdRunning {
-		PrintFatal(stderr, kr.Red("An old version of krd is still running. Please run "+kr.Cyan("kr restart")+kr.Red(" and try again.")))
+		PrintFatal(stderr, krdclient.ErrOldKrdRunning.Error())
 	}
 	interactive := c.Bool("interactive")
 

@@ -13,6 +13,8 @@ import (
 	"github.com/kryptco/kr"
 )
 
+var ErrOldKrdRunning = fmt.Errorf(kr.Red("An old version of krd is still running. Please run " + kr.Cyan("kr restart") + kr.Red(" and try again.")))
+
 func IsLatestKrdRunning() (isRunning bool, err error) {
 	version, err := RequestKrdVersion()
 	if err != nil {
@@ -183,20 +185,6 @@ func RequestGitSignature(request kr.Request) (response kr.Response, err error) {
 	return
 }
 
-func RequestHostsOver(request kr.Request, conn net.Conn) (hostsResponse kr.HostsResponse, err error) {
-	response, err := makeRequestWithJsonResponse(conn, request)
-	if err != nil {
-		return
-	}
-
-	if response.HostsResponse != nil {
-		hostsResponse = *response.HostsResponse
-		return
-	}
-	err = fmt.Errorf("Response missing HostsResponse")
-	return
-}
-
 func RequestHosts() (response kr.HostsResponse, err error) {
 	request, err := kr.NewRequest()
 	if err != nil {
@@ -205,6 +193,27 @@ func RequestHosts() (response kr.HostsResponse, err error) {
 	kr.StartControlServerLogger(request.NotifyPrefix())
 	request.HostsRequest = &kr.HostsRequest{}
 
+	genericResponse, err := Request(request)
+	if err != nil {
+		return
+	}
+	if genericResponse.HostsResponse == nil {
+		err = fmt.Errorf("no HostsResponse found")
+		return
+	}
+	response = *genericResponse.HostsResponse
+	return
+}
+
+func Request(request kr.Request) (response kr.Response, err error) {
+	latestRunning, err := IsLatestKrdRunning()
+	if err != nil {
+		return
+	}
+	if !latestRunning {
+		err = ErrOldKrdRunning
+		return
+	}
 	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
 	if err != nil {
 		err = kr.ErrConnectingToDaemon
@@ -216,7 +225,7 @@ func RequestHosts() (response kr.HostsResponse, err error) {
 		return
 	}
 	defer daemonConn.Close()
-	response, err = RequestHostsOver(request, daemonConn)
+	response, err = makeRequestWithJsonResponse(daemonConn, request)
 	return
 }
 

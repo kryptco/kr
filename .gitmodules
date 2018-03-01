@@ -1,0 +1,3 @@
+[submodule "sigchain"]
+	path = sigchain
+	url = git@github.com:kryptco/sigchain

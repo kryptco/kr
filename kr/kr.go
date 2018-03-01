@@ -348,27 +348,48 @@ func addCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "add", nil, nil)
 	}()
-	copyKey()
+
+	// ensure there's a user@server or alias to add to
 	if len(c.Args()) < 1 {
 		PrintFatal(os.Stderr, "kr add <user@server or SSH alias>")
 		return
 	}
+
 	server := c.Args()[0]
 
 	portFlag := c.String("port")
+	publicKeyFlag := c.String("public-key")
 
-	me, err := krdclient.RequestMe()
-	if err != nil {
-		PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
+	var authorizedKeyString string
+
+	// check if input is from stdin
+	fi, _ := os.Stdin.Stat()
+
+	if (fi.Mode() & os.ModeCharDevice) == 0 {
+		reader := bufio.NewReader(os.Stdin)
+		publicKeyStdin, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		authorizedKeyString = publicKeyStdin
+
+	} else if publicKeyFlag != "" {
+		authorizedKeyString = publicKeyFlag
+	} else {
+		me, err := krdclient.RequestMe()
+		if err != nil {
+			PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
+		}
+
+		authorizedKeyString, err = me.AuthorizedKeyString()
+		if err != nil {
+			PrintFatal(os.Stderr, err.Error())
+		}
 	}
 
-	authorizedKeyString, err := me.AuthorizedKeyString()
-	if err != nil {
-		PrintFatal(os.Stderr, err.Error())
-	}
 	authorizedKey := append([]byte(authorizedKeyString), []byte("\n")...)
 
-	PrintErr(os.Stderr, "Adding your SSH public key to %s", server)
+	PrintErr(os.Stderr, "Adding SSH public key to %s", server)
 
 	authorizedKeyReader := bytes.NewReader(authorizedKey)
 	args := []string{server}
@@ -626,11 +647,204 @@ func main() {
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard.",
 			Action: copyCommand,
+		},
+		cli.Command{
+			Name:  "team",
+			Usage: "Krypton Teams settings",
 			Subcommands: []cli.Command{
 				cli.Command{
-					Name:   "pgp",
-					Usage:  "Copy your PGP public key to the clipboard.",
-					Action: copyPGPCommand,
+					Name:   "create",
+					Usage:  "Create a Krypton Team.",
+					Action: createTeamCommand,
+				},
+
+				cli.Command{
+					Name:   "set-name",
+					Usage:  "Change the name of your team.",
+					Action: setTeamNameCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "name,n",
+							Usage: "team name",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "invite",
+					Usage:  "Create a secret invite link (with email restrictions) to share with your team. ",
+					Action: createInviteCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "emails,e",
+							Usage: "Restrict to individual email addresses",
+						},
+						cli.StringFlag{
+							Name:  "domain,d",
+							Usage: "Restrict to an email domain wildcard",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "close-invitations",
+					Usage:  "Close all outstanding invitation links.",
+					Action: closeInvitationsCommand,
+				},
+				cli.Command{
+					Name:   "members",
+					Usage:  "List your team members' emails and public keys.",
+					Action: getMembersCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "query,q",
+							Usage: "Filter by email",
+						},
+						cli.BoolFlag{
+							Name:  "ssh,s",
+							Usage: "Print SSH public keys",
+						},
+						cli.BoolFlag{
+							Name:  "pgp,p",
+							Usage: "Print PGP public keys",
+						},
+					},
+				},
+				cli.Command{
+					Name:  "hosts",
+					Usage: "Distribute & manage SSH known hosts for your team.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "list",
+							Usage:  "List pinned host SSH public keys.",
+							Action: listPinnedKeysCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "host",
+									Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned.",
+								},
+								cli.BoolFlag{
+									Name:  "search",
+									Usage: "(Optional) Treats --host flag as a search instead of exact match.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "pin",
+							Usage:  "Pin a host's SSH public keys.",
+							Action: pinHostKeyCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "host",
+									Usage: "(Required) Host name or SSH alias",
+								},
+								cli.StringFlag{
+									Name:  "public-key",
+									Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file.",
+								},
+								cli.BoolFlag{
+									Name:  "update-from-server",
+									Usage: "(Optional) Update list of known keys from this server before pinning.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "unpin",
+							Usage:  "Unpin a host SSH public key.",
+							Action: unpinHostKeyCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "host",
+									Usage: "Host name",
+								},
+								cli.StringFlag{
+									Name:  "public-key",
+									Usage: "Public key",
+								},
+							},
+						},
+					},
+				},
+				cli.Command{
+					Name:  "admin",
+					Usage: "List or manage your team's admins.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "promote",
+							Usage:  "Promote a team member to 'Admin'.",
+							Action: addAdminCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "email",
+									Usage: "Member's email.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "demote",
+							Usage:  "Demote an admin to 'Member'.",
+							Action: removeAdminCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "email",
+									Usage: "Admin's email.",
+								},
+							},
+						},
+						cli.Command{
+							Name:   "list",
+							Usage:  "List the team admins.",
+							Action: getAdminsCommand,
+						},
+					},
+				},
+				cli.Command{
+					Name:  "policy",
+					Usage: "View your team's policy.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "set",
+							Usage:  "Set your team's auto-approval policy.",
+							Action: setPolicyCommand,
+							Flags: []cli.Flag{
+								cli.StringFlag{
+									Name:  "window,w",
+									Usage: "temporary approval window in seconds, or \"\" to not override Krypton's default",
+								},
+							},
+						},
+					},
+				},
+
+				cli.Command{
+					Name:   "logs",
+					Usage:  "Stream team audit logs.",
+					Action: viewLogs,
+					// Flags: []cli.Flag{
+					// 	cli.StringFlag{
+					// 		Name:  "query,q",
+					// 		Usage: "Filter logs with a query string",
+					// 	},
+					// },
+				},
+				cli.Command{
+					Name:  "edit-logging",
+					Usage: "Manage team audit logging preferences.",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:   "enable",
+							Usage:  "Enable logging of encrypted logs.",
+							Action: enableLoggingCommand,
+						},
+						cli.Command{
+							Name:   "update",
+							Usage:  "Update locally stored team logs.",
+							Action: logsCommand,
+						},
+					},
+				},
+				cli.Command{
+					Name:   "billing",
+					Usage:  "Manage Krypton Teams billing.",
+					Action: teamBillingCommand,
 				},
 			},
 		},
@@ -656,7 +870,7 @@ func main() {
 		},
 		cli.Command{
 			Name:   "transfer",
-			Usage:  "Transfer authority to a new Krypton public key (authorize a new Krypton device's public key to servers)",
+			Usage:  "Authorize a new Krypton device to access of your servers.",
 			Action: transferCommand,
 			Flags: []cli.Flag{
 				cli.BoolFlag{
@@ -666,8 +880,8 @@ func main() {
 			},
 		},
 		cli.Command{
-			Name:  "aws,bitbucket,digitalocean,gcloud,github,ghe,gitlab,heroku",
-			Usage: "Upload your public key to this site. Copies your public key to the clipboard and opens the site's settings page.",
+			Name:  "aws,bitbucket,digitalocean,gcp,github,ghe,gitlab,heroku",
+			Usage: "Upload your public key this service.",
 		},
 		cli.Command{
 			Name:   "github",
@@ -744,19 +958,23 @@ func main() {
 			Hidden: true,
 		},
 		cli.Command{
-			Name:   "gcloud",
+			Name:   "gcp",
 			Usage:  "Upload your public key to Google Cloud. Copies your public key to the clipboard and opens the Google Cloud Console.",
 			Action: gcloudCommand,
 			Hidden: true,
 		},
 		cli.Command{
 			Name:   "add",
-			Usage:  "kr add <user@server or SSH alias> -- add your Krypton SSH public key to the server.",
+			Usage:  "Add your Krypton SSH public key to a < user@server or SSH alias >",
 			Action: addCommand,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "port, p",
 					Usage: "Port of SSH server",
+				},
+				cli.StringFlag{
+					Name:  "public-key",
+					Usage: "A non-paired public key to add",
 				},
 			},
 		},
