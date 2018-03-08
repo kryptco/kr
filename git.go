@@ -12,11 +12,11 @@ func GlobalGitUserId() (id string, err error) {
 	if !strings.Contains(oldPath, "/usr/local/bin") || !strings.Contains(oldPath, "/usr/bin") {
 		os.Setenv("PATH", "/usr/bin:/usr/local/bin:"+oldPath)
 	}
-	name, err := exec.Command("git", "config", "--global", "user.name").Output()
+	name, err := exec.Command("git", "config", "--global", "--includes", "user.name").Output()
 	if err != nil {
 		return
 	}
-	email, err := exec.Command("git", "config", "--global", "user.email").Output()
+	email, err := exec.Command("git", "config", "--global", "--includes", "user.email").Output()
 	if err != nil {
 		return
 	}
