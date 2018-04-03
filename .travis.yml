@@ -1,9 +1,22 @@
 language: go
+git:
+    submodules: false
+before_install:
+  - sed -i.bak 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init
+  - sed -i.bak 's/git@github.com:/https:\/\/github.com\//' sigchain/.gitmodules
+  - git submodule update --init --recursive
 before_script:
   - curl https://sh.rustup.rs -sSf | sh -s -- -y
   - export PATH=$PATH:$HOME/.cargo/bin/
+
+  - curl -L https://github.com/koute/cargo-web/releases/download/0.6.9/cargo-web-x86_64-unknown-linux-gnu.gz | gzip -d > cargo-web
+  - chmod +x cargo-web
+  - mkdir -p ~/.cargo/bin
+  - mv cargo-web ~/.cargo/bin
+
 go:
   - stable
 script:
-  - make
-  - make check
+  - CONFIGURATION=Debug make
+  - CONFIGURATION=Debug make check
