@@ -18,9 +18,12 @@ __kr__ currently supports MacOS (10.10+) and Linux (Debian, RHEL, CentOS, Fedora
 # Build Dependencies / Instructions
 - [Install Go 1.10+](https://golang.org/doc/install)
 - [Install Rust 1.24+ and cargo](https://www.rustup.rs)
+- Install cargo-web: `cargo install cargo-web`
+- Install emscripten/binaryen (macOS only): `brew install emscripten binaryen`
 ```sh
 go get github.com/kryptco/kr # or clone into $GOPATH/src/github.com/kryptco/
 cd $GOPATH/src/github.com/kryptco/kr
+git submodule update --init --recursive
 make
 ```
 
