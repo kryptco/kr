@@ -9,6 +9,8 @@ import (
 
 	"github.com/kryptco/kr"
 	"github.com/kryptco/kr/krd"
+	sigchain "github.com/kryptco/kr/sigchaingobridge"
+
 	"github.com/op/go-logging"
 )
 
@@ -85,6 +87,10 @@ func main() {
 	}()
 
 	log.Notice("krd launched and listening on UNIX socket")
+
+	go func() {
+		sigchain.ServeDashboardIfParamsPresent()
+	}()
 
 	stopSignal := make(chan os.Signal, 1)
 	signal.Notify(stopSignal, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)

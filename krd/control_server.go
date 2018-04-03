@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/kryptco/kr"
+	sigchain "github.com/kryptco/kr/sigchaingobridge"
+
 	"github.com/op/go-logging"
 )
 
@@ -41,6 +43,7 @@ func (cs *ControlServer) HandleControlHTTP(listener net.Listener) (err error) {
 	httpMux.HandleFunc("/pair", cs.handlePair)
 	httpMux.HandleFunc("/enclave", cs.handleEnclave)
 	httpMux.HandleFunc("/ping", cs.handlePing)
+	httpMux.HandleFunc("/dashboard", cs.handleDashboard)
 	err = http.Serve(listener, httpMux)
 	return
 }
@@ -144,17 +147,12 @@ func (cs *ControlServer) handleEnclave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if enclaveRequest.SignRequest != nil {
-		cs.handleEnclaveGeneric(w, enclaveRequest)
-		return
-	}
-
-	if enclaveRequest.GitSignRequest != nil {
-		cs.handleEnclaveGeneric(w, enclaveRequest)
-		return
-	}
-
-	if enclaveRequest.HostsRequest != nil {
+	if enclaveRequest.SignRequest != nil ||
+		enclaveRequest.GitSignRequest != nil ||
+		enclaveRequest.HostsRequest != nil ||
+		enclaveRequest.ReadTeamRequest != nil ||
+		enclaveRequest.TeamOperationRequest != nil ||
+		enclaveRequest.LogDecryptionRequest != nil {
 		cs.handleEnclaveGeneric(w, enclaveRequest)
 		return
 	}
@@ -222,6 +220,7 @@ func (cs *ControlServer) handleEnclaveGeneric(w http.ResponseWriter, enclaveRequ
 		return
 	}
 
+	cs.log.Error("encoding response...")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		cs.log.Error(err)
@@ -230,6 +229,11 @@ func (cs *ControlServer) handleEnclaveGeneric(w http.ResponseWriter, enclaveRequ
 }
 
 func (cs *ControlServer) handlePing(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (cs *ControlServer) handleDashboard(w http.ResponseWriter, r *http.Request) {
+	sigchain.ServeDashboard()
 	w.WriteHeader(http.StatusOK)
 }
 

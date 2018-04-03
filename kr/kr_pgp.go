@@ -36,7 +36,7 @@ func codesignCommand(c *cli.Context) (err error) {
 	stderr := os.Stderr
 	latestKrdRunning, err := krdclient.IsLatestKrdRunning()
 	if err != nil || !latestKrdRunning {
-		PrintFatal(stderr, kr.Red("An old version of krd is still running. Please run "+kr.Cyan("kr restart")+kr.Red(" and try again.")))
+		PrintFatal(stderr, krdclient.ErrOldKrdRunning.Error())
 	}
 	interactive := c.Bool("interactive")
 
@@ -128,10 +128,7 @@ func codesignUninstallCommand(c *cli.Context) (err error) {
 }
 
 func onboardGithub(pk string) {
-	os.Stderr.WriteString("Would you like to add this key to " + kr.Cyan("GitHub") + "? [y/n]")
-	in := []byte{0, 0}
-	os.Stdin.Read(in)
-	if in[0] == 'y' {
+	if confirm(os.Stderr, "Would you like to add this key to "+kr.Cyan("GitHub")+"?") {
 		copyPGPKey()
 		<-time.After(1000 * time.Millisecond)
 		os.Stderr.WriteString("Press " + kr.Cyan("ENTER") + " to open your browser to GitHub settings. Then click " + kr.Cyan("New GPG key") + " and paste your Krypton PGP public key.\r\n")
@@ -143,10 +140,7 @@ func onboardGithub(pk string) {
 func onboardAutoCommitSign(interactive bool) {
 	var autoSign bool
 	if interactive {
-		os.Stderr.WriteString("Would you like to enable " + kr.Cyan("automatic commit signing") + "? [y/n]")
-		in := []byte{0, 0}
-		os.Stdin.Read(in)
-		if in[0] == 'y' {
+		if confirm(os.Stderr, "Would you like to enable "+kr.Cyan("automatic commit signing")+"?") {
 			autoSign = true
 		}
 	}
@@ -245,10 +239,7 @@ func onboardGPG_TTY(interactive bool) {
 func onboardKeyServerUpload(interactive bool, pk string) {
 	var uploadKey bool
 	if interactive {
-		os.Stderr.WriteString("In order for other people to verify your commits, they need to be able to download your public key. Would you like to " + kr.Cyan("upload your public key to the MIT keyserver") + "? [y/n]")
-		in := []byte{0, 0}
-		os.Stdin.Read(in)
-		if in[0] == 'y' {
+		if confirm(os.Stderr, "In order for other people to verify your commits, they need to be able to download your public key. Would you like to "+kr.Cyan("upload your public key to the MIT keyserver")+"?") {
 			uploadKey = true
 		}
 	}
@@ -269,10 +260,7 @@ func onboardLocalGPG(interactive bool, me kr.Profile) {
 	}
 	var importKey bool
 	if interactive {
-		os.Stderr.WriteString("In order to verify your own commits, you must add your key to gpg locally. Would you like to " + kr.Cyan("add your public key to gpg") + "? [y/n]")
-		in := []byte{0, 0}
-		os.Stdin.Read(in)
-		if in[0] == 'y' {
+		if confirm(os.Stderr, "In order to verify your own commits, you must add your key to gpg locally. Would you like to "+kr.Cyan("add your public key to gpg")+"?") {
 			importKey = true
 		}
 	}

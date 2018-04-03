@@ -13,6 +13,8 @@ import (
 	"github.com/kryptco/kr"
 )
 
+var ErrOldKrdRunning = fmt.Errorf(kr.Red("An old version of krd is still running. Please run " + kr.Cyan("kr restart") + kr.Red(" and try again.")))
+
 func IsLatestKrdRunning() (isRunning bool, err error) {
 	version, err := RequestKrdVersion()
 	if err != nil {
@@ -183,20 +185,6 @@ func RequestGitSignature(request kr.Request) (response kr.Response, err error) {
 	return
 }
 
-func RequestHostsOver(request kr.Request, conn net.Conn) (hostsResponse kr.HostsResponse, err error) {
-	response, err := makeRequestWithJsonResponse(conn, request)
-	if err != nil {
-		return
-	}
-
-	if response.HostsResponse != nil {
-		hostsResponse = *response.HostsResponse
-		return
-	}
-	err = fmt.Errorf("Response missing HostsResponse")
-	return
-}
-
 func RequestHosts() (response kr.HostsResponse, err error) {
 	request, err := kr.NewRequest()
 	if err != nil {
@@ -205,6 +193,27 @@ func RequestHosts() (response kr.HostsResponse, err error) {
 	kr.StartControlServerLogger(request.NotifyPrefix())
 	request.HostsRequest = &kr.HostsRequest{}
 
+	genericResponse, err := Request(request)
+	if err != nil {
+		return
+	}
+	if genericResponse.HostsResponse == nil {
+		err = fmt.Errorf("no HostsResponse found")
+		return
+	}
+	response = *genericResponse.HostsResponse
+	return
+}
+
+func Request(request kr.Request) (response kr.Response, err error) {
+	latestRunning, err := IsLatestKrdRunning()
+	if err != nil {
+		return
+	}
+	if !latestRunning {
+		err = ErrOldKrdRunning
+		return
+	}
 	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
 	if err != nil {
 		err = kr.ErrConnectingToDaemon
@@ -216,7 +225,7 @@ func RequestHosts() (response kr.HostsResponse, err error) {
 		return
 	}
 	defer daemonConn.Close()
-	response, err = RequestHostsOver(request, daemonConn)
+	response, err = makeRequestWithJsonResponse(daemonConn, request)
 	return
 }
 
@@ -369,4 +378,44 @@ func RequestNoOp() (err error) {
 	}
 	defer daemonConn.Close()
 	return requestNoOpOver(daemonConn)
+}
+
+func requestDashboardOver(conn net.Conn) (err error) {
+	getDashboard, err := http.NewRequest("GET", "/dashboard", nil)
+	if err != nil {
+		return
+	}
+	err = getDashboard.Write(conn)
+	if err != nil {
+		err = fmt.Errorf("Daemon Write error: %s", err.Error())
+		return
+	}
+
+	responseReader := bufio.NewReader(conn)
+	httpResponse, err := http.ReadResponse(responseReader, getDashboard)
+	if err != nil {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode != http.StatusOK {
+		err = kr.ErrConnectingToDaemon
+		return
+	}
+
+	return
+}
+
+func RequestDashboard() (err error) {
+	unixFile, err := kr.KrDirFile(kr.DAEMON_SOCKET_FILENAME)
+	if err != nil {
+		return
+	}
+	daemonConn, err := kr.DaemonDialWithTimeout(unixFile)
+	if err != nil {
+		err = fmt.Errorf("DaemonDialWithTimeout error: %s", err.Error())
+		return
+	}
+	defer daemonConn.Close()
+	return requestDashboardOver(daemonConn)
 }

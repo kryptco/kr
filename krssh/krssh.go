@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/kryptco/kr"
-	"github.com/kryptco/kr/krd"
 
 	"github.com/keybase/saltpack/encoding/basex"
 	"github.com/op/go-logging"
@@ -110,7 +109,7 @@ func startLogger(prefix string, checkForUpdate bool) (r kr.NotificationReader, e
 		}
 
 		go func() {
-			if checkForUpdate && !silenceWarnings && krd.CheckIfUpdateAvailable(logger) {
+			if checkForUpdate && !silenceWarnings && kr.CheckIfUpdateAvailable(logger) {
 				os.Stderr.WriteString(kr.Yellow("Krypton ▶ A new version of Krypton is available. Run \"kr upgrade\" to install it. You can view the changelog at https://krypt.co/app/krd_changelog/\r\n"))
 			}
 		}()

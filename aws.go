@@ -103,8 +103,11 @@ func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueN
 	gcmPayload, _ := json.Marshal(
 		map[string]interface{}{
 			"data": map[string]interface{}{
-				"message": requestCiphertext,
-				"queue":   sqsQueueName,
+				"priority":         "high",
+				"time_to_live":     0,
+				"delay_while_idle": false,
+				"message":          requestCiphertext,
+				"queue":            sqsQueueName,
 			},
 		})
 	err = pushToSNS(endpointARN, apnsPayload, gcmPayload)
@@ -126,8 +129,11 @@ func PushToSNSEndpoint(requestCiphertext, endpointARN, sqsQueueName string) (err
 	gcmPayload, _ := json.Marshal(
 		map[string]interface{}{
 			"data": map[string]interface{}{
-				"message": requestCiphertext,
-				"queue":   sqsQueueName,
+				"priority":         "high",
+				"time_to_live":     0,
+				"delay_while_idle": false,
+				"message":          requestCiphertext,
+				"queue":            sqsQueueName,
 			},
 		})
 	err = pushToSNS(endpointARN, apnsPayload, gcmPayload)
@@ -280,7 +286,6 @@ func CreateQueue(queue string) (queueURL string, err error) {
 		Attributes: map[string]*string{
 			//	longer to store Unpair messages
 			sqs.QueueAttributeNameMessageRetentionPeriod: aws.String("172800"),
-			sqs.QueueAttributeNameVisibilityTimeout:      aws.String("1"),
 		},
 	}
 	createQueueResponse, err := sqsService.CreateQueue(createQueueInput)

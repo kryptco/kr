@@ -51,12 +51,23 @@ SRCFRAMEWORK = $(PWD)/Frameworks
 DSTFRAMEWORK = $(PREFIX)/Frameworks
 
 CONFIGURATION ?= Release
+ifeq ($(CONFIGURATION), Release)
+	CARGO_RELEASE = --release
+	CARGO_TARGET_SCHEME = release
+else ifeq ($(CONFIGURATION), Debug)
+	CARGO_TARGET_SCHEME = debug
+else
+$(error Invalid $$CONFIGURATION)
+endif
+
+LINK_LIBSIGCHAIN_LDFLAGS = -L ${PWD}/sigchain/target/${CARGO_TARGET_SCHEME} 
 
 all:
 	-rm -rf bin lib Frameworks
 	-mkdir -p bin
 	-mkdir -p lib
 	-mkdir -p Frameworks
+	go clean -cache || true
 ifeq ($(UNAME_S),Darwin)
 ifeq ($(shell expr $(OSXRELEASE) \>= 16), 1)
 		cd krbtle && xcodebuild -configuration $(CONFIGURATION) -archivePath $(SRCFRAMEWORK) -scheme krbtle-Package
@@ -64,21 +75,20 @@ ifeq ($(shell expr $(OSXRELEASE) \>= 16), 1)
 		cp -R krbtle/build/$(CONFIGURATION)/krbtle.framework $(SRCFRAMEWORK)/krbtle.framework
 endif
 endif
-	cd kr; go build $(GO_TAGS) -o ../bin/kr
-	cd krd/main; CGO_LDFLAGS="$(CGO_LDFLAGS)" go build $(GO_TAGS) -o ../../bin/krd
+	cd sigchain && CARGO_RELEASE=$(CARGO_RELEASE) make libsigchain-with-dashboard
+	cd kr; CGO_LDFLAGS="$(LINK_LIBSIGCHAIN_LDFLAGS)" go build -ldflags="-s -w" $(GO_TAGS) -o ../bin/kr
+	cd krd/main; CGO_LDFLAGS="$(CGO_LDFLAGS) $(LINK_LIBSIGCHAIN_LDFLAGS)" go build -ldflags="-s -w" $(GO_TAGS) -o ../../bin/krd
 	cd pkcs11shim; make; cp target/release/kr-pkcs11.so ../lib/
-	cd krssh; CGO_LDFLAGS="$(CGO_LDFLAGS)" go build $(GO_TAGS) -o ../bin/krssh
-	cd krgpg; go build $(GO_TAGS) -o ../bin/krgpg
+	cd krssh; CGO_LDFLAGS="$(CGO_LDFLAGS)" go build -ldflags="-s -w" $(GO_TAGS) -o ../bin/krssh
+	cd krgpg; go build $(GO_TAGS) -ldflags="-s -w" -o ../bin/krgpg
 
 clean:
 	rm -rf bin/
 
-check: vet
-	CGO_LDFLAGS="$(CGO_TEST_LDFLAGS)" go test $(GO_TAGS) github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krd/main github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg
+check:
+	go clean -cache || true
+	CGO_LDFLAGS="$(CGO_TEST_LDFLAGS) $(LINK_LIBSIGCHAIN_LDFLAGS)" go test $(GO_TAGS) github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krd/main github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg
 	cd pkcs11shim; cargo test
-
-vet:
-	go vet github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg
 
 install: all
 	mkdir -p $(DSTBIN)

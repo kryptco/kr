@@ -25,6 +25,10 @@ type Request struct {
 	MeRequest      *MeRequest      `json:"me_request,omitempty"`
 	UnpairRequest  *UnpairRequest  `json:"unpair_request,omitempty"`
 	HostsRequest   *HostsRequest   `json:"hosts_request,omitempty"`
+
+	ReadTeamRequest      *ReadTeamRequest      `json:"read_team_request,omitempty"`
+	TeamOperationRequest *TeamOperationRequest `json:"team_operation_request,omitempty"`
+	LogDecryptionRequest *json.RawMessage      `json:"log_decryption_request,omitempty"`
 }
 
 func NewRequest() (request Request, err error) {
@@ -33,11 +37,14 @@ func NewRequest() (request Request, err error) {
 }
 
 func (r *Request) Prepare() (err error) {
-	id, err := Rand128Base62()
-	if err != nil {
-		return
+	if r.RequestID == "" {
+		id, idErr := Rand128Base62()
+		if idErr != nil {
+			err = idErr
+			return
+		}
+		r.RequestID = id
 	}
-	r.RequestID = id
 	r.UnixSeconds = time.Now().Unix()
 	r.Version = CURRENT_VERSION
 	r.SendACK = true
@@ -88,9 +95,13 @@ type Response struct {
 	MeResponse      *MeResponse      `json:"me_response,omitempty"`
 	UnpairResponse  *UnpairResponse  `json:"unpair_response,omitempty"`
 	AckResponse     *AckResponse     `json:"ack_response,omitempty"`
+	HostsResponse   *HostsResponse   `json:"hosts_response,omitempty"`
 	SNSEndpointARN  *string          `json:"sns_endpoint_arn,omitempty"`
 	TrackingID      *string          `json:"tracking_id,omitempty"`
-	HostsResponse   *HostsResponse   `json:"hosts_response,omitempty"`
+
+	ReadTeamResponse      *json.RawMessage `json:"read_team_response,omitempty"`
+	TeamOperationResponse *json.RawMessage `json:"team_operation_response,omitempty"`
+	LogDecryptionResponse *json.RawMessage `json:"log_decryption_response,omitempty"`
 }
 
 type SignRequest struct {
