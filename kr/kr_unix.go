@@ -61,6 +61,9 @@ func hasYum() bool {
 func hasYaourt() bool {
 	return exec.Command("which", "yaourt").Run() == nil
 }
+func hasPkg() bool {
+	return exec.Command("which", "pkg").Run() == nil
+}
 
 func uninstallCommand(c *cli.Context) (err error) {
 	go func() {
@@ -86,6 +89,9 @@ func uninstallCommand(c *cli.Context) (err error) {
 
 	if hasYaourt() {
 		runCommandWithUserInteraction("sudo", "yaourt", "-R", "kr")
+	}
+	if hasPkg() {
+		runCommandWithUserInteraction("sudo", "pkg", "remove", "kr")
 	}
 
 	cleanSSHConfig()
@@ -117,6 +123,9 @@ func upgradeCommand(c *cli.Context) (err error) {
 	}
 	if hasYaourt() {
 		runCommandWithUserInteraction("sudo", "yaourt", "-Sy", "kr")
+	}
+	if hasPkg() {
+		runCommandWithUserInteraction("sudo", "pkg", "upgrade", "kr")
 	}
 
 	return
