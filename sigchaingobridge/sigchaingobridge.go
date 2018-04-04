@@ -3,7 +3,7 @@ package sigchaingobridge
 /*
 #cgo darwin LDFLAGS: -framework Security -framework Security -framework CoreFoundation -lSystem -lresolv -lc -lm
 #cgo LDFLAGS: -lsigchain
-#cgo linux LDFLAGS: -lssl -lcrypto -lutil -lutil -lrt -lpthread -ldl -lgcc_s -lc -lm -lrt -lpthread -lutil -lutil
+#cgo linux LDFLAGS: -lutil -lutil -lrt -lpthread -ldl -lgcc_s -lc -lm -lrt -lpthread -lutil -lutil
 
 #include <stdlib.h>
 #include "../sigchain/target/include/sigchain.h"
