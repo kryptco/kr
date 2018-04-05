@@ -11,18 +11,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-const DEFAULT_PREFIX = "/usr/local"
-
-func getPrefix() string {
-	prefix := DEFAULT_PREFIX
-	if os.Getenv("PREFIX") != "" {
-		prefix = os.Getenv("PREFIX")
-	} else if os.Getenv("HOMEBREW_PREFIX") != "" {
-		prefix = os.Getenv("HOMEBREW_PREFIX")
-	}
-	return prefix
-}
-
 const PLIST_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -158,13 +146,17 @@ func uninstallCommand(c *cli.Context) (err error) {
 	confirmOrFatal(os.Stderr, "Uninstall Krypton from this workstation?")
 	_, _ = runCommandTmuxFriendly("brew", "uninstall", "kr")
 	_, _ = runCommandTmuxFriendly("npm", "uninstall", "-g", "krd")
-	prefix := getPrefix()
-	for _, file := range []string{"/bin/kr", "/bin/krssh", "/bin/krd", "/bin/krgpg", "/lib/kr-pkcs11.so", "/share/kr", "/Frameworks/krbtle.framework"} {
-		rmErr := exec.Command("rm", "-rf", prefix+file).Run()
-		if rmErr != nil {
-			if os.IsPermission(rmErr) {
-				PrintErr(os.Stderr, "sudo rm -rf "+prefix+file)
-				runCommandWithUserInteraction("sudo", "rm", "-rf", prefix+file)
+	prefix, err := getPrefix()
+	if err != nil {
+		PrintErr(os.Stderr, "Could not determine PREFIX: "+err.Error())
+	} else {
+		for _, file := range []string{"/bin/kr", "/bin/krssh", "/bin/krd", "/bin/krgpg", "/lib/kr-pkcs11.so", "/share/kr", "/Frameworks/krbtle.framework"} {
+			rmErr := exec.Command("rm", "-rf", prefix+file).Run()
+			if rmErr != nil {
+				if os.IsPermission(rmErr) {
+					PrintErr(os.Stderr, "sudo rm -rf "+prefix+file)
+					runCommandWithUserInteraction("sudo", "rm", "-rf", prefix+file)
+				}
 			}
 		}
 	}

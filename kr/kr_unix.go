@@ -5,20 +5,11 @@ package main
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/kryptco/kr"
 	"github.com/urfave/cli"
 )
-
-const DEFAULT_PREFIX = "/usr"
-
-func getPrefix() string {
-	prefix := DEFAULT_PREFIX
-	if os.Getenv("PREFIX") != "" {
-		prefix = os.Getenv("PREFIX")
-	}
-	return prefix
-}
 
 func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 	if isUserInitiated {
