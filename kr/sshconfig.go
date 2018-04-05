@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/urfave/cli"
@@ -24,15 +26,18 @@ Host *
 
 const KR_SKIP_SSH_CONFIG = "KR_SKIP_SSH_CONFIG"
 
-func getKrSSHConfigBlock() string {
-	prefix := getPrefix()
+func getKrSSHConfigBlockOrFatal() string {
+	prefix, err := getPrefix()
+	if err != nil {
+		PrintFatal(os.Stderr, err.Error())
+	}
 	var sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix, prefix)
 	return sshConfigWithPrefix
 }
 
 func sshConfigCommand(c *cli.Context) (err error) {
 	if c.Bool("print") {
-		os.Stdout.WriteString(getKrSSHConfigBlock() + "\n")
+		os.Stdout.WriteString(getKrSSHConfigBlockOrFatal() + "\n")
 		return
 	}
 	return editSSHConfig(true, c.Bool("force"))
@@ -46,7 +51,7 @@ func autoEditSSHConfig() (err error) {
 }
 
 func editSSHConfig(prompt bool, forceAppend bool) (err error) {
-	configBlock := []byte(getKrSSHConfigBlock())
+	configBlock := []byte(getKrSSHConfigBlockOrFatal())
 	sshDirPath := os.Getenv("HOME") + "/.ssh"
 	_ = os.MkdirAll(sshDirPath, 0700)
 	sshConfigPath := sshDirPath + "/config"
@@ -106,7 +111,7 @@ func editSSHConfig(prompt bool, forceAppend bool) (err error) {
 }
 
 func cleanSSHConfig() (err error) {
-	configBlock := []byte(getKrSSHConfigBlock())
+	configBlock := []byte(getKrSSHConfigBlockOrFatal())
 	sshDirPath := os.Getenv("HOME") + "/.ssh"
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr.uninstall"
@@ -133,4 +138,13 @@ func cleanSSHConfig() (err error) {
 		return
 	}
 	return
+}
+
+func getPrefix() (string, error) {
+	krAbsPath, err := exec.Command("which", "kr").Output()
+	if err != nil {
+		PrintErr(os.Stderr, kr.Red("Krypton ▶ Could not find kr on PATH"))
+		return "", err
+	}
+	return strings.TrimSuffix(strings.TrimSpace(string(krAbsPath)), "/bin/kr"), nil
 }
