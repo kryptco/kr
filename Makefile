@@ -39,7 +39,7 @@ ifeq ($(UNAME_S),Darwin)
 	endif
 endif
 ifeq ($(UNAME_S),FreeBSD)
-	MAKE ?= gmake
+	MAKE = gmake
 	PREFIX ?= /usr/local
 endif
 
