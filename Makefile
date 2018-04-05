@@ -1,3 +1,4 @@
+MAKE ?= make
 OS ?= $(shell ./install/os.sh)
 UNAME_S := $(shell uname -s)
 
@@ -38,6 +39,7 @@ ifeq ($(UNAME_S),Darwin)
 	endif
 endif
 ifeq ($(UNAME_S),FreeBSD)
+	MAKE ?= gmake
 	PREFIX ?= /usr/local
 endif
 
@@ -66,7 +68,7 @@ endif
 endif
 	cd kr; go build $(GO_TAGS) -o ../bin/kr
 	cd krd/main; CGO_LDFLAGS="$(CGO_LDFLAGS)" go build $(GO_TAGS) -o ../../bin/krd
-	cd pkcs11shim; make; cp target/release/kr-pkcs11.so ../lib/
+	cd pkcs11shim; $(MAKE); cp target/release/kr-pkcs11.so ../lib/
 	cd krssh; CGO_LDFLAGS="$(CGO_LDFLAGS)" go build $(GO_TAGS) -o ../bin/krssh
 	cd krgpg; go build $(GO_TAGS) -o ../bin/krgpg
 
