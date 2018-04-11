@@ -17,6 +17,10 @@ export DH_VERBOSE = 1
 %:
 	dh $@
 
+override_dh_auto_test:
+	#ignore test for now to speedup build
+	true
+
 override_dh_auto_configure:
 	git submodule update --init --recursive
 
