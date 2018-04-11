@@ -647,6 +647,13 @@ func main() {
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard",
 			Action: copyCommand,
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "pgp",
+					Usage:  "Copy your PGP public key to the clipboard.",
+					Action: copyPGPCommand,
+				},
+			},
 		},
 		cli.Command{
 			Name:  "team",
