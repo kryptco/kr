@@ -1,0 +1,13 @@
+Source: kr
+Section: unknown
+Priority: optional
+Maintainer: KryptCo Software Distribution <hello@krypt.co>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://krypt.co
+Vcs-Git: https://github.com/kryptco/kr.git
+
+Package: kr
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: SSH and PGP sign using a key stored in Krypton.
