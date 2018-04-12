@@ -63,7 +63,6 @@ endif
 LINK_LIBSIGCHAIN_LDFLAGS = -L ${PWD}/sigchain/target/${CARGO_TARGET_SCHEME} 
 
 all:
-	export PATH=$(HOME)/.cargo/bin:$(PATH)
 	-rm -rf bin lib Frameworks
 	-mkdir -p bin
 	-mkdir -p lib
