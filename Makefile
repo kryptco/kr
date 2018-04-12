@@ -42,10 +42,10 @@ ifeq ($(UNAME_S),FreeBSD)
 endif
 
 SRCBIN = $(PWD)/bin
-DSTBIN = $(PREFIX)/bin
+DSTBIN = $(DESTDIR)$(PREFIX)/bin
 
 SRCLIB = $(PWD)/lib
-DSTLIB = $(PREFIX)/lib
+DSTLIB = $(DESTDIR)$(PREFIX)/lib
 
 SRCFRAMEWORK = $(PWD)/Frameworks
 DSTFRAMEWORK = $(PREFIX)/Frameworks
