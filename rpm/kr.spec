@@ -1,5 +1,5 @@
 Name:    kr
-Version: 2.4.2
+Version: %{version}
 Release: 1%{?dist}
 Url: https://krypt.co
 Summary: Krypton daemon -- use an SSH key stored in the Krypton mobile app.
