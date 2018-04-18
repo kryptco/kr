@@ -88,6 +88,7 @@ func StartNotifyCleanup() {
 								if err == nil {
 									info, err := logFile.Stat()
 									if err == nil {
+										_ = logFile.Close()
 										if time.Now().Sub(info.ModTime()) >= time.Hour {
 											_ = os.Remove(logFilePath)
 										}
