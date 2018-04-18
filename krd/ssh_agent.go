@@ -348,6 +348,11 @@ func (a *Agent) onHostAuth(hostAuth kr.HostAuth) {
 		return
 	}
 
+	// Server public key may be a certificate, for now extract the inner public key
+	if sshCert, ok := sshPK.(*ssh.Certificate); ok {
+		sshPK = sshCert.Key
+	}
+
 	var sshSig ssh.Signature
 	err = ssh.Unmarshal(hostAuth.Signature, &sshSig)
 	if err != nil {
