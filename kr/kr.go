@@ -344,67 +344,6 @@ func copyPGPKeyNonFatalOnClipboardError() (me kr.Profile, pk string, err error) 
 	return
 }
 
-func addCommand(c *cli.Context) (err error) {
-	go func() {
-		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "add", nil, nil)
-	}()
-
-	// ensure there's a user@server or alias to add to
-	if len(c.Args()) < 1 {
-		PrintFatal(os.Stderr, "kr add <user@server or SSH alias>")
-		return
-	}
-
-	server := c.Args()[0]
-
-	portFlag := c.String("port")
-	publicKeyFlag := c.String("public-key")
-
-	var authorizedKeyString string
-
-	// check if input is from stdin
-	fi, _ := os.Stdin.Stat()
-
-	if (fi.Mode() & os.ModeCharDevice) == 0 {
-		reader := bufio.NewReader(os.Stdin)
-		publicKeyStdin, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		authorizedKeyString = publicKeyStdin
-
-	} else if publicKeyFlag != "" {
-		authorizedKeyString = publicKeyFlag
-	} else {
-		me, err := krdclient.RequestMe()
-		if err != nil {
-			PrintFatal(os.Stderr, "error retrieving your public key: ", err.Error())
-		}
-
-		authorizedKeyString, err = me.AuthorizedKeyString()
-		if err != nil {
-			PrintFatal(os.Stderr, err.Error())
-		}
-	}
-
-	authorizedKey := append([]byte(authorizedKeyString), []byte("\n")...)
-
-	PrintErr(os.Stderr, "Adding SSH public key to %s", server)
-
-	authorizedKeyReader := bytes.NewReader(authorizedKey)
-	args := []string{server}
-	if portFlag != "" {
-		args = append(args, "-p "+portFlag)
-	}
-	args = append(args, "sh -c 'read keys; mkdir -m 700 -p ~/.ssh && echo $keys >> ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys'")
-	sshCommand := exec.Command("ssh", args...)
-	sshCommand.Stdin = authorizedKeyReader
-	sshCommand.Stdout = os.Stdout
-	sshCommand.Stderr = os.Stderr
-	sshCommand.Run()
-	return
-}
-
 func githubCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "github", nil, nil)
@@ -1013,7 +952,7 @@ func main() {
 		},
 		cli.Command{
 			Name:   "add",
-			Usage:  "Add your Krypton SSH public key to a < user@server or SSH alias >",
+			Usage:  "Add a Krypton SSH public key to a < user@server or SSH alias >",
 			Action: addCommand,
 			Flags: []cli.Flag{
 				cli.StringFlag{
@@ -1023,6 +962,58 @@ func main() {
 				cli.StringFlag{
 					Name:  "public-key",
 					Usage: "A non-paired public key to add",
+				},
+				cli.StringFlag{
+					Name:  "member, m",
+					Usage: "Member of the team to add to this server",
+				},
+				cli.StringFlag{
+					Name:  "server, s",
+					Usage: "Server to add access to. Can be of the form <user@host> or an SSH alias",
+				},
+			},
+		},
+		cli.Command{
+			Name:    "remove",
+			Aliases: []string{"rm"},
+			Usage:   "Remove SSH public keys from < user@server or SSH alias >",
+			Action:  removeCommand,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "port, p",
+					Usage: "Port of SSH server",
+				},
+				cli.StringFlag{
+					Name:  "public-key",
+					Usage: "A non-paired public key to add",
+				},
+				cli.StringFlag{
+					Name:  "member, m",
+					Usage: "Email of team member to remove from this server",
+				},
+				cli.StringFlag{
+					Name:  "server, s",
+					Usage: "Server to remove access from. Can be of the form <user@host> or an SSH alias",
+				},
+			},
+		},
+		cli.Command{
+			Name:    "list",
+			Aliases: []string{"ls"},
+			Usage:   "List which team members have access to a server",
+			Action:  listCommand,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "port, p",
+					Usage: "Port of SSH server",
+				},
+				cli.StringFlag{
+					Name:  "ignore-unknown",
+					Usage: "Do not print public keys that do not correspond to any team member",
+				},
+				cli.StringFlag{
+					Name:  "server, s",
+					Usage: "Server to query. Can be of the form <user@host> or an SSH alias",
 				},
 			},
 		},

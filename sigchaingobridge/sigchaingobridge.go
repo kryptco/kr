@@ -11,7 +11,11 @@ package sigchaingobridge
 import (
 	"C"
 )
-import "strings"
+import (
+	"os"
+	"strings"
+	"unsafe"
+)
 
 func InviteEmails(emails []string) {
 	emailsStringSlice := []byte(strings.Join(emails, ","))
@@ -160,4 +164,38 @@ func ServeDashboard() {
 
 func ServeDashboardIfParamsPresent() {
 	C.serve_dashboard_if_params_present()
+}
+
+func KrAdd() {
+	args, n := osArgsToCArray()
+	C.kr_add(args, n)
+	C.free(unsafe.Pointer(args))
+}
+
+func KrList() {
+	args, n := osArgsToCArray()
+	C.kr_list(args, n)
+	C.free(unsafe.Pointer(args))
+}
+
+func KrRm() {
+	args, n := osArgsToCArray()
+	C.kr_rm(args, n)
+	C.free(unsafe.Pointer(args))
+}
+
+// Caller must free returned array
+func osArgsToCArray() (**C.char, C.uintptr_t) {
+	// Pass arguments from Go since the rust native library std::env::args returns an empty list on Linux
+	// https://stackoverflow.com/questions/41492071/how-do-i-convert-a-go-array-of-strings-to-a-c-array-of-strings
+	goArgs := os.Args
+	cArray := C.malloc(C.size_t(len(goArgs)) * C.size_t(unsafe.Sizeof(uintptr(0))))
+
+	a := (*[1<<30 - 1]*C.char)(cArray)
+
+	for idx, arg := range goArgs {
+		a[idx] = C.CString(arg)
+	}
+
+	return (**C.char)(cArray), C.uintptr_t(len(goArgs))
 }

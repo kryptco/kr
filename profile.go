@@ -22,11 +22,20 @@ type Profile struct {
 }
 
 func (p Profile) AuthorizedKeyString() (authString string, err error) {
+	authString, err = p.AuthorizedKeyStringWithoutEmail()
+	if err != nil {
+		return
+	}
+	authString += " " + strings.Replace(p.Email, " ", "", -1)
+	return
+}
+
+func (p Profile) AuthorizedKeyStringWithoutEmail() (authString string, err error) {
 	pk, err := p.SSHPublicKey()
 	if err != nil {
 		return
 	}
-	authString = pk.Type() + " " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey) + " " + strings.Replace(p.Email, " ", "", -1)
+	authString = pk.Type() + " " + base64.StdEncoding.EncodeToString(p.SSHWirePublicKey)
 	return
 }
 
