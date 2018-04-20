@@ -3,7 +3,7 @@ Version: %{version}
 Release: 1%{?dist}
 Url: https://krypt.co
 Summary: Krypton daemon -- use an SSH key stored in the Krypton mobile app.
-Requires: redhat-lsb-core, openssl
+Requires: openssl
 Source: kr.tar.gz
 License: All rights reserved.
 

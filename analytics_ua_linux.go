@@ -21,12 +21,14 @@ func getAnalyticsOSVersion() *string {
 		return cachedAnalyticsOSVersion
 	}
 
-	analytics_os_version_bytes, err := exec.Command("lsb_release", "-d", "-s").Output()
+	analytics_os_version_bytes, err := exec.Command("grep", "PRETTY_NAME", "/etc/os-release").Output()
 	if err != nil {
 		log.Error("error retrieving OS version:", err.Error())
 		return nil
 	}
 	stripped := strings.TrimSpace(string(analytics_os_version_bytes))
+	stripped = strings.TrimPrefix(stripped, "PRETTY_NAME=\"")
+	stripped = strings.TrimSuffix(stripped, "\"")
 	cachedAnalyticsOSVersion = &stripped
 	return cachedAnalyticsOSVersion
 }
