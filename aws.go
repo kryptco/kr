@@ -97,7 +97,6 @@ func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueN
 				"queue":             sqsQueueName,
 				"c":                 requestCiphertext,
 				"session_uuid":      sqsQueueName,
-				"category":          "authorize_identifier",
 			},
 		})
 	gcmPayload, _ := json.Marshal(
