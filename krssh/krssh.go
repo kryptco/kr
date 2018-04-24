@@ -64,7 +64,7 @@ func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error)
 
 	hostnameWithNonDefaultPort := hostname
 	if port != "22" && port != "" {
-		hostnameWithNonDefaultPort = net.JoinHostPort(hostname, port)
+		hostnameWithNonDefaultPort = "[" + hostname + "]:" + port
 	}
 
 	if err == nil {
