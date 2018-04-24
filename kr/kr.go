@@ -595,6 +595,95 @@ func main() {
 			},
 		},
 		cli.Command{
+			Name:  "hosts",
+			Usage: "Distribute & manage SSH known hosts for your team",
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:   "list",
+					Usage:  "List pinned host SSH public keys",
+					Action: listPinnedKeysCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned",
+						},
+						cli.BoolFlag{
+							Name:  "search",
+							Usage: "(Optional) Treats --host flag as a search instead of exact match",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "pin",
+					Usage:  "Pin a host's SSH public keys",
+					Action: pinHostKeyCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "(Required) Host name or SSH alias",
+						},
+						cli.StringFlag{
+							Name:  "public-key",
+							Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file",
+						},
+						cli.BoolFlag{
+							Name:  "update-from-server",
+							Usage: "(Optional) Update list of known keys from this server before pinning",
+						},
+					},
+				},
+				cli.Command{
+					Name:   "unpin",
+					Usage:  "Unpin a host SSH public key",
+					Action: unpinHostKeyCommand,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "host",
+							Usage: "Host name",
+						},
+						cli.StringFlag{
+							Name:  "public-key",
+							Usage: "Public key",
+						},
+					},
+				},
+			},
+		},
+		cli.Command{
+			Name:   "pin",
+			Usage:  "Pin a host's SSH public keys",
+			Action: pinHostKeyCommand,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "host",
+					Usage: "(Required) Host name or SSH alias",
+				},
+				cli.StringFlag{
+					Name:  "public-key",
+					Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file",
+				},
+				cli.BoolFlag{
+					Name:  "update-from-server",
+					Usage: "(Optional) Update list of known keys from this server before pinning",
+				},
+			},
+		},
+		cli.Command{
+			Name:   "unpin",
+			Usage:  "Unpin a host SSH public key",
+			Action: unpinHostKeyCommand,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "host",
+					Usage: "Host name",
+				},
+				cli.StringFlag{
+					Name:  "public-key",
+					Usage: "Public key",
+				},
+			},
+		},
+		cli.Command{
 			Name:  "team",
 			Usage: "Krypton Teams settings",
 			Subcommands: []cli.Command{
@@ -647,7 +736,7 @@ func main() {
 					},
 				},
 				cli.Command{
-					Name:   "members",
+					Name:   "list",
 					Usage:  "List your team members' emails and public keys",
 					Action: getMembersCommand,
 					Flags: []cli.Flag{
@@ -663,113 +752,31 @@ func main() {
 							Name:  "pgp, p",
 							Usage: "Print PGP public keys",
 						},
+						cli.BoolFlag{
+							Name:  "admin",
+							Usage: "Only include team admins",
+						},
 					},
 				},
 				cli.Command{
-					Name:   "pin",
-					Usage:  "Distribute & manage known hosts for your team: pin a host's SSH public keys",
-					Action: pinHostKeyCommand,
-					Hidden: true,
+					Name:   "promote",
+					Usage:  "Promote a team member to 'Admin'",
+					Action: addAdminCommand,
 					Flags: []cli.Flag{
 						cli.StringFlag{
-							Name:  "host",
-							Usage: "(Required) Host name or SSH alias",
+							Name:  "email, e",
+							Usage: "Member's email",
 						},
+					},
+				},
+				cli.Command{
+					Name:   "demote",
+					Usage:  "Demote an admin to 'Member'",
+					Action: removeAdminCommand,
+					Flags: []cli.Flag{
 						cli.StringFlag{
-							Name:  "public-key",
-							Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file",
-						},
-						cli.BoolFlag{
-							Name:  "update-from-server",
-							Usage: "(Optional) Update list of known keys from this server before pinning",
-						},
-					},
-				},
-				cli.Command{
-					Name:  "hosts",
-					Usage: "Distribute & manage SSH known hosts for your team",
-					Subcommands: []cli.Command{
-						cli.Command{
-							Name:   "list",
-							Usage:  "List pinned host SSH public keys",
-							Action: listPinnedKeysCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "host",
-									Usage: "(Optional) Host name or SSH alias. By default all hosts' pinned keys are returned",
-								},
-								cli.BoolFlag{
-									Name:  "search",
-									Usage: "(Optional) Treats --host flag as a search instead of exact match",
-								},
-							},
-						},
-						cli.Command{
-							Name:   "pin",
-							Usage:  "Pin a host's SSH public keys",
-							Action: pinHostKeyCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "host",
-									Usage: "(Required) Host name or SSH alias",
-								},
-								cli.StringFlag{
-									Name:  "public-key",
-									Usage: "(Optional) Public key to pin. If unset, parses keys from local known_hosts file",
-								},
-								cli.BoolFlag{
-									Name:  "update-from-server",
-									Usage: "(Optional) Update list of known keys from this server before pinning",
-								},
-							},
-						},
-						cli.Command{
-							Name:   "unpin",
-							Usage:  "Unpin a host SSH public key",
-							Action: unpinHostKeyCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "host",
-									Usage: "Host name",
-								},
-								cli.StringFlag{
-									Name:  "public-key",
-									Usage: "Public key",
-								},
-							},
-						},
-					},
-				},
-				cli.Command{
-					Name:  "admin",
-					Usage: "List or manage your team's admins",
-					Subcommands: []cli.Command{
-						cli.Command{
-							Name:   "promote",
-							Usage:  "Promote a team member to 'Admin'",
-							Action: addAdminCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "email, e",
-									Usage: "Member's email",
-								},
-							},
-						},
-						cli.Command{
-							Name:   "demote",
-							Usage:  "Demote an admin to 'Member'",
-							Action: removeAdminCommand,
-							Flags: []cli.Flag{
-								cli.StringFlag{
-									Name:  "email, e",
-									Usage: "Admin's email",
-								},
-							},
-						},
-						cli.Command{
-							Name:   "list",
-							Usage:  "List the team admins",
-							Action: getAdminsCommand,
+							Name:  "email, e",
+							Usage: "Admin's email",
 						},
 					},
 				},

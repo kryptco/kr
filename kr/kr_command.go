@@ -192,7 +192,7 @@ func getMembersCommand(c *cli.Context) (err error) {
 		}
 		email = &address.Address
 	}
-	sigchain.GetMembers(email, c.Bool("ssh"), c.Bool("pgp"))
+	sigchain.GetMembers(email, c.Bool("ssh"), c.Bool("pgp"), c.Bool("admin"))
 	return
 }
 
@@ -217,13 +217,6 @@ func removeAdminCommand(c *cli.Context) (err error) {
 		PrintFatal(os.Stderr, "--email required")
 	}
 	sigchain.RemoveAdmin(email)
-	return
-}
-
-func getAdminsCommand(c *cli.Context) (err error) {
-	exitIfNotOnTeam()
-
-	sigchain.GetAdmins()
 	return
 }
 

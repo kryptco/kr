@@ -57,16 +57,16 @@ func SetApprovalWindow(approval_window *int64) {
 	C.set_policy((*C.int64_t)(approval_window))
 }
 
-func GetMembers(email *string, printSSHPubkey bool, printPGPPubkey bool) {
+func GetMembers(email *string, printSSHPubkey bool, printPGPPubkey bool, admin bool) {
 	if email != nil {
 		emailSlice := []byte(*email)
 		bytes := C.CBytes(emailSlice)
 		C.get_members((*C.uint8_t)(bytes), C.uintptr_t(len(emailSlice)),
-			C._Bool(printSSHPubkey), C._Bool(printPGPPubkey))
+			C._Bool(printSSHPubkey), C._Bool(printPGPPubkey), C._Bool(admin))
 		C.free(bytes)
 	} else {
 		C.get_members((*C.uint8_t)(nil), C.uintptr_t(0),
-			C._Bool(printSSHPubkey), C._Bool(printPGPPubkey))
+			C._Bool(printSSHPubkey), C._Bool(printPGPPubkey), C._Bool(admin))
 	}
 }
 
@@ -86,10 +86,6 @@ func RemoveAdmin(email string) {
 	bytes := C.CBytes(emailSlice)
 	C.remove_admin((*C.uint8_t)(bytes), C.uintptr_t(len(emailSlice)))
 	C.free(bytes)
-}
-
-func GetAdmins() {
-	C.get_admins()
 }
 
 func PinHostKey(host string, publicKey []byte) {
