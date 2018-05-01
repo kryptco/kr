@@ -85,6 +85,18 @@ func main() {
 			Name:  "keyid-format",
 			Usage: "Key ID format",
 		},
+		cli.BoolFlag{
+			Name:  "batch",
+			Hidden: true,
+		},
+		cli.BoolFlag{
+			Name:  "no-tty",
+			Hidden: true,
+		},
+		cli.BoolFlag{
+			Name:  "yes",
+			Hidden: true,
+		},
 	}
 	app.Action = func(c *cli.Context) error {
 		if c.Bool("bsau") || (c.Bool("s") && c.Bool("b") && c.Bool("a")) {
