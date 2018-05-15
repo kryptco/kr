@@ -33,8 +33,8 @@ func QREncode(data []byte) (*Encodings, error) {
 }
 
 const (
-	black = "\033[40m  \033[0m"
-	white = "\033[47m  \033[0m"
+	black = "\033[48;5;232m  \033[0m"
+	white = "\033[48;5;255m  \033[0m"
 )
 
 func terminal(code *qr.Code) string {
