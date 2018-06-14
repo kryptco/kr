@@ -146,6 +146,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 	confirmOrFatal(os.Stderr, "Uninstall Krypton from this workstation?")
 	_, _ = runCommandTmuxFriendly("brew", "uninstall", "kr")
 	_, _ = runCommandTmuxFriendly("npm", "uninstall", "-g", "krd")
+	cleanSSHConfig()
 	prefix, err := getPrefix()
 	if err != nil {
 		PrintErr(os.Stderr, "Could not determine PREFIX: "+err.Error())
@@ -162,7 +163,6 @@ func uninstallCommand(c *cli.Context) (err error) {
 	}
 	runCommandTmuxFriendly("launchctl", "unload", homePlist)
 	os.Remove(homePlist)
-	cleanSSHConfig()
 	uninstallCodesigning()
 	PrintErr(os.Stderr, "Krypton uninstalled. If you experience any issues, please refer to https://krypt.co/docs/start/installation.html#uninstalling-kr")
 	return

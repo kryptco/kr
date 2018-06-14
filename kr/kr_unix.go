@@ -58,6 +58,8 @@ func uninstallCommand(c *cli.Context) (err error) {
 	}()
 	confirmOrFatal(os.Stderr, "Uninstall Krypton from this workstation? (same as sudo apt-get/yum remove kr)")
 
+	cleanSSHConfig()
+
 	exec.Command("killall", "krd").Run()
 
 	if hasAptGet() {
@@ -77,8 +79,6 @@ func uninstallCommand(c *cli.Context) (err error) {
 	if hasYaourt() {
 		runCommandWithUserInteraction("sudo", "yaourt", "-R", "kr")
 	}
-
-	cleanSSHConfig()
 	uninstallCodesigning()
 	PrintErr(os.Stderr, "Krypton uninstalled. If you experience any issues, please refer to https://krypt.co/docs/start/installation.html#uninstalling-kr")
 	return
