@@ -15,6 +15,8 @@ func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
 	}
 
+	_ = migrateSSHConfig()
+
 	exec.Command("killall", "krd").Run()
 	startKrd()
 

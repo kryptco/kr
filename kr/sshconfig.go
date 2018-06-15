@@ -16,13 +16,16 @@ import (
 
 const SSH_CONFIG_FORMAT = `# Added by Krypton
 Host *
-	PKCS11Provider %s/lib/kr-pkcs11.so
+	IdentityAgent ~/.kr/krd-agent.sock
 	ProxyCommand %s/bin/krssh %%h %%p
 	IdentityFile ~/.ssh/id_krypton
 	IdentityFile ~/.ssh/id_ed25519
 	IdentityFile ~/.ssh/id_rsa
 	IdentityFile ~/.ssh/id_ecdsa
 	IdentityFile ~/.ssh/id_dsa`
+
+const OLD_PKCS11_PROVIDER_FORMAT = `PKCS11Provider %s/lib/kr-pkcs11.so`
+const NEW_IDENTITY_AGENT = `IdentityAgent ~/.kr/krd-agent.sock`
 
 const KR_SKIP_SSH_CONFIG = "KR_SKIP_SSH_CONFIG"
 
@@ -31,7 +34,7 @@ func getKrSSHConfigBlockOrFatal() string {
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
-	var sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix, prefix)
+	var sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix)
 	return sshConfigWithPrefix
 }
 
@@ -50,12 +53,18 @@ func autoEditSSHConfig() (err error) {
 	return editSSHConfig(false, false)
 }
 
-func editSSHConfig(prompt bool, forceAppend bool) (err error) {
-	configBlock := []byte(getKrSSHConfigBlockOrFatal())
+func getSSHConfigAndBakPaths() (string, string) {
 	sshDirPath := os.Getenv("HOME") + "/.ssh"
 	_ = os.MkdirAll(sshDirPath, 0700)
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr"
+	return sshConfigPath, sshConfigBackupPath
+}
+
+func editSSHConfig(prompt bool, forceAppend bool) (err error) {
+	configBlock := []byte(getKrSSHConfigBlockOrFatal())
+
+	sshConfigPath, sshConfigBackupPath := getSSHConfigAndBakPaths()
 
 	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0700)
 	if err != nil {
@@ -108,6 +117,40 @@ func editSSHConfig(prompt bool, forceAppend bool) (err error) {
 		<-time.After(time.Second)
 	}
 	return
+}
+
+func migrateSSHConfig() (err error) {
+	prefix, err := getPrefix()
+	if err != nil {
+		PrintErr(os.Stderr, err.Error())
+		return err
+	}
+	sshConfigPath, _ := getSSHConfigAndBakPaths()
+
+	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0700)
+	if err != nil {
+		return
+	}
+	defer sshConfigFile.Close()
+	currentConfigContents, err := ioutil.ReadAll(sshConfigFile)
+	if err != nil {
+		return
+	}
+
+	oldPKCS11Provider := fmt.Sprintf(OLD_PKCS11_PROVIDER_FORMAT, prefix)
+
+	if !bytes.Contains(currentConfigContents, []byte(oldPKCS11Provider)) {
+		return nil
+	}
+
+	newConfigContents := bytes.Replace(currentConfigContents, []byte(oldPKCS11Provider), []byte(NEW_IDENTITY_AGENT), -1)
+
+	err = ioutil.WriteFile(sshConfigPath, newConfigContents, 0700)
+	if err != nil {
+		return
+	}
+
+	return nil
 }
 
 func cleanSSHConfig() (err error) {
