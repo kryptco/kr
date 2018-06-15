@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"os"
 
 	"github.com/hashicorp/golang-lru"
 	"github.com/keybase/saltpack/encoding/basex"
@@ -28,23 +29,10 @@ type sessionIDSig struct {
 
 type hostAuthCallback chan *kr.HostAuth
 
-func getOriginalAgent() (originalAgent agent.Agent, err error) {
-	originalAgentSock, err := kr.KrDirFile("original-agent.sock")
-	if err != nil {
-		return
-	}
-	conn, err := net.Dial("unix", originalAgentSock)
-	if err != nil {
-		return
-	}
-	return agent.NewClient(conn), nil
-}
-
 func (a *Agent) withOriginalAgent(do func(agent.Agent)) error {
-	originalAgentSock, err := kr.KrDirFile("original-agent.sock")
-	if err != nil {
-		a.log.Error("error connecting to fallbackAgent: " + err.Error())
-		return err
+	originalAgentSock := os.Getenv("SSH_AUTH_SOCK")
+	if strings.HasSuffix(originalAgentSock, "krd-agent.sock") {
+		return nil
 	}
 	conn, err := net.Dial("unix", originalAgentSock)
 	if err != nil {
