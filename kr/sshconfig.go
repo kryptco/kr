@@ -8,13 +8,14 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"strconv"
 
 	"github.com/urfave/cli"
 
 	"github.com/kryptco/kr"
 )
 
-const SSH_CONFIG_FORMAT = `# Added by Krypton
+const OLD_SSH_CONFIG_FORMAT = `# Added by Krypton
 Host *
 	PKCS11Provider %s/lib/kr-pkcs11.so
 	ProxyCommand %s/bin/krssh %%h %%p
@@ -24,6 +25,19 @@ Host *
 	IdentityFile ~/.ssh/id_ecdsa
 	IdentityFile ~/.ssh/id_dsa`
 
+const SSH_CONFIG_FORMAT = `# Added by Krypton
+Host *
+	IdentityAgent ~/.kr/krd-agent.sock
+	ProxyCommand %s/bin/krssh %%h %%p
+	IdentityFile ~/.ssh/id_krypton
+	IdentityFile ~/.ssh/id_ed25519
+	IdentityFile ~/.ssh/id_rsa
+	IdentityFile ~/.ssh/id_ecdsa
+	IdentityFile ~/.ssh/id_dsa`
+
+const OLD_PKCS11_PROVIDER_FORMAT = `PKCS11Provider %s/lib/kr-pkcs11.so`
+const NEW_IDENTITY_AGENT = `IdentityAgent ~/.kr/krd-agent.sock`
+
 const KR_SKIP_SSH_CONFIG = "KR_SKIP_SSH_CONFIG"
 
 func getKrSSHConfigBlockOrFatal() string {
@@ -31,7 +45,14 @@ func getKrSSHConfigBlockOrFatal() string {
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
-	var sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix, prefix)
+	var sshConfigWithPrefix string
+
+	if localSSHSupportsIdentityAgent(){
+		sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix)
+	} else {
+		sshConfigWithPrefix = fmt.Sprintf(OLD_SSH_CONFIG_FORMAT, prefix, prefix)
+	}
+
 	return sshConfigWithPrefix
 }
 
@@ -50,12 +71,18 @@ func autoEditSSHConfig() (err error) {
 	return editSSHConfig(false, false)
 }
 
-func editSSHConfig(prompt bool, forceAppend bool) (err error) {
-	configBlock := []byte(getKrSSHConfigBlockOrFatal())
+func getSSHConfigAndBakPaths() (string, string) {
 	sshDirPath := os.Getenv("HOME") + "/.ssh"
 	_ = os.MkdirAll(sshDirPath, 0700)
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr"
+	return sshConfigPath, sshConfigBackupPath
+}
+
+func editSSHConfig(prompt bool, forceAppend bool) (err error) {
+	configBlock := []byte(getKrSSHConfigBlockOrFatal())
+
+	sshConfigPath, sshConfigBackupPath := getSSHConfigAndBakPaths()
 
 	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0700)
 	if err != nil {
@@ -108,6 +135,71 @@ func editSSHConfig(prompt bool, forceAppend bool) (err error) {
 		<-time.After(time.Second)
 	}
 	return
+}
+
+func localSSHSupportsIdentityAgent() bool {
+	//	Valid OpenSSH version strings:
+	//	OpenSSH_6.7p1 Debian-5+deb8u4, OpenSSL 1.0.1t  3 May 2016
+	//	OpenSSH_7.7p1, OpenSSL 1.0.2o  27 Mar 2018
+	versionOutput, err := exec.Command("ssh", "-V").CombinedOutput()
+	if err != nil {
+		return false
+	}
+	versionString := string(versionOutput)
+	versionString = strings.TrimPrefix(versionString, "OpenSSH_")
+	for _, suffixDelim := range []string{" ", ",", "p"} {
+		versionString = strings.Split(versionString, suffixDelim)[0]
+	}
+	versionStringToks := strings.Split(versionString, ".")
+	if len(versionStringToks) != 2 {
+		return false
+	}
+	major, err := strconv.ParseUint(versionStringToks[0], 10, 64)
+	if err != nil {
+		return false
+	}
+	minor, err := strconv.ParseUint(versionStringToks[1], 10, 64)
+	if err != nil {
+		return false
+	}
+	return major > 7 || (major >= 7 && minor >= 3)
+}
+
+func migrateSSHConfig() (err error) {
+	if !localSSHSupportsIdentityAgent() {
+		return
+	}
+	prefix, err := getPrefix()
+	if err != nil {
+		PrintErr(os.Stderr, err.Error())
+		return err
+	}
+	sshConfigPath, _ := getSSHConfigAndBakPaths()
+
+	sshConfigFile, err := os.OpenFile(sshConfigPath, os.O_RDONLY|os.O_CREATE, 0700)
+	if err != nil {
+		return
+	}
+	defer sshConfigFile.Close()
+	currentConfigContents, err := ioutil.ReadAll(sshConfigFile)
+	if err != nil {
+		return
+	}
+
+	oldPKCS11Provider := fmt.Sprintf(OLD_PKCS11_PROVIDER_FORMAT, prefix)
+
+	if !bytes.Contains(currentConfigContents, []byte(oldPKCS11Provider)) {
+		return nil
+	}
+
+	newConfigContents := bytes.Replace(currentConfigContents, []byte(oldPKCS11Provider), []byte(NEW_IDENTITY_AGENT), -1)
+
+	err = ioutil.WriteFile(sshConfigPath, newConfigContents, 0700)
+	if err != nil {
+		return
+	}
+
+	return nil
 }
 
 func cleanSSHConfig() (err error) {

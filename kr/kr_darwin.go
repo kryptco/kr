@@ -79,8 +79,8 @@ func startKrd() (err error) {
 	if err != nil {
 		return
 	}
-	for _, proxyVar := range []string{"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"} {
-		copyEnvToLaunchctl(proxyVar)
+	for _, envVar := range []string{"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY", "SSH_AUTH_SOCK"} {
+		copyEnvToLaunchctl(envVar)
 	}
 	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
 	output, err := runCommandTmuxFriendly("launchctl", "load", homePlist)
@@ -115,6 +115,8 @@ func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 	if isUserInitiated {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "restart", nil, nil)
 	}
+
+	_ = migrateSSHConfig()
 
 	err = copyPlist()
 	if err != nil {
