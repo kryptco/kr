@@ -94,7 +94,7 @@ func startKrd() (err error) {
 
 func killKrd() (err error) {
 	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
-	_, _ = runCommandTmuxFriendly("killall", "-u", os.Getenv("UID"), "krd")
+	_, _ = runCommandTmuxFriendly("killall", "-u", os.Getenv("USER"), "krd")
 	return
 }
 

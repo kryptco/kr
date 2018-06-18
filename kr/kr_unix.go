@@ -109,3 +109,7 @@ func upgradeCommand(c *cli.Context) (err error) {
 
 	return
 }
+
+func killKrd() {
+	kr.KillKrd()
+}

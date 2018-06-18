@@ -11,7 +11,6 @@ import (
 )
 
 func DaemonDial(unixFile string) (conn net.Conn, err error) {
-	uid := os.Getenv("UID")
 	if !IsKrdRunning() {
 		os.Stderr.WriteString(Yellow("Krypton ▶ Restarting krd...\r\n"))
 		exec.Command("nohup", "krd").Start()
@@ -32,7 +31,6 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	return
 }
 
-func KillKrd() [
-	uid := os.Getenv("UID")
-	exec.Command("killall", "-u", uid, "krd").Run()
+func KillKrd() {
+	exec.Command("killall", "-u", os.Getenv("USER"), "krd").Run()
 }

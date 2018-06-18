@@ -93,10 +93,7 @@ func doManualRePairWithNewKrypton(c *cli.Context, newProfile kr.Profile) (err er
 		return
 	}
 
-	err = exec.Command("killall", "krd").Run()
-	if err != nil {
-		return
-	}
+	killKrd()
 
 	// move the new pairing back
 	err = os.Rename(pairingTransferNewFilePath, pairingFilePath)
@@ -148,10 +145,7 @@ func doManualRePairWithOldKrypton(c *cli.Context, oldProfile kr.Profile) (err er
 		return
 	}
 
-	err = exec.Command("killall", "krd").Run()
-	if err != nil {
-		return
-	}
+	killKrd()
 
 	// move the new pairing temporarily
 	err = os.Rename(pairingFilePath, pairingTransferNewFilePath)
@@ -200,10 +194,7 @@ func doPairNewKryptonDevice(c *cli.Context) (newProfile kr.Profile, err error) {
 		return
 	}
 
-	err = exec.Command("killall", "krd").Run()
-	if err != nil {
-		return
-	}
+	killKrd()
 
 	// move it temporarily
 	err = os.Rename(pairingFilePath, pairingTransferOldFilePath)
