@@ -14,15 +14,15 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	if !IsKrdRunning() {
 		os.Stderr.WriteString(Yellow("Krypton ▶ Restarting krd...\r\n"))
 		exec.Command("nohup", "krd").Start()
-		<-time.After(250 * time.Millisecond)
+		<-time.After(1 * time.Second)
 	}
 	conn, err = net.Dial("unix", unixFile)
 	if err != nil {
 		//	restart then try again
 		os.Stderr.WriteString(Yellow("Krypton ▶ Restarting krd...\r\n"))
 		KillKrd()
-		exec.Command("nohup", "krd").Run()
-		<-time.After(250 * time.Millisecond)
+		exec.Command("nohup", "krd").Start()
+		<-time.After(1 * time.Second)
 		conn, err = net.Dial("unix", unixFile)
 	}
 	if err != nil {
@@ -33,4 +33,5 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 
 func KillKrd() {
 	exec.Command("killall", "-u", os.Getenv("USER"), "krd").Run()
+	<-time.After(1*time.Second)
 }

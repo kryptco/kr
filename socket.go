@@ -144,7 +144,7 @@ func DaemonDialWithTimeout(unixFile string) (conn net.Conn, err error) {
 	}()
 
 	select {
-	case <-time.After(time.Second):
+	case <-time.After(5*time.Second):
 		err = fmt.Errorf("ping timed out")
 		return
 	case err = <-done:
@@ -166,6 +166,12 @@ func DaemonSocketOrFatal() (unixFile string) {
 }
 
 func IsKrdRunning() bool {
-	uid := os.Getenv("UID")
-	return nil == exec.Command("pgrep", "-U", uid, "krd").Run()
+	cmd := exec.Command("pgrep", "-U", os.Getenv("USER"), "krd")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Error(cmd.Args)
+		log.Error(string(out))
+		log.Error(err.Error())
+	}
+	return nil == err
 }
