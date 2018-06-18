@@ -26,7 +26,7 @@ func NewControlServer(log *logging.Logger, notifier *kr.Notifier) (cs *ControlSe
 		kr.AWSTransport{},
 		kr.FilePersister{
 			PairingDir: krdir,
-			SSHDir:     filepath.Join(kr.UnsudoedHomeDir(), ".ssh"),
+			SSHDir:     filepath.Join(kr.HomeDir(), ".ssh"),
 		},
 		nil,
 		log,

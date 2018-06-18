@@ -92,13 +92,9 @@ func startKrd() (err error) {
 	return
 }
 
-func isKrdRunning() bool {
-	return nil == exec.Command("pgrep", "krd").Run()
-}
-
 func killKrd() (err error) {
 	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
-	_, _ = runCommandTmuxFriendly("killall", "krd")
+	_, _ = runCommandTmuxFriendly("killall", "-u", os.Getenv("UID"), "krd")
 	return
 }
 

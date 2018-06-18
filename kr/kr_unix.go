@@ -17,7 +17,7 @@ func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 
 	_ = migrateSSHConfig()
 
-	exec.Command("killall", "krd").Run()
+	kr.KillKrd()
 	startKrd()
 
 	if isUserInitiated {
@@ -29,10 +29,6 @@ func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 func startKrd() (err error) {
 	exec.Command("nohup", "krd").Start()
 	return
-}
-
-func isKrdRunning() bool {
-	return nil == exec.Command("pgrep", "krd").Run()
 }
 
 func openBrowser(url string) {
@@ -62,7 +58,7 @@ func uninstallCommand(c *cli.Context) (err error) {
 
 	cleanSSHConfig()
 
-	exec.Command("killall", "krd").Run()
+	kr.KillKrd()
 
 	if hasAptGet() {
 		uninstallCmd := exec.Command("sudo", "apt-get", "remove", "kr", "-y")

@@ -6,22 +6,18 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"time"
 )
 
-//	Find home directory of logged-in user even when run as sudo
-func UnsudoedHomeDir() (home string) {
-	userName := os.Getenv("SUDO_USER")
-	if userName == "" {
-		userName = os.Getenv("USER")
-	}
+func HomeDir() (home string) {
+	userName := os.Getenv("USER")
 	user, err := user.Lookup(userName)
 	if err == nil && user != nil {
 		home = user.HomeDir
 	} else {
-		log.Notice("falling back to $HOME")
 		home = os.Getenv("HOME")
 		err = nil
 	}
@@ -32,7 +28,7 @@ func UnsudoedHomeDir() (home string) {
 }
 
 func KrDir() (krPath string, err error) {
-	home := UnsudoedHomeDir()
+	home := HomeDir()
 	if err != nil {
 		return
 	}
@@ -42,7 +38,7 @@ func KrDir() (krPath string, err error) {
 }
 
 func NotifyDir() (krPath string, err error) {
-	home := UnsudoedHomeDir()
+	home := HomeDir()
 	if err != nil {
 		return
 	}
@@ -167,4 +163,9 @@ func DaemonSocketOrFatal() (unixFile string) {
 		log.Fatal("Could not open connection to daemon. Make sure it is running by typing \"kr restart\".")
 	}
 	return
+}
+
+func IsKrdRunning() bool {
+	uid := os.Getenv("UID")
+	return nil == exec.Command("pgrep", "-U", uid, "krd").Run()
 }

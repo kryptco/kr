@@ -11,7 +11,8 @@ import (
 )
 
 func DaemonDial(unixFile string) (conn net.Conn, err error) {
-	if runningErr := exec.Command("pgrep", "krd").Run(); runningErr != nil {
+	uid := os.Getenv("UID")
+	if !IsKrdRunning() {
 		os.Stderr.WriteString(Yellow("Krypton ▶ Restarting krd...\r\n"))
 		exec.Command("nohup", "krd").Start()
 		<-time.After(250 * time.Millisecond)
@@ -20,7 +21,7 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	if err != nil {
 		//	restart then try again
 		os.Stderr.WriteString(Yellow("Krypton ▶ Restarting krd...\r\n"))
-		exec.Command("killall", "krd").Start()
+		KillKrd()
 		exec.Command("nohup", "krd").Run()
 		<-time.After(250 * time.Millisecond)
 		conn, err = net.Dial("unix", unixFile)
@@ -29,4 +30,9 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 		err = fmt.Errorf("Failed to connect to Krypton daemon. Please make sure it is running by typing \"kr restart\".")
 	}
 	return
+}
+
+func KillKrd() [
+	uid := os.Getenv("UID")
+	exec.Command("killall", "-u", uid, "krd").Run()
 }

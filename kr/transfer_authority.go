@@ -46,7 +46,7 @@ func getFilePersister() (files kr.FilePersister, err error) {
 
 	files = kr.FilePersister{
 		PairingDir: krdir,
-		SSHDir:     filepath.Join(kr.UnsudoedHomeDir(), ".ssh"),
+		SSHDir:     filepath.Join(kr.HomeDir(), ".ssh"),
 	}
 
 	return

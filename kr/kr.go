@@ -62,7 +62,7 @@ func pairCommand(c *cli.Context) (err error) {
 	go func() {
 		kr.Analytics{}.PostEventUsingPersistedTrackingID("kr", "pair", nil, nil)
 	}()
-	if !isKrdRunning() {
+	if !kr.IsKrdRunning() {
 		err = startKrd()
 		if err != nil {
 			return
@@ -85,7 +85,7 @@ func pairCommand(c *cli.Context) (err error) {
 }
 
 func pairCommandForce() (err error) {
-	if !isKrdRunning() {
+	if !kr.IsKrdRunning() {
 		err = startKrd()
 		if err != nil {
 			return
