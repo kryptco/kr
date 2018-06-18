@@ -8,11 +8,22 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"strconv"
 
 	"github.com/urfave/cli"
 
 	"github.com/kryptco/kr"
 )
+
+const OLD_SSH_CONFIG_FORMAT = `# Added by Krypton
+Host *
+	PKCS11Provider %s/lib/kr-pkcs11.so
+	ProxyCommand %s/bin/krssh %%h %%p
+	IdentityFile ~/.ssh/id_krypton
+	IdentityFile ~/.ssh/id_ed25519
+	IdentityFile ~/.ssh/id_rsa
+	IdentityFile ~/.ssh/id_ecdsa
+	IdentityFile ~/.ssh/id_dsa`
 
 const SSH_CONFIG_FORMAT = `# Added by Krypton
 Host *
@@ -34,7 +45,14 @@ func getKrSSHConfigBlockOrFatal() string {
 	if err != nil {
 		PrintFatal(os.Stderr, err.Error())
 	}
-	var sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix)
+	var sshConfigWithPrefix string
+
+	if localSSHSupportsIdentityAgent(){
+		sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix)
+	} else {
+		sshConfigWithPrefix = fmt.Sprintf(OLD_SSH_CONFIG_FORMAT, prefix, prefix)
+	}
+
 	return sshConfigWithPrefix
 }
 
@@ -119,7 +137,38 @@ func editSSHConfig(prompt bool, forceAppend bool) (err error) {
 	return
 }
 
+func localSSHSupportsIdentityAgent() bool {
+	//	Valid OpenSSH version strings:
+	//	OpenSSH_6.7p1 Debian-5+deb8u4, OpenSSL 1.0.1t  3 May 2016
+	//	OpenSSH_7.7p1, OpenSSL 1.0.2o  27 Mar 2018
+	versionOutput, err := exec.Command("ssh", "-V").CombinedOutput()
+	if err != nil {
+		return false
+	}
+	versionString := string(versionOutput)
+	versionString = strings.TrimPrefix(versionString, "OpenSSH_")
+	for _, suffixDelim := range []string{" ", ",", "p"} {
+		versionString = strings.Split(versionString, suffixDelim)[0]
+	}
+	versionStringToks := strings.Split(versionString, ".")
+	if len(versionStringToks) != 2 {
+		return false
+	}
+	major, err := strconv.ParseUint(versionStringToks[0], 10, 64)
+	if err != nil {
+		return false
+	}
+	minor, err := strconv.ParseUint(versionStringToks[1], 10, 64)
+	if err != nil {
+		return false
+	}
+	return major > 7 || (major >= 7 && minor >= 3)
+}
+
 func migrateSSHConfig() (err error) {
+	if !localSSHSupportsIdentityAgent() {
+		return
+	}
 	prefix, err := getPrefix()
 	if err != nil {
 		PrintErr(os.Stderr, err.Error())
