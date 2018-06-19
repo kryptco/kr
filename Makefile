@@ -115,7 +115,7 @@ endif
 	kr restart
 
 uninstall:
-	killall -u $(UID) krd
+	pkill -U $(UID) -x krd
 	kr uninstall
 	$(SUDO) rm -f $(DSTBIN)/kr
 	$(SUDO) rm -f $(DSTBIN)/krd

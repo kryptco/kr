@@ -32,6 +32,6 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 }
 
 func KillKrd() {
-	exec.Command("killall", "-u", os.Getenv("USER"), "krd").Run()
+	exec.Command("pkill", "-U", os.Getenv("USER"), "-x", "krd").Run()
 	<-time.After(1*time.Second)
 }

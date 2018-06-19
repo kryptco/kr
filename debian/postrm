@@ -7,7 +7,7 @@ set -e
 
 case "$1" in
     purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-        killall krd 1>/dev/null 2>/dev/null || true
+        pkill -x krd 1>/dev/null 2>/dev/null || true
     ;;
 
     *)

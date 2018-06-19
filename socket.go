@@ -166,12 +166,6 @@ func DaemonSocketOrFatal() (unixFile string) {
 }
 
 func IsKrdRunning() bool {
-	cmd := exec.Command("pgrep", "-U", os.Getenv("USER"), "krd")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Error(cmd.Args)
-		log.Error(string(out))
-		log.Error(err.Error())
-	}
+	err := exec.Command("pgrep", "-U", os.Getenv("USER"), "krd").Run()
 	return nil == err
 }

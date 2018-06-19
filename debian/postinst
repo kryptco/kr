@@ -20,7 +20,7 @@ set -e
 
 case "$1" in
     configure)
-        killall krd 1>/dev/null 2>/dev/null || true
+        pkill -x krd 1>/dev/null 2>/dev/null || true
 	echo Krypton is now installed! Type \"kr pair\" to pair with the Krypton phone app.
     ;;
 
