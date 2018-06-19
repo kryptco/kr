@@ -74,6 +74,21 @@ func runCommandTmuxFriendly(cmd string, args ...string) (output string, err erro
 	return
 }
 
+func filterReattachToUserNamespaceOutput(output string) string {
+	//	reattach-to-user-namespace prints a warning on 10.14, filter this
+	//	output so that a false positive is not created for launchctl load error
+	//	detection
+	lines := strings.Split(output, "\n")
+	filteredLines := []string{}
+	for _, line := range lines {
+		if strings.Contains(line, "reattach-to-user-namespace") {
+			continue
+		}
+		filteredLines = append(filteredLines, line)
+	}
+	return strings.Join(filteredLines, "\n")
+}
+
 func startKrd() (err error) {
 	err = copyPlist()
 	if err != nil {
@@ -84,6 +99,8 @@ func startKrd() (err error) {
 	}
 	_, _ = runCommandTmuxFriendly("launchctl", "unload", homePlist)
 	output, err := runCommandTmuxFriendly("launchctl", "load", homePlist)
+	output = filterReattachToUserNamespaceOutput(output)
+	//	launchctl load exit status only reflects syntax, not execution failure (always returns 0)
 	if len(output) > 0 || err != nil {
 		err = fmt.Errorf(kr.Red("Krypton ▶ Error starting krd with launchctl: " + string(output)))
 		PrintErr(os.Stderr, err.Error())
