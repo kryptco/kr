@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"os"
 	"os/exec"
 	"os/user"
@@ -12,9 +13,20 @@ import (
 	"time"
 )
 
+func User() string {
+	user := os.Getenv("USER")
+	if user == "" {
+		whoami, err := exec.Command("whoami").Output()
+		if err == nil {
+			user = strings.TrimSpace(string(whoami))
+			os.Setenv("USER", user)
+		}
+	}
+	return user
+}
+
 func HomeDir() (home string) {
-	userName := os.Getenv("USER")
-	user, err := user.Lookup(userName)
+	user, err := user.Lookup(User())
 	if err == nil && user != nil {
 		home = user.HomeDir
 	} else {
@@ -166,6 +178,6 @@ func DaemonSocketOrFatal() (unixFile string) {
 }
 
 func IsKrdRunning() bool {
-	err := exec.Command("pgrep", "-U", os.Getenv("USER"), "krd").Run()
+	err := exec.Command("pgrep", "-U", User(), "krd").Run()
 	return nil == err
 }
