@@ -10,7 +10,7 @@ paired mobile phone, where the user decides whether to allow the operation or
 not. _The private key never leaves the phone._
 
 # Supported Operating Systems
-__kr__ currently supports MacOS (10.10+) and Linux (Debian, RHEL, CentOS, Fedora with `systemd`).
+__kr__ currently supports MacOS (10.10+) and Linux (64 Bit) (Debian, RHEL, CentOS, Fedora with `systemd`).
 
 # Easy Install
 `curl https://krypt.co/kr | sh`
