@@ -87,7 +87,8 @@ clean:
 
 check:
 	go clean -cache || true
-	CGO_LDFLAGS="$(CGO_TEST_LDFLAGS) $(LINK_LIBSIGCHAIN_LDFLAGS)" go test $(GO_TAGS) github.com/kryptco/kr github.com/kryptco/kr/krd github.com/kryptco/kr/krd/main github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg
+	go test $(GO_TAGS) github.com/kryptco/kr
+	CGO_LDFLAGS="$(CGO_TEST_LDFLAGS) $(LINK_LIBSIGCHAIN_LDFLAGS)" go test $(GO_TAGS) github.com/kryptco/kr/krd github.com/kryptco/kr/krd/main github.com/kryptco/kr/krdclient github.com/kryptco/kr/kr github.com/kryptco/kr/krssh github.com/kryptco/kr/krgpg
 	cd pkcs11shim; cargo test
 	cd sigchain; CARGO_RELEASE=$(CARGO_RELEASE) make check-libsigchain-with-dashboard
 
