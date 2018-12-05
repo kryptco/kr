@@ -102,12 +102,12 @@ func PushAlertToSNSEndpoint(alertText, requestCiphertext, endpointARN, sqsQueueN
 	gcmPayload, _ := json.Marshal(
 		map[string]interface{}{
 			"data": map[string]interface{}{
-				"priority":         "high",
-				"time_to_live":     0,
-				"delay_while_idle": false,
-				"message":          requestCiphertext,
-				"queue":            sqsQueueName,
+				"message": requestCiphertext,
+				"queue":   sqsQueueName,
 			},
+			"delay_while_idle": false,
+			"priority":         "high",
+			"time_to_live":     0,
 		})
 	err = pushToSNS(endpointARN, apnsPayload, gcmPayload)
 	return
