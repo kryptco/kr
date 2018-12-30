@@ -4,7 +4,7 @@ import (
 	"github.com/blang/semver"
 )
 
-var CURRENT_VERSION = semver.MustParse("2.4.11")
+var CURRENT_VERSION = semver.MustParse("2.4.14")
 
 func GetLatestVersion() (version semver.Version, err error) {
 	versions, err := GetLatestVersions()

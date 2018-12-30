@@ -209,10 +209,10 @@
 			"revisionTime": "2016-04-13T18:01:33Z"
 		},
 		{
-			"checksumSHA1": "czipMwxVJCjnOJk482unkRs5VCM=",
+			"checksumSHA1": "dvVGF+goNL6/ld3VDQ2cLSc1LZw=",
 			"path": "github.com/kryptco/go-crypto/blake2b",
-			"revision": "4dd74302dce656561273d45beb4ae61575f5326a",
-			"revisionTime": "2017-04-10T21:23:53Z"
+			"revision": "028287cfc5c4b148fc7b9a262f7d7c92d52f0203",
+			"revisionTime": "2017-07-12T14:30:15Z"
 		},
 		{
 			"checksumSHA1": "1FNUYeTxvldrwoTRD7mLx9Zi1M4=",
@@ -351,6 +351,12 @@
 			"path": "golang.org/x/crypto/ssh/agent",
 			"revision": "ba87603ee638331d0d191f6bb79eea6fecced4fe",
 			"revisionTime": "2017-05-24T20:39:50Z"
+		},
+		{
+			"checksumSHA1": "REkmyB368pIiip76LiqMLspgCRk=",
+			"path": "golang.org/x/sys/cpu",
+			"revision": "d0be0721c37eeb5299f245a996a483160fc36940",
+			"revisionTime": "2018-09-09T03:34:56Z"
 		},
 		{
 			"checksumSHA1": "oBKY8LJtCoSvmYA4ADFDY02A8NY=",

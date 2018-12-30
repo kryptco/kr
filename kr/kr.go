@@ -450,7 +450,7 @@ func herokuCommand(c *cli.Context) (err error) {
 	}()
 	_, err = krdclient.RequestMe()
 	if err != nil {
-		PrintFatal(os.Stderr, "Failed to retrieve your public key:", err)
+		PrintFatal(os.Stderr, "Failed to retrieve your public key: %s", err.Error())
 	}
 	PrintErr(os.Stderr, "Adding your SSH public key using heroku toolbelt.")
 	addKeyCmd := exec.Command("heroku", "keys:add", filepath.Join(os.Getenv("HOME"), ".ssh", kr.ID_KRYPTON_FILENAME))
