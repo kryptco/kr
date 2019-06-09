@@ -25,10 +25,6 @@ type Request struct {
 	MeRequest      *MeRequest      `json:"me_request,omitempty"`
 	UnpairRequest  *UnpairRequest  `json:"unpair_request,omitempty"`
 	HostsRequest   *HostsRequest   `json:"hosts_request,omitempty"`
-
-	ReadTeamRequest      *ReadTeamRequest      `json:"read_team_request,omitempty"`
-	TeamOperationRequest *TeamOperationRequest `json:"team_operation_request,omitempty"`
-	LogDecryptionRequest *json.RawMessage      `json:"log_decryption_request,omitempty"`
 }
 
 func NewRequest() (request Request, err error) {

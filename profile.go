@@ -18,7 +18,6 @@ type Profile struct {
 	SSHWirePublicKey []byte          `json:"public_key_wire"`
 	Email            string          `json:"email"`
 	PGPPublicKey     *[]byte         `json:"pgp_pk,omitempty"`
-	TeamCheckpoint   *TeamCheckpoint `json:"team_checkpoint,omitempty"`
 }
 
 func (p Profile) AuthorizedKeyString() (authString string, err error) {
@@ -50,10 +49,6 @@ func (p Profile) RSAPublicKey() (pk *rsa.PublicKey, err error) {
 func (p Profile) PublicKeyFingerprint() []byte {
 	digest := sha256.Sum256(p.SSHWirePublicKey)
 	return digest[:]
-}
-
-func (p Profile) IsOnTeam() bool {
-	return p.TeamCheckpoint != nil
 }
 
 func (p Profile) Equal(other Profile) bool {
