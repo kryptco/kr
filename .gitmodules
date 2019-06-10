@@ -1,3 +1,0 @@
-[submodule "sigchain"]
-	path = sigchain
-	url = https://github.com/kryptco/sigchain
