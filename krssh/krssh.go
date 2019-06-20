@@ -48,8 +48,9 @@ type kexECDHReplyMsg struct {
 	Signature       []byte
 }
 
-func sendHostAuth(hostAuth kr.HostAuth) {
+func sendHostAuth(hostAuth kr.HostAuth, sentHostAuth chan bool) {
 	conn, err := kr.HostAuthDial()
+	sentHostAuth <- nil == err
 	if err != nil {
 		os.Stderr.WriteString(kr.Red("Krypton ▶ Could not connect to Krypton daemon. Make sure it is running by typing \"kr restart\".\r\n"))
 		return
@@ -58,7 +59,7 @@ func sendHostAuth(hostAuth kr.HostAuth) {
 	json.NewEncoder(conn).Encode(hostAuth)
 }
 
-func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error) {
+func tryParse(hostname string, onHostPrefix chan string, sentHostAuth chan bool, buf []byte) (err error) {
 	kexECDHReplyTemplate := kexECDHReplyMsg{}
 	err = ssh.Unmarshal(buf, &kexECDHReplyTemplate)
 
@@ -78,7 +79,7 @@ func tryParse(hostname string, onHostPrefix chan string, buf []byte) (err error)
 		case onHostPrefix <- "[" + basex.Base62StdEncoding.EncodeToString(sigHash[:]) + "]":
 		default:
 		}
-		sendHostAuth(hostAuth)
+		sendHostAuth(hostAuth, sentHostAuth)
 	}
 	return
 }
@@ -174,6 +175,8 @@ func startRemoteOutputParsing(remoteConn io.Reader, doneChan chan bool, notifyPr
 		func() {
 			buf := make([]byte, 1<<18)
 			packetNum := 0
+			doneHostAuth := false
+			sentHostAuth := make(chan bool, 1)
 			for {
 				n, err := remoteConn.Read(buf)
 				if err != nil {
@@ -181,14 +184,18 @@ func startRemoteOutputParsing(remoteConn io.Reader, doneChan chan bool, notifyPr
 				}
 				if n > 0 {
 					packetNum++
-					if packetNum > 1 {
-						sshPacket := parseSSHPacket(buf)
-						tryParse(host, notifyPrefixChan, sshPacket)
-					}
 					byteBuf := bytes.NewBuffer(buf[:n])
 					_, err := byteBuf.WriteTo(os.Stdout)
-					if err != nil {
+					switch {
+					case err != nil:
 						return
+					case doneHostAuth:
+						continue
+					case packetNum > 1:
+						sshPacket := parseSSHPacket(buf)
+						if err := tryParse(host, notifyPrefixChan, sentHostAuth, sshPacket); err == nil {
+							doneHostAuth = <-sentHostAuth
+						}
 					}
 				}
 			}
