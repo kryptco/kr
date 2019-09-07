@@ -256,7 +256,7 @@ pub extern "C" fn CK_C_OpenSession(slotID: CK_SLOT_ID,
         return CKR_SESSION_PARALLEL_NOT_SUPPORTED;
     }
     unsafe {
-        *session = next_session_handle.fetch_add(1usize, SeqCst) as u64;
+        *session = next_session_handle.fetch_add(1usize, SeqCst) as CK_SESSION_HANDLE;
     }
     CKR_OK
 }
