@@ -197,7 +197,7 @@ pub extern "C" fn CK_C_GetMechanismList(slotID: CK_SLOT_ID,
     notice!("CK_C_GetMechanismList");
     if mechanism_list.is_null() {
         unsafe {
-            *count = MECHANISM_LIST.len() as u64;
+            *count = MECHANISM_LIST.len() as ::std::os::raw::c_ulong;
         }
         return CKR_OK;
     }
