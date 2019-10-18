@@ -1,0 +1,32 @@
+name: Compile kr binaries
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+        
+    steps:
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: build
+      run: make all
+
+    - name: tar
+      run: tar -czvf kr-${{ matrix.os }}.tar.gz bin/
+
+    - name: upload
+      uses: actions/upload-artifact@master
+      with:
+        name: kr-${{ matrix.os }}.tar.gz
+        path: kr-${{ matrix.os }}.tar.gz

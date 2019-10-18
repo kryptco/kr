@@ -1,3 +1,0 @@
-krbtle: 
-	xcodebuild
-.PHONY: krbtle
