@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"krypt.co/kr/common/socket"
 	"net"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -34,11 +33,10 @@ type sessionIDSig struct {
 type hostAuthCallback chan *HostAuth
 
 func (a *Agent) withOriginalAgent(do func(agent.Agent)) error {
-	originalAgentSock := os.Getenv("SSH_AUTH_SOCK")
-	if strings.HasSuffix(originalAgentSock, "krd-agent.sock") {
+	conn, err := getOriginalAgentConn()
+	if conn == nil {
 		return nil
 	}
-	conn, err := net.Dial("unix", originalAgentSock)
 	if err != nil {
 		a.log.Error("error connecting to fallbackAgent: " + err.Error())
 		return err

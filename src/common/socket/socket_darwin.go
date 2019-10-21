@@ -12,3 +12,12 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	}
 	return
 }
+
+func IsKrdRunning() bool {
+	err := exec.Command("pgrep", "-U", User(), "krd").Run()
+	return nil == err
+}
+
+func AgentListen() (listener net.Listener, err error) {
+	return AgentListenUnix()
+}

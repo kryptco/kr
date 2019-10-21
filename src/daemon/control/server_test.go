@@ -8,20 +8,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kryptco/kr"
 	"github.com/op/go-logging"
+	. "krypt.co/kr/daemon/enclave"
+	. "krypt.co/kr/common/transport"
+	. "krypt.co/kr/common/log"
+	. "krypt.co/kr/common/protocol"
+	. "krypt.co/kr/common/util"
 )
 
 func NewTestControlServer(ec EnclaveClientI) *ControlServer {
-	return &ControlServer{ec, kr.SetupLogging("test", logging.INFO, false)}
+	return &ControlServer{ec, SetupLogging("test", logging.INFO, false)}
 }
 
 func TestControlServerPair(t *testing.T) {
-	transport := &kr.ResponseTransport{T: t}
+	transport := &ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
 	cs := NewTestControlServer(ec)
 
-	var pairingOptions kr.PairingOptions
+	var pairingOptions PairingOptions
 	var body, err = json.Marshal(pairingOptions)
 	if err != nil {
 		t.Fatal(err)
@@ -37,7 +41,7 @@ func TestControlServerPair(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatal("non-200 status")
 	}
-	var pairingSecret kr.PairingSecret
+	var pairingSecret PairingSecret
 	err = json.NewDecoder(resp.Body).Decode(&pairingSecret)
 	if err != nil {
 		t.Fatal(err)
@@ -53,22 +57,22 @@ func TestControlServerPair(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatal("non-200 status")
 	}
-	var me kr.Profile
+	var me Profile
 	err = json.NewDecoder(resp.Body).Decode(&me)
 	if err != nil {
 		t.Fatal(err)
 	}
-	testMe, _, _ := kr.TestMe(t)
+	testMe, _, _ := TestMe(t)
 	if !me.Equal(testMe) {
 		t.Fatal("paired profile wrong")
 	}
 }
 
 func TestControlServerUnpair(t *testing.T) {
-	transport := &kr.ResponseTransport{T: t}
+	transport := &ResponseTransport{T: t}
 	ec := NewTestEnclaveClientShortTimeouts(transport)
 	cs := NewTestControlServer(ec)
-	var pairingOptions kr.PairingOptions
+	var pairingOptions PairingOptions
 
 	var body, err = json.Marshal(pairingOptions)
 	if err != nil {
@@ -85,7 +89,7 @@ func TestControlServerUnpair(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatal("non-200 status")
 	}
-	var pairingSecret kr.PairingSecret
+	var pairingSecret PairingSecret
 	err = json.NewDecoder(resp.Body).Decode(&pairingSecret)
 	if err != nil {
 		t.Fatal(err)
@@ -118,14 +122,14 @@ func TestControlServerUnpair(t *testing.T) {
 }
 
 func TestControlServerMe(t *testing.T) {
-	transport := &kr.ResponseTransport{T: t}
+	transport := &ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
 	cs := NewTestControlServer(ec)
-	request, err := kr.NewRequest()
+	request, err := NewRequest()
 	if err != nil {
 		t.Fatal(err)
 	}
-	request.MeRequest = &kr.MeRequest{}
+	request.MeRequest = &MeRequest{}
 
 	meRequest, err := request.HTTPRequest()
 	if err != nil {
@@ -152,29 +156,29 @@ func TestControlServerMe(t *testing.T) {
 		t.Fatal("non-200 status")
 	}
 
-	var meResponse kr.Response
+	var meResponse Response
 	err = json.NewDecoder(resp.Body).Decode(&meResponse)
 	if err != nil {
 		t.Fatal(err)
 	}
-	me, _, _ := kr.TestMe(t)
+	me, _, _ := TestMe(t)
 	if !meResponse.MeResponse.Me.Equal(me) {
 		t.Fatal("profiles unequal")
 	}
 }
 
 func TestControlServerSign(t *testing.T) {
-	transport := &kr.ResponseTransport{T: t}
+	transport := &ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
 	cs := NewTestControlServer(ec)
-	request, err := kr.NewRequest()
+	request, err := NewRequest()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	me, _, _ := kr.TestMe(t)
-	data, err := kr.RandNBytes(32)
-	request.SignRequest = &kr.SignRequest{
+	me, _, _ := TestMe(t)
+	data, err := RandNBytes(32)
+	request.SignRequest = &SignRequest{
 		PublicKeyFingerprint: me.PublicKeyFingerprint(),
 		Data:                 data,
 	}
@@ -204,7 +208,7 @@ func TestControlServerSign(t *testing.T) {
 		t.Fatal("non-200 status")
 	}
 
-	var signResponse kr.Response
+	var signResponse Response
 	err = json.NewDecoder(resp.Body).Decode(&signResponse)
 	if err != nil {
 		t.Fatal(err)
@@ -212,7 +216,7 @@ func TestControlServerSign(t *testing.T) {
 }
 
 func TestControlServerPing(t *testing.T) {
-	transport := &kr.ResponseTransport{T: t}
+	transport := &ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
 	cs := NewTestControlServer(ec)
 	pingRequest, err := http.NewRequest("GET", "/ping", nil)
@@ -228,13 +232,13 @@ func TestControlServerPing(t *testing.T) {
 }
 
 func TestControlServerNoOp(t *testing.T) {
-	transport := &kr.ResponseTransport{T: t}
+	transport := &ResponseTransport{T: t}
 	ec := NewTestEnclaveClient(transport)
 	cs := NewTestControlServer(ec)
 	PairClient(t, ec)
 	defer ec.Stop()
 
-	request, err := kr.NewRequest()
+	request, err := NewRequest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +254,7 @@ func TestControlServerNoOp(t *testing.T) {
 		t.Fatal("expected 200")
 	}
 
-	kr.TrueBefore(t, func() bool {
+	TrueBefore(t, func() bool {
 		return transport.GetSentNoOps() > 0
 	}, time.Now().Add(time.Second))
 }

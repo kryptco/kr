@@ -80,7 +80,7 @@ func KrDirFile(file string) (fullPath string, err error) {
 
 const AGENT_SOCKET_FILENAME = "krd-agent.sock"
 
-func AgentListen() (listener net.Listener, err error) {
+func AgentListenUnix() (listener net.Listener, err error) {
 	socketPath, err := KrDirFile(AGENT_SOCKET_FILENAME)
 	if err != nil {
 		return
@@ -176,9 +176,4 @@ func DaemonSocketOrFatal() (unixFile string) {
 		log.Fatal("Could not open connection to daemon. Make sure it is running by typing \"kr restart\".")
 	}
 	return
-}
-
-func IsKrdRunning() bool {
-	err := exec.Command("pgrep", "-U", User(), "krd").Run()
-	return nil == err
 }

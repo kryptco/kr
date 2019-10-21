@@ -1,4 +1,4 @@
-// +build !darwin
+// +build !darwin,!windows
 
 package socket
 
@@ -36,4 +36,13 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 func KillKrd() {
 	exec.Command("pkill", "-U", User(), "-x", "krd").Run()
 	<-time.After(1*time.Second)
+}
+
+func IsKrdRunning() bool {
+	err := exec.Command("pgrep", "-U", User(), "krd").Run()
+	return nil == err
+}
+
+func AgentListen() (listener net.Listener, err error) {
+	return AgentListenUnix()
 }

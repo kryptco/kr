@@ -523,6 +523,7 @@ func restartCommand(c *cli.Context) (err error) {
 }
 
 func main() {
+	initTerminal()
 	app := cli.NewApp()
 	app.Name = "kr"
 	app.Usage = "communicate with Krypton and krd - the Krypton daemon"
