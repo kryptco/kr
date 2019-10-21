@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
@@ -20,10 +21,23 @@ func AgentListen() (listener net.Listener, err error) {
 	return
 }
 
+// TODO too much repeating...
+func getPrefix() (string, error) {
+	if ex, err := os.Executable(); err == nil {
+		return filepath.Dir(ex), nil
+	} else {
+		return "", err
+	}
+}
+
 func DaemonDial(unixFile string) (conn net.Conn, err error) {
 	if !IsKrdRunning() {
 		os.Stderr.WriteString(util.Yellow("Krypton ▶ Restarting krd...\r\n"))
-		_ = exec.Command("cmd.exe", "/C", "start", "/b", `krd.exe`).Start()
+		exe := "krd.exe"
+		if pfx, err := getPrefix(); err == nil {
+			exe = pfx + `\krd.exe`
+		}
+		_ = exec.Command("cmd.exe", "/C", "start", "/b", exe).Start()
 		<-time.After(1 * time.Second)
 	}
 	conn, err = net.Dial("unix", unixFile)
