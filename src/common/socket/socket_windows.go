@@ -37,7 +37,7 @@ func DaemonDial(unixFile string) (conn net.Conn, err error) {
 		if pfx, err := getPrefix(); err == nil {
 			exe = pfx + `\krd.exe`
 		}
-		_ = exec.Command("cmd.exe", "/C", "start", "/b", exe).Start()
+		_ = exec.Command(exe).Start()
 		<-time.After(1 * time.Second)
 	}
 	conn, err = net.Dial("unix", unixFile)

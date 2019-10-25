@@ -40,7 +40,7 @@ Host *
 const SSH_CONFIG_FORMAT_WIN = `# Added by Krypton
 Host *
 	IdentityAgent \\.\pipe\krd-agent
-	ProxyCommand %s\krssh.exe %%h %%p`
+	ProxyCommand "%s\krssh.exe" %%h %%p`
 /*
 	IdentityFile ~/.ssh/id_krypton
 	IdentityFile ~/.ssh/id_ed25519

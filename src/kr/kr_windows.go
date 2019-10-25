@@ -60,7 +60,7 @@ func startKrd() (err error) {
 	if pfx, err := getPrefix(); err == nil {
 		exe = pfx + `\krd.exe`
 	}
-	cmd := exec.Command("cmd.exe", "/C", "start", "/b", exe)
+	cmd := exec.Command(exe)
 	return cmd.Run()
 }
 
