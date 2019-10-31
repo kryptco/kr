@@ -3,6 +3,7 @@ package socket
 import (
 	"fmt"
 	"net"
+	"os/exec"
 )
 
 func DaemonDial(unixFile string) (conn net.Conn, err error) {
