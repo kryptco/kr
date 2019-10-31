@@ -30,3 +30,32 @@ jobs:
       with:
         name: kr-${{ matrix.os }}.tar.gz
         path: kr-${{ matrix.os }}.tar.gz
+
+
+  buildwin:
+    name: Build Win
+    runs-on: windows-latest
+
+    steps:
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: build
+      run: build.bat
+      shell: cmd
+
+    - name: zip
+      run: Compress-Archive -Path bin\* -DestinationPath kr-windows-latest.zip
+      shell: powershell
+
+    - name: upload
+      uses: actions/upload-artifact@master
+      with:
+        name: kr-windows-latest.zip
+        path: kr-windows-latest.zip
