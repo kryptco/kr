@@ -253,6 +253,14 @@ func unpairOver(unixFile string, stdout io.ReadWriter, stderr io.ReadWriter) (er
 	default:
 		PrintFatal(stderr, "Unpair failed with error %d", response.StatusCode)
 	}
+
+	if os.Getenv(KR_SKIP_SSH_CONFIG) == "" {
+		err = cleanSSHConfig()
+		if err != nil {
+			PrintFatal(stderr, "Unpair failed to clean SSH config with error %s", err.Error())
+		}
+	}
+
 	stdout.Write([]byte("Unpaired Krypton.\r\n"))
 	return
 }
