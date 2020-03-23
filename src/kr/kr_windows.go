@@ -61,7 +61,7 @@ func startKrd() (err error) {
 		exe = pfx + `\krd.exe`
 	}
 	cmd := exec.Command(exe)
-	return cmd.Run()
+	return cmd.Start()
 }
 
 func openBrowser(url string) {
