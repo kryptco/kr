@@ -724,6 +724,11 @@ func main() {
 			Action: upgradeCommand,
 		},
 		cli.Command{
+			Name:   "update",			
+			Action: upgradeCommand,
+			Hidden: true,
+		},
+		cli.Command{
 			Name:   "unpair",
 			Usage:  "Unpair this workstation from a phone running Krypton",
 			Action: unpairCommand,
@@ -731,6 +736,10 @@ func main() {
 		cli.Command{
 			Name:   "uninstall",
 			Usage:  "Uninstall Krypton from this workstation",
+			Action: uninstallCommand,
+		},
+		cli.Command{
+			Name:   "remove",			
 			Action: uninstallCommand,
 		},
 		cli.Command{
