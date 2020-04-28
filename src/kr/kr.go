@@ -11,13 +11,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"krypt.co/kr/common/version"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"krypt.co/kr/common/version"
 
 	"github.com/atotto/clipboard"
 	"github.com/urfave/cli"
@@ -633,8 +634,9 @@ func main() {
 			},
 		},
 		cli.Command{
-			Name:  "aws,bitbucket,digitalocean,gcp,github,ghe,gitlab,heroku",
-			Usage: "Upload your public key this service",
+			Name:   "aws,bitbucket,digitalocean,gcp,github,ghe,gitlab,heroku",
+			Usage:  "Upload your public key this service",
+			Action: func(c *cli.Context) { PrintErr(os.Stderr, Red("Pick one service to upload your public key to!")) },
 		},
 		cli.Command{
 			Name:   "github",
@@ -687,16 +689,11 @@ func main() {
 			Hidden: true,
 		},
 		cli.Command{
-			Name:   "digitalocean",
-			Usage:  "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings",
-			Action: digitaloceanCommand,
-			Hidden: true,
-		},
-		cli.Command{
-			Name:   "digital-ocean",
-			Usage:  "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings",
-			Action: digitaloceanCommand,
-			Hidden: true,
+			Name:    "digitalocean",
+			Aliases: []string{"digital-ocean"},
+			Usage:   "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings",
+			Action:  digitaloceanCommand,
+			Hidden:  true,
 		},
 		cli.Command{
 			Name:   "heroku",
