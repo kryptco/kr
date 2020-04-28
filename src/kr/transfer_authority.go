@@ -8,7 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
+	
 	. "krypt.co/kr/common/persistance"
 	. "krypt.co/kr/common/protocol"
 	. "krypt.co/kr/common/socket"

@@ -19,6 +19,7 @@ require (
 	github.com/paypal/gatt v0.0.0-20151011220935-4ae819d591cf // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/urfave/cli v1.22.1
+	github.com/urfave/cli/v2 v2.2.0
 	github.com/youtube/vitess v2.1.1+incompatible
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )
