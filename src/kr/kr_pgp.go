@@ -10,7 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
+	
 	. "krypt.co/kr/common/util"
 	. "krypt.co/kr/common/analytics"
 	. "krypt.co/kr/daemon/client"

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	. "krypt.co/kr/common/protocol"
 	. "krypt.co/kr/common/util"
@@ -53,49 +53,49 @@ func main() {
 	app.Name = "krgpg"
 	app.Usage = "Sign git commits with your Krypton key"
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "a",
 			Usage: "Ouput ascii armor",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "b,detach-sign",
 			Usage: "Create a detached signature",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "s,sign",
 			Usage: "Create a signature",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "u,local-user",
 			Value: "",
 			Usage: "User ID",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "status-fd",
 			Value: "",
 			Usage: "status file descriptor",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "bsau",
 			Usage: "Git method of passing in detach-sign ascii armor flags",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "verify",
 			Usage: "Verify a signature",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "keyid-format",
 			Usage: "Key ID format",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "batch",
 			Hidden: true,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "no-tty",
 			Hidden: true,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "yes",
 			Hidden: true,
 		},

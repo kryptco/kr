@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"krypt.co/kr/common/version"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,8 +19,9 @@ import (
 	"time"
 
 	"github.com/atotto/clipboard"
-	"github.com/urfave/cli"
-
+	"github.com/urfave/cli/v2"
+	
+	"krypt.co/kr/common/version"
 	. "krypt.co/kr/common/analytics"
 	. "krypt.co/kr/common/persistance"
 	. "krypt.co/kr/common/protocol"
@@ -528,139 +528,143 @@ func main() {
 	app.Usage = "communicate with Krypton and krd - the Krypton daemon"
 	app.Version = version.CURRENT_VERSION.String()
 	app.Flags = []cli.Flag{}
-	app.Commands = []cli.Command{
-		cli.Command{
+	app.Commands = []*cli.Command{
+		{
 			Name:  "pair",
 			Usage: "Initiate pairing of this workstation with a phone running Krypton",
 			Flags: []cli.Flag{
-				cli.BoolFlag{
+				&cli.BoolFlag{
 					Name:  "force",
 					Usage: "Do not ask for confirmation to unpair a currently paired device",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "name, n",
 					Usage: "WorkstationName for this computer",
 				},
 			},
 			Action: pairCommand,
 		},
-		cli.Command{
+		{
 			Name:   "me",
 			Usage:  "Print your SSH public key",
 			Action: meCommand,
-			Subcommands: []cli.Command{
-				cli.Command{
+			Subcommands: []*cli.Command{
+				&cli.Command{
 					Name:   "pgp",
 					Usage:  "Print your PGP public key",
 					Action: mePGPCommand,
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:  "codesign",
 			Usage: "Setup Krypton to sign git commits",
 			Flags: []cli.Flag{
-				cli.BoolFlag{
+				&cli.BoolFlag{
 					Name:  "interactive, i",
 					Usage: "Prompt before each step",
 				},
 			},
 			Action: codesignCommand,
-			Subcommands: []cli.Command{
-				cli.Command{
+			Subcommands: []*cli.Command{
+				{
 					Name:   "uninstall",
 					Usage:  "Uninstall Krypton codesigning",
 					Action: codesignUninstallCommand,
 				},
-				cli.Command{
+				{
 					Name:   "test",
 					Usage:  "Test Krypton codesigning",
 					Action: codesignTestCommand,
 				},
-				cli.Command{
+				{
 					Name:   "on",
 					Usage:  "Turn on auto commit signing (requires git v2.0+)",
 					Action: codesignOnCommand,
 				},
-				cli.Command{
+				{
 					Name:   "off",
 					Usage:  "Turn off auto commit signing",
 					Action: codesignOffCommand,
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:   "copy",
 			Usage:  "Copy your SSH public key to the clipboard",
 			Action: copyCommand,
-			Subcommands: []cli.Command{
-				cli.Command{
+			Subcommands: []*cli.Command{
+				{
 					Name:   "pgp",
 					Usage:  "Copy your PGP public key to the clipboard.",
 					Action: copyPGPCommand,
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:   "env",
 			Usage:  "Print useful environment variables for configuring kr/krd",
 			Action: envCommand,
 		},
-		cli.Command{
+		{
 			Name:   "sshconfig",
 			Usage:  "Verify SSH is configured to use Krypton",
 			Action: sshConfigCommand,
 			Flags: []cli.Flag{
-				cli.BoolFlag{
+				&cli.BoolFlag{
 					Name:  "print",
 					Usage: "Print Krypton SSH config block",
 				},
-				cli.BoolFlag{
+				&cli.BoolFlag{
 					Name:  "force",
 					Usage: "Force append the Krypton SSH config block even if other Krypton-related lines are present",
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:   "transfer",
 			Usage:  "Authorize a new Krypton device to access of your servers",
 			Action: transferCommand,
 			Flags: []cli.Flag{
-				cli.BoolFlag{
+				&cli.BoolFlag{
 					Name:  "dry-run, d",
 					Usage: "Do a dry-run and preview all servers that kr will try to add the new public key too",
 				},
 			},
 		},
-		cli.Command{
-			Name:  "aws,bitbucket,digitalocean,gcp,github,ghe,gitlab,heroku",
-			Usage: "Upload your public key this service",
+		{
+			Name:   "aws,bitbucket,digitalocean,gcp,github,ghe,gitlab,heroku",
+			Usage:  "Upload your public key this service",
+			Action: func(c *cli.Context) (err error) { 
+				PrintErr(os.Stderr, Red("Pick one service to upload your public key to!")) 
+				return
+			},
 		},
-		cli.Command{
+		{
 			Name:   "github",
 			Usage:  "Upload your public key to GitHub. Copies your public key to the clipboard and opens GitHub settings",
 			Action: githubCommand,
 			Hidden: true,
-			Subcommands: []cli.Command{
-				cli.Command{
+			Subcommands: []*cli.Command{
+				{
 					Name:   "pgp",
 					Usage:  "Upload your PGP public key to GitHub. Copies your public key to the clipboard and opens GitHub settings",
 					Action: githubPGPCommand,
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:   "ghe",
 			Usage:  "Upload your public key to GitHub Enterprise. Copies your public key to the clipboard and opens GitHub Enterprise settings",
 			Action: gheCommand,
 			Hidden: true,
-			Subcommands: []cli.Command{
-				cli.Command{
+			Subcommands: []*cli.Command{
+				{
 					Name:   "pgp",
 					Usage:  "Upload your PGP public key to GitHub Enterprise. Copies your public key to the clipboard and opens GitHub Enterprise settings",
 					Action: ghePGPCommand,
 					Flags: []cli.Flag{
-						cli.StringFlag{
+						&cli.StringFlag{
 							Name:  "url",
 							Usage: "GitHub Enterprise URL, i.e. github.mit.edu",
 						},
@@ -668,75 +672,79 @@ func main() {
 				},
 			},
 			Flags: []cli.Flag{
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "url",
 					Usage: "GitHub Enterprise URL, i.e. github.mit.edu",
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:   "gitlab",
 			Usage:  "Upload your public key to GitLab. Copies your public key to the clipboard and opens your GitLab profile",
 			Action: gitlabCommand,
 			Hidden: true,
 		},
-		cli.Command{
+		{
 			Name:   "bitbucket",
 			Usage:  "Upload your public key to BitBucket. Copies your public key to the clipboard and opens BitBucket settings",
 			Action: bitbucketCommand,
 			Hidden: true,
 		},
-		cli.Command{
-			Name:   "digitalocean",
-			Usage:  "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings",
-			Action: digitaloceanCommand,
-			Hidden: true,
+		{
+			Name:    "digitalocean",
+			Aliases: []string{"digital-ocean"},
+			Usage:   "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings",
+			Action:  digitaloceanCommand,
+			Hidden:  true,
 		},
-		cli.Command{
-			Name:   "digital-ocean",
-			Usage:  "Upload your public key to DigitalOcean. Copies your public key to the clipboard and opens DigitalOcean settings",
-			Action: digitaloceanCommand,
-			Hidden: true,
-		},
-		cli.Command{
+		{
 			Name:   "heroku",
 			Usage:  "Upload your public key to Heroku. Copies your public key to the clipboard and opens Heroku settings",
 			Action: herokuCommand,
 			Hidden: true,
 		},
-		cli.Command{
+		{
 			Name:   "aws",
 			Usage:  "Upload your public key to Amazon Web Services. Copies your public key to the clipboard and opens the AWS Console",
 			Action: awsCommand,
 			Hidden: true,
 		},
-		cli.Command{
+		{
 			Name:   "gcp",
 			Usage:  "Upload your public key to Google Cloud. Copies your public key to the clipboard and opens the Google Cloud Console",
 			Action: gcloudCommand,
 			Hidden: true,
 		},
-		cli.Command{
+		{
 			Name:   "restart",
 			Usage:  "Restart the Krypton daemon",
 			Action: restartCommand,
 		},
-		cli.Command{
+		{
 			Name:   "upgrade",
 			Usage:  "Upgrade Krypton on this workstation",
 			Action: upgradeCommand,
 		},
-		cli.Command{
+		{
+			Name:   "update",			
+			Action: upgradeCommand,
+			Hidden: true,
+		},
+		{
 			Name:   "unpair",
 			Usage:  "Unpair this workstation from a phone running Krypton",
 			Action: unpairCommand,
 		},
-		cli.Command{
+		{
 			Name:   "uninstall",
 			Usage:  "Uninstall Krypton from this workstation",
 			Action: uninstallCommand,
 		},
-		cli.Command{
+		{
+			Name:   "remove",			
+			Action: uninstallCommand,
+		},
+		{
 			Name:   "debugaws",
 			Usage:  "Check connectivity to AWS SQS",
 			Action: debugAWSCommand,
