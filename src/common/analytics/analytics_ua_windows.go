@@ -7,9 +7,9 @@ import (
 )
 
 // TODO
-var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (Windows NT 0.0; Win64; x64; rv: 0.0) (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
+var analytics_user_agent = fmt.Sprintf("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
 
-const analytics_os = "Linux"
+const analytics_os = "Windows"
 
 var cachedAnalyticsOSVersion *string
 var osVersionMutex sync.Mutex
