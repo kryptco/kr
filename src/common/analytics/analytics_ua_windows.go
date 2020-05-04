@@ -7,7 +7,7 @@ import (
 )
 
 // TODO
-var analytics_user_agent = fmt.Sprintf("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
+var analytics_user_agent = fmt.Sprintf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Version/%s kr/%s", CURRENT_VERSION, CURRENT_VERSION)
 
 const analytics_os = "Windows"
 
@@ -21,6 +21,7 @@ func getAnalyticsOSVersion() *string {
 		return cachedAnalyticsOSVersion
 	}
 
-	// TODO
-	return nil
+	//TODO: find system way to get version
+	// for now just use a constant here
+	return "WindowsOS"
 }
