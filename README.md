@@ -1,6 +1,6 @@
-<div style="margin-left: auto; margin-right: auto;">
-    <a href="https://krypt.co"><img src="https://krypt.co/static/dist/img/krypton_for_devops.svg" width="150"/> </a>
-</div>
+# DEPRECATED
+
+**This project is not maintained.** Development will continue at https://github.com/akamai/akr.
 
 ### Krypton Developer Tools 
 # The `kr` command line interface
