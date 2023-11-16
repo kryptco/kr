@@ -1,4 +1,4 @@
-// +build !darwin
+// +build !darwin,!windows
 
 package main
 
@@ -10,6 +10,9 @@ import (
 	. "krypt.co/kr/common/analytics"
 	. "krypt.co/kr/common/socket"
 )
+
+func initTerminal() {
+}
 
 func restartCommandOptions(c *cli.Context, isUserInitiated bool) (err error) {
 	if isUserInitiated {

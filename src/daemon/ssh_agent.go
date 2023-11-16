@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"krypt.co/kr/common/socket"
 	"net"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -33,12 +32,11 @@ type sessionIDSig struct {
 
 type hostAuthCallback chan *HostAuth
 
-func (a *Agent) withOriginalAgent(do func(agent.Agent)) error {
-	originalAgentSock := os.Getenv("SSH_AUTH_SOCK")
-	if strings.HasSuffix(originalAgentSock, "krd-agent.sock") {
+func (a *Agent) withOriginalAgent(do func(extendedAgent agent.ExtendedAgent)) error {
+	conn, err := getOriginalAgentConn()
+	if conn == nil {
 		return nil
 	}
-	conn, err := net.Dial("unix", originalAgentSock)
 	if err != nil {
 		a.log.Error("error connecting to fallbackAgent: " + err.Error())
 		return err
@@ -81,7 +79,7 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 		a.notify("", Yellow("Krypton ▶ "+ErrNotPaired.Error()))
 	}
 
-	a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		fallbackKeys, err := fallbackAgent.List()
 		if err == nil {
 			keys = append(keys, fallbackKeys...)
@@ -94,14 +92,18 @@ func (a *Agent) List() (keys []*agent.Key, err error) {
 // Sign has the agent sign the data using a protocol 2 key as defined
 // in [PROTOCOL.agent] section 2.6.2.
 func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signature, err error) {
+	return a.SignWithFlags(key, data, 0)
+}
+
+func (a *Agent) SignWithFlags(key ssh.PublicKey, data []byte, flags agent.SignatureFlags) (sshSignature *ssh.Signature, err error) {
 	keyFingerprint := sha256.Sum256(key.Marshal())
 
-	a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		fallbackKeys, fallbackErr := fallbackAgent.List()
 		if fallbackErr == nil {
 			for _, fallbackKey := range fallbackKeys {
 				if bytes.Equal(fallbackKey.Marshal(), key.Marshal()) {
-					sshSignature, err = fallbackAgent.Sign(key, data)
+					sshSignature, err = fallbackAgent.SignWithFlags(key, data, flags)
 					return
 				}
 			}
@@ -221,7 +223,7 @@ func (a *Agent) Sign(key ssh.PublicKey, data []byte) (sshSignature *ssh.Signatur
 
 // Add adds a private key to the agent.
 func (a *Agent) Add(key agent.AddedKey) (err error) {
-	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		err = fallbackAgent.Add(key)
 	})
 	if connErr != nil {
@@ -232,7 +234,7 @@ func (a *Agent) Add(key agent.AddedKey) (err error) {
 
 // Remove removes all identities with the given public key.
 func (a *Agent) Remove(key ssh.PublicKey) (err error) {
-	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		err = fallbackAgent.Remove(key)
 	})
 	if connErr != nil {
@@ -243,7 +245,7 @@ func (a *Agent) Remove(key ssh.PublicKey) (err error) {
 
 // RemoveAll removes all identities.
 func (a *Agent) RemoveAll() (err error) {
-	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		err = fallbackAgent.RemoveAll()
 	})
 	if connErr != nil {
@@ -254,7 +256,7 @@ func (a *Agent) RemoveAll() (err error) {
 
 // Lock locks the agent. Sign and Remove will fail, and List will empty an empty list.
 func (a *Agent) Lock(passphrase []byte) (err error) {
-	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		err = fallbackAgent.Lock(passphrase)
 	})
 	if connErr != nil {
@@ -265,7 +267,7 @@ func (a *Agent) Lock(passphrase []byte) (err error) {
 
 // Unlock undoes the effect of Lock
 func (a *Agent) Unlock(passphrase []byte) (err error) {
-	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		err = fallbackAgent.Unlock(passphrase)
 	})
 	if connErr != nil {
@@ -276,11 +278,21 @@ func (a *Agent) Unlock(passphrase []byte) (err error) {
 
 // Signers returns signers for all the known keys.
 func (a *Agent) Signers() (signers []ssh.Signer, err error) {
-	connErr := a.withOriginalAgent(func(fallbackAgent agent.Agent) {
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
 		signers, err = fallbackAgent.Signers()
 	})
 	if connErr != nil {
 		err = connErr
+	}
+	return
+}
+
+func (a *Agent) Extension(extensionType string, contents []byte) (ret []byte, err error) {
+	connErr := a.withOriginalAgent(func(fallbackAgent agent.ExtendedAgent) {
+		ret, err = fallbackAgent.Extension(extensionType, contents)
+	})
+	if connErr != nil {
+		err = agent.ErrExtensionUnsupported
 	}
 	return
 }

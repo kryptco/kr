@@ -37,6 +37,9 @@ const PLIST_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 </dict>
 </plist>`
 
+func initTerminal() {
+}
+
 func copyPlist() (err error) {
 	output, err := exec.Command("which", "krd").Output()
 	if err != nil {

@@ -1,14 +1,11 @@
-// +build !windows
-
 package log
 
 import (
-	stdlog "log"
-	"log/syslog"
 	"os"
 
 	"github.com/op/go-logging"
-	socket "krypt.co/kr/common/socket"
+
+	. "krypt.co/kr/common/socket"
 )
 
 var Log = logging.MustGetLogger("")
@@ -21,6 +18,7 @@ var stderrFormat = logging.MustStringFormatter(
 
 func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) *logging.Logger {
 	var backend logging.Backend
+	/*
 	if trySyslog {
 		var err error
 		backend, err = logging.NewSyslogBackendPriority(prefix, syslog.LOG_NOTICE)
@@ -35,6 +33,7 @@ func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) 
 		}
 
 	}
+	*/
 	if backend == nil {
 		var err error
 		var file *os.File
@@ -43,7 +42,7 @@ func SetupLogging(prefix string, defaultLogLevel logging.Level, trySyslog bool) 
 			logName = "kr"
 		}
 		logName += ".log"
-		path, err := socket.KrDirFile(logName)
+		path, err := KrDirFile(logName)
 		if err != nil {
 			file = os.Stderr
 		} else {

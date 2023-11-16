@@ -3,6 +3,7 @@ module krypt.co/kr
 go 1.13
 
 require (
+	github.com/Microsoft/go-winio v0.4.14
 	github.com/atotto/clipboard v0.1.2
 	github.com/aws/aws-sdk-go v1.25.15
 	github.com/blang/semver v3.5.1+incompatible
@@ -17,10 +18,12 @@ require (
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/paypal/gatt v0.0.0-20151011220935-4ae819d591cf // indirect
+	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/satori/go.uuid v1.2.0
 	github.com/urfave/cli v1.22.1
 	github.com/youtube/vitess v2.1.1+incompatible
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+	golang.org/x/sys v0.0.0-20191008105621-543471e840be
 )
 
 replace golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 => github.com/kryptco/go-crypto v0.0.0-20191020215841-c5850b359d8a

@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"runtime"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 
 	"github.com/urfave/cli"
 
+	. "krypt.co/kr/common/socket"
 	. "krypt.co/kr/common/util"
 )
 
@@ -35,6 +37,18 @@ Host *
 	IdentityFile ~/.ssh/id_ecdsa
 	IdentityFile ~/.ssh/id_dsa`
 
+const SSH_CONFIG_FORMAT_WIN = `# Added by Krypton
+Host *
+	IdentityAgent \\.\pipe\krd-agent
+	ProxyCommand %s\krssh.exe %%h %%p`
+/*
+	IdentityFile ~/.ssh/id_krypton
+	IdentityFile ~/.ssh/id_ed25519
+	IdentityFile ~/.ssh/id_rsa
+	IdentityFile ~/.ssh/id_ecdsa
+	IdentityFile ~/.ssh/id_dsa`
+*/
+
 const OLD_PKCS11_PROVIDER_FORMAT = `PKCS11Provider %s/lib/kr-pkcs11.so`
 const NEW_IDENTITY_AGENT = `IdentityAgent ~/.kr/krd-agent.sock`
 
@@ -48,7 +62,11 @@ func getKrSSHConfigBlockOrFatal() string {
 	var sshConfigWithPrefix string
 
 	if localSSHSupportsIdentityAgent(){
-		sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix)
+		if runtime.GOOS == "windows" {
+			sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT_WIN, prefix)
+		} else {
+			sshConfigWithPrefix = fmt.Sprintf(SSH_CONFIG_FORMAT, prefix)
+		}
 	} else {
 		sshConfigWithPrefix = fmt.Sprintf(OLD_SSH_CONFIG_FORMAT, prefix, prefix)
 	}
@@ -72,7 +90,7 @@ func autoEditSSHConfig() (err error) {
 }
 
 func getSSHConfigAndBakPaths() (string, string) {
-	sshDirPath := os.Getenv("HOME") + "/.ssh"
+	sshDirPath := HomeDir() + "/.ssh"
 	_ = os.MkdirAll(sshDirPath, 0700)
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr"
@@ -141,11 +159,13 @@ func localSSHSupportsIdentityAgent() bool {
 	//	Valid OpenSSH version strings:
 	//	OpenSSH_6.7p1 Debian-5+deb8u4, OpenSSL 1.0.1t  3 May 2016
 	//	OpenSSH_7.7p1, OpenSSL 1.0.2o  27 Mar 2018
+	//  OpenSSH_for_Windows_7.7p1, LibreSSL 2.6.5
 	versionOutput, err := exec.Command("ssh", "-V").CombinedOutput()
 	if err != nil {
 		return false
 	}
 	versionString := string(versionOutput)
+	versionString = strings.TrimPrefix(versionString, "OpenSSH_for_Windows_")
 	versionString = strings.TrimPrefix(versionString, "OpenSSH_")
 	for _, suffixDelim := range []string{" ", ",", "p"} {
 		versionString = strings.Split(versionString, suffixDelim)[0]
@@ -204,7 +224,7 @@ func migrateSSHConfig() (err error) {
 
 func cleanSSHConfig() (err error) {
 	configBlock := []byte(getKrSSHConfigBlockOrFatal())
-	sshDirPath := os.Getenv("HOME") + "/.ssh"
+	sshDirPath := HomeDir() + "/.ssh"
 	sshConfigPath := sshDirPath + "/config"
 	sshConfigBackupPath := sshConfigPath + ".bak.kr.uninstall"
 
@@ -230,13 +250,4 @@ func cleanSSHConfig() (err error) {
 		return
 	}
 	return
-}
-
-func getPrefix() (string, error) {
-	krAbsPath, err := exec.Command("which", "kr").Output()
-	if err != nil {
-		PrintErr(os.Stderr, Red("Krypton ▶ Could not find kr on PATH"))
-		return "", err
-	}
-	return strings.TrimSuffix(strings.TrimSpace(string(krAbsPath)), "/bin/kr"), nil
 }

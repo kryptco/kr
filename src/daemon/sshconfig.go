@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+
+	. "krypt.co/kr/common/socket"
 )
 
 func replaceKryptoniteWithKrypton(in []byte) []byte {
@@ -13,7 +15,7 @@ func replaceKryptoniteWithKrypton(in []byte) []byte {
 }
 
 func UpgradeSSHConfig() (err error) {
-	sshDirPath := os.Getenv("HOME") + "/.ssh"
+	sshDirPath := HomeDir() + "/.ssh"
 	_ = os.MkdirAll(sshDirPath, 0700)
 	sshConfigPath := sshDirPath + "/config"
 
