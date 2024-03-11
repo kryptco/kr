@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/atotto/clipboard v0.1.2
-	github.com/aws/aws-sdk-go v1.25.15
+	github.com/aws/aws-sdk-go v1.34.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc
@@ -16,7 +16,6 @@ require (
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	github.com/paypal/gatt v0.0.0-20151011220935-4ae819d591cf // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/urfave/cli v1.22.1
 	github.com/youtube/vitess v2.1.1+incompatible
